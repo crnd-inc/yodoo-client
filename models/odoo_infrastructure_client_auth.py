@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
-from odoo import models, fields, api
+
+from odoo import models, fields
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
+
 
 class OdooInfrasstructureClientAuth(models.Model):
     _name = 'odoo.infrastructure.client.auth'

@@ -1,4 +1,4 @@
-from odoo import api, models, registry, SUPERUSER_ID
+from odoo import models, registry, SUPERUSER_ID
 
 
 class Users(models.Model):
