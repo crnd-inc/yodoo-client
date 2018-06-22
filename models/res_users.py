@@ -1,4 +1,4 @@
-from odoo import models, registry, SUPERUSER_ID
+from odoo import models, fields, registry, SUPERUSER_ID
 
 
 class Users(models.Model):
@@ -13,8 +13,8 @@ class Users(models.Model):
         with registry(db).cursor() as cr:
             cr.execute(
                 'SELECT * FROM odoo_infrastructure_client_auth '
-                'WHERE token_user=%s AND token_password=%s;',
-                (login, password)
+                'WHERE token_user=%s AND token_password=%s AND expire>%s;',
+                (login, password, fields.Datetime.now())
             )
             res = cr.fetchone()
         if res:
