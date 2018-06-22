@@ -14,7 +14,8 @@
     'depends': ['base'],
 
     # always loaded
-    'data': ['security/ir.model.access.csv'],
+    'data': ['security/ir.model.access.csv',
+             'data/ir_cron_data.xml'],
     # only loaded in demonstration mode
     'demo': [],
     'category': 'Odoo Infrastructure',

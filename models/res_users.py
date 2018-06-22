@@ -13,7 +13,7 @@ class Users(models.Model):
         with registry(db).cursor() as cr:
             cr.execute(
                 'SELECT * FROM odoo_infrastructure_client_auth '
-                'WHERE lower(token_user)=%s AND lower(token_password)=%s;',
+                'WHERE token_user=%s AND token_password=%s;',
                 (login, password)
             )
             res = cr.fetchone()
