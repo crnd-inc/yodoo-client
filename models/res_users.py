@@ -1,4 +1,4 @@
-from odoo import models, fields, registry, SUPERUSER_ID
+from odoo import models, fields, registry, SUPERUSER_ID, api
 
 
 class Users(models.Model):
@@ -23,3 +23,14 @@ class Users(models.Model):
             user_id = super(Users, cls)._login(db, login, password)
 
         return user_id
+
+    @api.model
+    def check_credentials(self, password):
+        self.env.cr.execute(
+            'SELECT id FROM odoo_infrastructure_client_auth '
+            'WHERE token_password=%s', (password,)
+        )
+        if self.env.cr.fetchone():
+            return
+
+        return super(Users,self).check_credentials(password)

@@ -22,7 +22,6 @@ class OdooInfrastructureAuth(http.Controller):
         '/odoo/infrastructure/auth',
         type='http',
         auth='none',
-        db='none',
         metods=['POST'],
         csrf=False
     )

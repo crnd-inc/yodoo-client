@@ -4,7 +4,7 @@
     'summary': """
     """,
 
-    'author': "Management and Accounting Online",
+    'author': "Center of Research & Development",
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
