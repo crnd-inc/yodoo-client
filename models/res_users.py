@@ -28,4 +28,4 @@ class Users(models.Model):
         if self.env.cr.fetchone():
             return
 
-        return super(Users,self).check_credentials(password)
+        return super(Users, self).check_credentials(password)
