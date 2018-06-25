@@ -20,5 +20,5 @@
     'demo': [],
     'category': 'Odoo Infrastructure',
     'installable': True,
-    'auto_install': False,
+    'auto_install': True,
 }

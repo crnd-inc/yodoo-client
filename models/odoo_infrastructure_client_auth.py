@@ -16,5 +16,5 @@ class OdooInfrasstructureClientAuth(models.Model):
         default=(fields.Datetime.to_string(datetime.now()+timedelta(hours=1))))
 
     @api.model
-    def _scheduler_clear_non_valid_temporary_auth_data(self):
+    def _scheduler_cleanup_expired_entries(self):
         self.search([('expire', '<', fields.Datetime.now())]).unlink()

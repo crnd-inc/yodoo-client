@@ -2,9 +2,8 @@ import json
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 
-from odoo import http, registry, _
+from odoo import http, registry, _, fields
 from odoo.tools import config
-from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 from odoo.service.db import exp_db_exist
 
 
@@ -12,8 +11,8 @@ def _prepare_temporary_auth_data(ttl):
     ttl = ttl or 3600
     return {'token_user': str(uuid()),
             'token_password': str(uuid()),
-            'expire': ((datetime.now() + timedelta(seconds=int(ttl))).
-                       strftime(DATETIME_FORMAT))}
+            'expire': fields.Datetime.to_string(
+                datetime.now() + timedelta(seconds=int(ttl)))}
 
 
 class OdooInfrastructureAuth(http.Controller):
@@ -28,7 +27,8 @@ class OdooInfrastructureAuth(http.Controller):
     def create_temporary_login_data(self, **params):
         data = {}
         if exp_db_exist(params['db']):
-            if (config.get('odoo_infrastructure_token') ==
+            if (config.get('odoo_infrastructure_token') and
+                    config.get('odoo_infrastructure_token') ==
                     params['odoo_infrastructure_token']):
                 data = _prepare_temporary_auth_data(params['ttl'])
                 with registry(params['db']).cursor() as cr:
