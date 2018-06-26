@@ -1,13 +1,19 @@
 import string
 import json
+import hashlib
+import base64
+import logging
 
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
 
 from odoo import http, registry, _, fields
+from odoo.http import request
 from odoo.tools import config
 from odoo.service.db import exp_db_exist
+
+_logger = logging.getLogger(__name__)
 
 
 def generate_random_password(length):
@@ -20,12 +26,15 @@ def generate_random_password(length):
 
 def _prepare_temporary_auth_data(ttl, db_name, token):
     ttl = ttl or 3600
+    random_password = generate_random_password(128)
+    uri_token = '%s:%s:%s' % (db_name, random_password, token)
+    uri_token = base64.b64encode(uri_token.encode("utf-8")).decode()
     return {'token_user': str(uuid()),
             'token_password': str(uuid()),
-            'token_temp': '/saas_auth:%s:%s:%s' % (
-                db_name, generate_random_password(128), token),
+            'temp_url': '/saas_auth/%s' % uri_token,
             'expire': fields.Datetime.to_string(
-                datetime.now() + timedelta(seconds=int(ttl)))}
+                datetime.now() + timedelta(seconds=int(ttl))),
+            'token_temp': random_password, }
 
 
 class OdooInfrastructureAuth(http.Controller):
@@ -41,7 +50,9 @@ class OdooInfrastructureAuth(http.Controller):
         data = {}
         if exp_db_exist(params['db']):
             if (config.get('odoo_infrastructure_token') and
-                    config.get('odoo_infrastructure_token') ==
+                    hashlib.sha256(
+                        config.get('odoo_infrastructure_token').encode('utf8')
+                    ).hexdigest() ==
                     params['odoo_infrastructure_token']):
                 data = _prepare_temporary_auth_data(
                     params['ttl'],
@@ -50,8 +61,12 @@ class OdooInfrastructureAuth(http.Controller):
                 with registry(params['db']).cursor() as cr:
                     cr.execute(
                         'INSERT INTO odoo_infrastructure_client_auth '
-                        '(token_user, token_password, expire) VALUES '
-                        '(%(token_user)s, %(token_password)s, %(expire)s);',
+                        '(token_user, token_password, expire, token_temp) '
+                        'VALUES '
+                        '(%(token_user)s,'
+                        ' %(token_password)s,'
+                        ' %(expire)s,'
+                        ' %(token_temp)s);',
                         data
                     )
             else:
@@ -60,3 +75,31 @@ class OdooInfrastructureAuth(http.Controller):
             data['error'] = _('DB with this name is not found.')
 
         return json.dumps(data)
+
+    @http.route(
+        '/saas_auth/<token>',
+        type='http',
+        auth='none',
+        metods=['GET'],
+        csrf=False
+    )
+    def temporary_auth(self, token):
+        token = base64.b64decode(token).decode('utf-8')
+        data = token.split(':')
+
+        if data[2] == hashlib.sha256(
+                config.get('odoo_infrastructure_token').encode('utf8')
+        ).hexdigest():
+
+            with registry(data[0]).cursor() as cr:
+                cr.execute(
+                    'SELECT token_user, token_password FROM'
+                    ' odoo_infrastructure_client_auth '
+                    'WHERE token_temp=%s AND expire>%s;',
+                    (data[1], fields.Datetime.now())
+                )
+                res = cr.fetchone()
+            if res:
+                request.session.authenticate(data[0], res[0], res[1])
+                return http.redirect_with_hash('/web')
+        return 'error'
