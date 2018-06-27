@@ -104,13 +104,13 @@ class OdooInfrastructureAuth(http.Controller):
                     'WHERE token_temp=%s AND expire>%s;',
                     (token_temp, fields.Datetime.now())
                 )
-                id, user, password = cr.fetchone()
-            if id:
+                auth_id, user, password = cr.fetchone()
+            if auth_id:
                 request.session.authenticate(db, user, password)
                 with registry(db).cursor() as cr:
                     cr.execute(
                         'DELETE FROM odoo_infrastructure_client_auth '
-                        'WHERE id = %s;', (id,)
+                        'WHERE id = %s;', (auth_id,)
                     )
                 return http.redirect_with_hash('/web')
         _logger.info('Token: %s' % token)
