@@ -70,8 +70,13 @@ class OdooInfrastructureAuth(http.Controller):
                         data
                     )
             else:
+                _logger.info(
+                    'Token: %s does not match.' %
+                    params['odoo_infrastructure_token'])
                 data['error'] = _('Token does not match.')
         else:
+            _logger.info(
+                'DB with this name: %s is not found.' % params['db'])
             data['error'] = _('DB with this name is not found.')
 
         return json.dumps(data)
