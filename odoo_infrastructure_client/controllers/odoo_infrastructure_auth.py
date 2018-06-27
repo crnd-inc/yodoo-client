@@ -89,6 +89,7 @@ class OdooInfrastructureAuth(http.Controller):
         csrf=False
     )
     def temporary_auth(self, token):
+        _logger.info('Url token: %s' % token)
         token = base64.b64decode(token).decode('utf-8')
         data = token.split(':')
 
@@ -112,4 +113,6 @@ class OdooInfrastructureAuth(http.Controller):
                         'WHERE id = %s;', (res[0],)
                     )
                 return http.redirect_with_hash('/web')
+        _logger.info('Token: %s' % token)
+        _logger.info('Data: %s' % data)
         return 'error'
