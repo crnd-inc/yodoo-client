@@ -71,12 +71,12 @@ class OdooInfrastructureAuth(http.Controller):
                     )
             else:
                 _logger.info(
-                    'Token: %s does not match.' %
+                    'Token: %s does not match.',
                     params['odoo_infrastructure_token'])
                 data['error'] = _('Token does not match.')
         else:
             _logger.info(
-                'DB with this name: %s is not found.' % params['db'])
+                'DB with this name: %s is not found.', params['db'])
             data['error'] = _('DB with this name is not found.')
 
         return json.dumps(data)
@@ -89,7 +89,7 @@ class OdooInfrastructureAuth(http.Controller):
         csrf=False
     )
     def temporary_auth(self, token):
-        _logger.info('Url token: %s' % token)
+        _logger.info('Url token: %s', token)
         token = base64.b64decode(token).decode('utf-8')
         db, token_temp, hash_token = token.split(':')
 
@@ -113,6 +113,6 @@ class OdooInfrastructureAuth(http.Controller):
                         'WHERE id = %s;', (auth_id,)
                     )
                 return http.redirect_with_hash('/web')
-        _logger.info('Token: %s' % token)
-        _logger.info('Data: %s, %s, %s' % (db, token_temp, hash_token))
+        _logger.info('Token: %s', token)
+        _logger.info('Data: %s, %s, %s', (db, token_temp, hash_token))
         return 'error'
