@@ -91,28 +91,28 @@ class OdooInfrastructureAuth(http.Controller):
     def temporary_auth(self, token):
         _logger.info('Url token: %s' % token)
         token = base64.b64decode(token).decode('utf-8')
-        data = token.split(':')
+        db, token_temp, hash_token = token.split(':')
 
-        if data[2] == hashlib.sha256(
+        if hash_token == hashlib.sha256(
                 config.get('odoo_infrastructure_token').encode('utf8')
         ).hexdigest():
 
-            with registry(data[0]).cursor() as cr:
+            with registry(db).cursor() as cr:
                 cr.execute(
                     'SELECT id, token_user, token_password FROM'
                     ' odoo_infrastructure_client_auth '
                     'WHERE token_temp=%s AND expire>%s;',
-                    (data[1], fields.Datetime.now())
+                    (token_temp, fields.Datetime.now())
                 )
-                res = cr.fetchone()
-            if res:
-                request.session.authenticate(data[0], res[1], res[2])
-                with registry(data[0]).cursor() as cr:
+                id, user, password = cr.fetchone()
+            if id:
+                request.session.authenticate(db, user, password)
+                with registry(db).cursor() as cr:
                     cr.execute(
                         'DELETE FROM odoo_infrastructure_client_auth '
-                        'WHERE id = %s;', (res[0],)
+                        'WHERE id = %s;', (id,)
                     )
                 return http.redirect_with_hash('/web')
         _logger.info('Token: %s' % token)
-        _logger.info('Data: %s' % data)
+        _logger.info('Data: %s, %s, %s' % (db, token_temp, hash_token))
         return 'error'
