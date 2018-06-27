@@ -1,8 +1,0 @@
-*.py[cow]
-*.sw[pno]
-*.idea/
-*~
-.ropeproject/
-.coverage
-htmlcov
-venv/
