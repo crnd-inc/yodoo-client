@@ -80,10 +80,11 @@ class OdooInfrastructureAuth(http.Controller):
             _logger.info(
                 'DB with this name: %s is not found.', params['db'])
             data['error'] = _('DB with this name is not found.')
-            status_code = 404git 
+            status_code = 404
         response = request.make_response(json.dumps(data))
         response.status_code = status_code
         return response
+
 
     @http.route(
         '/saas_auth/<token>',
@@ -107,7 +108,7 @@ class OdooInfrastructureAuth(http.Controller):
                     " odoo_infrastructure_client_auth"
                     " WHERE token_temp=%s AND"
                     " expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';",
-                    (token_temp)
+                    (token_temp, )
                 )
                 auth_id, user, password = cr.fetchone()
             if auth_id:
@@ -115,7 +116,7 @@ class OdooInfrastructureAuth(http.Controller):
                 with registry(db).cursor() as cr:
                     cr.execute(
                         'DELETE FROM odoo_infrastructure_client_auth '
-                        'WHERE id = %s;', (auth_id,)
+                        'WHERE id = %s;', (auth_id, )
                     )
                 return http.redirect_with_hash('/web')
         _logger.info('Token: %s', token)

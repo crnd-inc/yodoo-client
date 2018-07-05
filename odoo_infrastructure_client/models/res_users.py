@@ -14,7 +14,7 @@ class Users(models.Model):
                 "SELECT id FROM odoo_infrastructure_client_auth"
                 " WHERE token_user=%s AND token_password=%s"
                 " AND expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';",
-                (login, password)
+                (login, password, )
             )
             if cr.fetchone():
                 return SUPERUSER_ID
@@ -24,7 +24,7 @@ class Users(models.Model):
     def check_credentials(self, password):
         self.env.cr.execute(
             'SELECT id FROM odoo_infrastructure_client_auth '
-            'WHERE token_password=%s', (password,)
+            'WHERE token_password=%s', (password, )
         )
         if self.env.cr.fetchone():
             return

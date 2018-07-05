@@ -63,17 +63,25 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
 
         # test incorrect request with bad odoo_infrastructure_token
 
-        data = self.data.copy().update({
+        data = self.data.copy()
+        data.update({
             'odoo_infrastructure_token': 'abracadabra'
         })
+        print(data)
 
         response = requests.post(self._url, data=data)
-        print(response)
-        #self.assertEqual(response.status_code, 404)
+        print(response.status_code)
+        print(response.text)
+        self.assertEqual(response.status_code, 200)
+
+        data = self.data.copy()
+        data.update({
+            'db': 'abracadabra'
+        })
 
 
-        #response = requests.post(self._url, data=data)
-        #self.assertEqual(response.status_code, 200)
+        response = requests.post(self._url, data=data)
+        self.assertEqual(response.status_code, 404)
 #
         #data.update({
         #    'odoo_infrastructure_token': 'abracadabra'
