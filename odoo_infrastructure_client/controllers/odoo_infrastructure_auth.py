@@ -58,6 +58,7 @@ class OdooInfrastructureAuth(http.Controller):
                     params['ttl'],
                     params['db'],
                     params['odoo_infrastructure_token'])
+                status_code = 200
                 with registry(params['db']).cursor() as cr:
                     cr.execute(
                         'INSERT INTO odoo_infrastructure_client_auth '
@@ -74,13 +75,15 @@ class OdooInfrastructureAuth(http.Controller):
                     'Token: %s does not match.',
                     params['odoo_infrastructure_token'])
                 data['error'] = _('Token does not match.')
+                status_code = 404
         else:
             _logger.info(
                 'DB with this name: %s is not found.', params['db'])
             data['error'] = _('DB with this name is not found.')
-
-        return json.dumps(data)
-
+            status_code = 404git 
+        response = request.make_response(json.dumps(data))
+        response.status_code = status_code
+        return response
 
     @http.route(
         '/saas_auth/<token>',
