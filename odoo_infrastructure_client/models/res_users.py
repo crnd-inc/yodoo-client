@@ -11,9 +11,10 @@ class Users(models.Model):
 
         with registry(db).cursor() as cr:
             cr.execute(
-                'SELECT id FROM odoo_infrastructure_client_auth '
-                'WHERE token_user=%s AND token_password=%s AND expire>%s;',
-                (login, password, fields.Datetime.now())
+                "SELECT id FROM odoo_infrastructure_client_auth"
+                " WHERE token_user=%s AND token_password=%s"
+                " AND expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';",
+                (login, password)
             )
             if cr.fetchone():
                 return SUPERUSER_ID

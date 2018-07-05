@@ -81,6 +81,7 @@ class OdooInfrastructureAuth(http.Controller):
 
         return json.dumps(data)
 
+
     @http.route(
         '/saas_auth/<token>',
         type='http',
@@ -99,10 +100,11 @@ class OdooInfrastructureAuth(http.Controller):
 
             with registry(db).cursor() as cr:
                 cr.execute(
-                    'SELECT id, token_user, token_password FROM'
-                    ' odoo_infrastructure_client_auth '
-                    'WHERE token_temp=%s AND expire>%s;',
-                    (token_temp, fields.Datetime.now())
+                    "SELECT id, token_user, token_password FROM"
+                    " odoo_infrastructure_client_auth"
+                    " WHERE token_temp=%s AND"
+                    " expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';",
+                    (token_temp)
                 )
                 auth_id, user, password = cr.fetchone()
             if auth_id:
