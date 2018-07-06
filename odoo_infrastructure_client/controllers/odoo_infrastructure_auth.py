@@ -124,7 +124,8 @@ class OdooInfrastructureAuth(http.Controller):
                         'Temp url %s does not exist', token)
             else:
                 _logger.warning(
-                    'Bad Data: dbname: %s, or token_temp: %s, or hash_token: %s',
+                    'Bad Data: '
+                    'dbname: %s, or token_temp: %s, or hash_token: %s',
                     db, token_temp, hash_token)
         else:
             _logger.warning(
