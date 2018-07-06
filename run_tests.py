@@ -144,6 +144,11 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
     def setUp(self):
         pass
 
+
+
+
+
+
 def suite():
     _suite = unittest.TestSuite()
     _suite.addTest(TestOdooInfrastructureAuthAuth('test_01_controller_odoo_infrastructure_auth'))
