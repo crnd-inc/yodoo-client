@@ -24,6 +24,12 @@ def create_url(host, port, query):
     return urlunsplit(('http', ':'.join((host, port)), query, '', ''))
 
 
+def change_expire(expire):
+    return (datetime.strptime(
+        expire, "%Y-%m-%d %H:%M:%S") -
+            timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+
+
 class TestOdooInfrastructureAuth(unittest.TestCase):
 
     @classmethod
@@ -126,10 +132,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
         # change expire
         temp_rows[0].write({
-            'expire': (
-                datetime.strptime(
-                    temp_rows[0]['expire'], "%Y-%m-%d %H:%M:%S") -
-                timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+            'expire': change_expire(temp_rows[0]['expire'])
         })
 
         # run scheduler
@@ -153,11 +156,72 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         )
 
     def test_01_controller_odoo_infrastructure_saas_auth(self):
+        # test correct request
         response = requests.get(self.url)
         response_data = response.text.split('\'')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('/web', response_data)
+
+    def test_02_controller_odoo_infrastructure_saas_auth(self):
+        # test incorrect request (url no base64)
+        response = requests.get(self.url[:-1])
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_03_controller_odoo_infrastructure_saas_auth(self):
+        # test incorrect request (bad url in base64)
+        response = requests.get(self.url[:-1] + 'A')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_04_controller_odoo_infrastructure_saas_auth(self):
+        # check temp record existing
+        OdooInfrastructureClientAuth = self._client[
+            'odoo.infrastructure.client.auth']
+        temp_rows = OdooInfrastructureClientAuth.search_records(
+            [('token_temp', '=', self.data['token_temp'])]
+        )
+        self.assertEqual(len(temp_rows), 1)
+        # correct request
+        requests.get(self.url)
+        # check temp record removed
+        temp_rows = OdooInfrastructureClientAuth.search_records(
+            [('token_temp', '=', self.data['token_temp'])]
+        )
+        self.assertEqual(len(temp_rows), 0)
+
+    def test_05_controller_odoo_infrastructure_saas_auth(self):
+        # check request if temp record does not exist
+        OdooInfrastructureClientAuth = self._client[
+            'odoo.infrastructure.client.auth']
+        temp_rows = OdooInfrastructureClientAuth.search_records(
+            [('token_temp', '=', self.data['token_temp'])]
+        )
+        self.assertEqual(len(temp_rows), 1)
+
+        temp_rows[0].unlink()
+        # correct request
+        response = requests.get(self.url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_06_controller_odoo_infrastructure_saas_auth(self):
+        # check request if expire
+        OdooInfrastructureClientAuth = self._client[
+            'odoo.infrastructure.client.auth']
+        temp_rows = OdooInfrastructureClientAuth.search_records(
+            [('token_temp', '=', self.data['token_temp'])]
+        )
+        self.assertEqual(len(temp_rows), 1)
+
+        temp_rows[0].write({
+            'expire': change_expire(temp_rows[0]['expire'])
+        })
+
+        response = requests.get(self.url)
+
+        self.assertEqual(response.status_code, 404)
 
 
 def suite():
@@ -172,6 +236,16 @@ def suite():
         'test_04_controller_odoo_infrastructure_auth'))
     _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
         'test_01_controller_odoo_infrastructure_saas_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
+        'test_02_controller_odoo_infrastructure_saas_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
+        'test_03_controller_odoo_infrastructure_saas_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
+        'test_04_controller_odoo_infrastructure_saas_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
+        'test_05_controller_odoo_infrastructure_saas_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
+        'test_06_controller_odoo_infrastructure_saas_auth'))
     return _suite
 
 
