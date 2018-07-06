@@ -39,6 +39,7 @@ def _prepare_temporary_auth_data(ttl, db_name, token):
 
 class OdooInfrastructureAuth(http.Controller):
 
+
     @http.route(
         '/odoo/infrastructure/auth',
         type='http',
