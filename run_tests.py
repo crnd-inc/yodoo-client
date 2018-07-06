@@ -1,4 +1,3 @@
-import requests
 import hashlib
 import string
 import unittest
@@ -7,6 +6,9 @@ from datetime import datetime, timedelta
 from random import shuffle
 from os import environ
 from urllib.parse import urlunsplit
+
+import requests
+
 from odoo_rpc_client import Client
 
 
@@ -16,6 +18,10 @@ def generate_random_string(length):
                    string.digits)
     shuffle(letters)
     return ''.join(letters[:length])
+
+
+def create_url(host, port, query):
+    return urlunsplit(('http', ':'.join((host, port)), query, '', ''))
 
 
 class TestOdooInfrastructureAuth(unittest.TestCase):
@@ -29,21 +35,20 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
         cls._odoo_db_port = environ.get('ODOO_DB_PORT', '8069')
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_db_host)
-        cls._client = cls._odoo_instance.services.db.create_db('admin', cls._db_name)
+        cls._client = cls._odoo_instance.services.db.create_db(
+            'admin', cls._db_name)
         cls._hash_token = hashlib.sha256(
             cls._odoo_instance_token.encode('utf8')).hexdigest()
-        cls._url = urlunsplit(
-            ('http',
-             ':'.join((cls._odoo_db_host, cls._odoo_db_port)),
-             '/odoo/infrastructure/auth/',
-             '',
-             '')
-        )
         cls._data = {
             'odoo_infrastructure_token': cls._hash_token,
             'ttl': 300,
             'db': cls._client.dbname
         }
+        cls._url = create_url(
+            cls._odoo_db_host,
+            cls._odoo_db_port,
+            '/odoo/infrastructure/auth/'
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -62,7 +67,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         self.incorrect_response_keys = {'error'}
 
     def test_01_controller_odoo_infrastructure_auth(self):
-
         # test correct request
         response = requests.post(self._url, data=self._data)
         self.assertEqual(response.status_code, 200)
@@ -71,9 +75,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
             self.correct_response_keys
         )
 
-
     def test_02_controller_odoo_infrastructure_auth(self):
-
         # test incorrect request with bad odoo_infrastructure_token
         data = self._data.copy()
         data.update({
@@ -88,7 +90,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         )
 
     def test_03_controller_odoo_infrastructure_auth(self):
-
         # test incorrect request with bad db_name
         data = self._data.copy()
         data.update({
@@ -103,10 +104,10 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         )
 
     def test_04_controller_odoo_infrastructure_auth(self):
-
         # test scheduler remove row after expire
         response = requests.post(self._url, data=self._data)
-        OdooInfrastructureClientAuth = self._client['odoo.infrastructure.client.auth']
+        OdooInfrastructureClientAuth = self._client[
+            'odoo.infrastructure.client.auth']
 
         # check if record exist
         temp_rows = OdooInfrastructureClientAuth.search_records(
@@ -124,11 +125,12 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         self.assertEqual(len(temp_rows), 1)
 
         # change expire
-        temp_rows[0].write({'expire':
-                                (datetime.strptime(
-                                    temp_rows[0]['expire'], "%Y-%m-%d %H:%M:%S") -
-                                 timedelta(hours=1)
-                                 ).strftime("%Y-%m-%d %H:%M:%S")})
+        temp_rows[0].write({
+            'expire': (
+                datetime.strptime(
+                    temp_rows[0]['expire'], "%Y-%m-%d %H:%M:%S") -
+                timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+        })
 
         # run scheduler
         OdooInfrastructureClientAuth.scheduler_cleanup_expired_entries()
@@ -142,19 +144,34 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
 class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
     def setUp(self):
-        pass
+        self.response = requests.post(self._url, data=self._data)
+        self.data = self.response.json()
+        self.url = create_url(
+            self._odoo_db_host,
+            self._odoo_db_port,
+            self.data["temp_url"]
+        )
 
+    def test_01_controller_odoo_infrastructure_saas_auth(self):
+        response = requests.get(self.url)
+        response_data = response.text.split('\'')
 
-
-
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('/web', response_data)
 
 
 def suite():
     _suite = unittest.TestSuite()
-    _suite.addTest(TestOdooInfrastructureAuthAuth('test_01_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthAuth('test_02_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthAuth('test_03_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthAuth('test_04_controller_odoo_infrastructure_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthAuth(
+        'test_01_controller_odoo_infrastructure_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthAuth(
+        'test_02_controller_odoo_infrastructure_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthAuth(
+        'test_03_controller_odoo_infrastructure_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthAuth(
+        'test_04_controller_odoo_infrastructure_auth'))
+    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
+        'test_01_controller_odoo_infrastructure_saas_auth'))
     return _suite
 
 
