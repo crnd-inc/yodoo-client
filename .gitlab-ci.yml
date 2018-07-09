@@ -50,11 +50,11 @@ tests:
         - odoo-helper link .
     script:
         #- bash run_tests.bash
+        - echo "odoo_infrastructure_token = qwerty" >> /opt/odoo/conf/odoo.conf
+        - echo "server_wide_modules = base,web,odoo_infrastructure_client" >> /opt/odoo/conf/odoo.conf
         - odoo-helper system update dev
         - odoo-helper server start --coverage
         - sleep 5
-        - echo "odoo_infrastructure_token = qwerty" >> /opt/odoo/conf/odoo.conf
-        - echo "server_wide_modules = base,web,odoo_infrastructure_client" >> /opt/odoo/conf/odoo.conf
         - odoo-helper exec python -m unittest run_tests.py
         - odoo-helper stop
         - odoo-helper exec coverage report
