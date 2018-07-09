@@ -42,7 +42,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_db_host)
         cls._client = cls._odoo_instance.services.db.create_db(
-            cls._odoo_admin_pass, cls._db_name)
+            'admin', cls._db_name)
         cls._hash_token = hashlib.sha256(
             cls._odoo_instance_token.encode('utf8')).hexdigest()
         cls._data = {
@@ -59,7 +59,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls._odoo_instance.services.db.drop_db(
-            cls._odoo_admin_pass, cls._db_name)
+            'admin', cls._db_name)
 
 
 class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
