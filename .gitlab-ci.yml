@@ -8,7 +8,10 @@ variables:
     ODOO_DB_HOST: 10.100.98.41-maao-docker-maao-ci-postgres
     ODOO_DB_USER: odoo
     ODOO_DB_PASSWORD: odoo
+
     ODOO_ADMIN_PASS: admin
+    ODOO_PORT: 8069
+    ODOO_HOST: localhost
 
 cache:
     paths:
@@ -38,19 +41,19 @@ pylint:
     script:
         - odoo-helper test pylint .
 
-#tests:
-#    stage: test
-#    services:
-#        - 10.100.98.41:5000/maao-docker/maao-ci-postgres
-#
-#    before_script:
-#        - odoo-helper link .
-#    script:
-#        - odoo-helper --use-unbuffer test --coverage --create-test-db -d .
-#        - odoo-helper exec coverage report --fail-under=90
-#        - odoo-helper exec coverage html -d html-coverage
-#    coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
-#    artifacts:
-#        paths:
-#            - html-coverage
-#
+tests:
+    stage: test
+    services:
+        - 10.100.98.41:5000/maao-docker/maao-ci-postgres
+
+    before_script:
+        - odoo-helper link .
+    script:
+        - echo "odoo_instance_token = qwerty" > /opt/odoo/conf/odoo.conf
+        - odoo-helper server start
+        - odoo-helper exec python -m unittest run_tests.py
+        - odoo-helper server stop
+    coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
+    artifacts:
+        paths:
+            - html-coverage
