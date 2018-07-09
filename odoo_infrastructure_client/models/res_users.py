@@ -11,9 +11,10 @@ class Users(models.Model):
 
         with registry(db).cursor() as cr:
             cr.execute(
-                "SELECT id FROM odoo_infrastructure_client_auth"
-                " WHERE token_user=%s AND token_password=%s"
-                " AND expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';",
+                """SELECT id FROM odoo_infrastructure_client_auth
+                 WHERE token_user=%s AND
+                  token_password=%s
+                   AND expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';""",
                 (login, password, )
             )
             if cr.fetchone():
@@ -23,8 +24,8 @@ class Users(models.Model):
     @api.model
     def check_credentials(self, password):
         self.env.cr.execute(
-            'SELECT id FROM odoo_infrastructure_client_auth '
-            'WHERE token_password=%s', (password, )
+            """SELECT id FROM odoo_infrastructure_client_auth
+             WHERE token_password=%s""", (password, )
         )
         if self.env.cr.fetchone():
             return
