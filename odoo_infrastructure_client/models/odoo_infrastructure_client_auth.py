@@ -17,5 +17,6 @@ class OdooInfrasstructureClientAuth(models.Model):
     token_temp = fields.Char()
 
     @api.model
-    def _scheduler_cleanup_expired_entries(self):
+    def scheduler_cleanup_expired_entries(self):
         self.search([('expire', '<', fields.Datetime.now())]).unlink()
+        return True
