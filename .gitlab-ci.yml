@@ -49,7 +49,9 @@ tests:
     before_script:
         - odoo-helper link .
     script:
-        - echo "odoo_instance_token = qwerty" > /opt/odoo/conf/odoo.conf
+        - cat /opt/odoo/conf/odoo.conf
+        - echo "odoo_instance_token = qwerty" >> /opt/odoo/conf/odoo.conf
+        - cat /opt/odoo/conf/odoo.conf
         - odoo-helper server start
         - odoo-helper exec python -m unittest run_tests.py
         - odoo-helper server stop
