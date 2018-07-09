@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from random import shuffle
 
 from odoo import http, registry, _, fields
-from odoo.http import request
+from odoo.http import request, Response
 from odoo.tools import config
 from odoo.service.db import exp_db_exist
 
@@ -46,44 +46,42 @@ class OdooInfrastructureAuth(http.Controller):
         metods=['POST'],
         csrf=False
     )
-    def create_temporary_login_data(self, **params):
-        data = {}
-        if exp_db_exist(params['db']):
-            if (config.get('odoo_infrastructure_token') and
-                    hashlib.sha256(
-                        config.get('odoo_infrastructure_token').encode('utf8')
-                    ).hexdigest() ==
-                    params['odoo_infrastructure_token']):
-                data = _prepare_temporary_auth_data(
-                    params['ttl'],
-                    params['db'],
-                    params['odoo_infrastructure_token'])
-                status_code = 200
-                with registry(params['db']).cursor() as cr:
-                    cr.execute(
-                        'INSERT INTO odoo_infrastructure_client_auth '
-                        '(token_user, token_password, expire, token_temp) '
-                        'VALUES '
-                        '(%(token_user)s,'
-                        ' %(token_password)s,'
-                        ' %(expire)s,'
-                        ' %(token_temp)s);',
-                        data
-                    )
-            else:
-                _logger.info(
-                    'Token: %s does not match.',
-                    params['odoo_infrastructure_token'])
-                data['error'] = _('Token does not match.')
-                status_code = 404
-        else:
+    def create_temporary_login_data(
+            self, db=None, ttl=3600, token_hash=None, **params):
+        if not exp_db_exist(db):
             _logger.info(
-                'DB with this name: %s is not found.', params['db'])
-            data['error'] = _('DB with this name is not found.')
-            status_code = 404
-        response = request.make_response(json.dumps(data))
-        response.status_code = status_code
-        return response
+                'DB with this name: %s is not found.',db)
+            return Response(
+                json.dumps({'error': _('DB with this name is not found.')}),
+                status=400)
+
+        token = config.get('odoo_infrastructure_token')
+        if not token:
+            _logger.info(
+                'Instance token: does not exist, please configure it.')
+            return http.request.not_found()
+        token_instance_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
+        if token_instance_hash != token_hash:
+            _logger.info(
+                'Tokens: %s and %s does not match.',
+                token_instance_hash, token_hash)
+            return Response(
+                json.dumps({'error': _('Tokens does not match.')}),
+                status=400)
+        data = _prepare_temporary_auth_data(ttl, db, token_hash)
+        with registry(db).cursor() as cr:
+            cr.execute("""
+                INSERT INTO odoo_infrastructure_client_auth 
+                (token_user, token_password, expire, token_temp) 
+                VALUES 
+                (%(token_user)s, 
+                %(token_password)s, 
+                %(expire)s, 
+                %(token_temp)s);
+                """,
+                data
+            )
+        return Response(json.dumps(data), status=200)
 
     @http.route(
         '/saas_auth/<token>',
@@ -93,43 +91,43 @@ class OdooInfrastructureAuth(http.Controller):
         csrf=False
     )
     def temporary_auth(self, token):
-        if len(token) % 4 == 0:
+
+        try:
             token = base64.b64decode(token).decode('utf-8')
             db, token_temp, hash_token = token.split(':')
-
-            if hash_token == hashlib.sha256(
-                    config.get('odoo_infrastructure_token').encode('utf8')
-            ).hexdigest():
-
-                with registry(db).cursor() as cr:
-                    cr.execute(
-                        "SELECT id, token_user, token_password FROM"
-                        " odoo_infrastructure_client_auth"
-                        " WHERE token_temp=%s AND"
-                        " expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';",
-                        (token_temp,)
-                    )
-                    res = cr.fetchone()
-                if res:
-                    auth_id, user, password = res
-                    request.session.authenticate(db, user, password)
-                    with registry(db).cursor() as cr:
-                        cr.execute(
-                            'DELETE FROM odoo_infrastructure_client_auth '
-                            'WHERE id = %s;', (auth_id,)
-                        )
-                    return http.redirect_with_hash('/web')
-                else:
-                    _logger.warning(
-                        'Temp url %s does not exist', token)
-            else:
-                _logger.warning(
-                    'Bad Data: '
-                    'dbname: %s, or token_temp: %s, or hash_token: %s',
-                    db, token_temp, hash_token)
-        else:
+        except base64.binascii.Error:
             _logger.warning(
                 'Bad Data: url: %s not in BASE64', token)
-        response = request.make_response('Bad request')
-        response.status_code = 404
-        return response
+            return Response('Bad request', status=400)
+
+        token_instance_hash = hashlib.sha256(
+            config.get('odoo_infrastructure_token').encode('utf8')
+        ).hexdigest()
+        if hash_token != token_instance_hash:
+            _logger.info(
+                'Tokens: %s and %s does not match.',
+                token_instance_hash, hash_token)
+            return Response('Bad request', status=400)
+
+        with registry(db).cursor() as cr:
+            cr.execute("""
+                SELECT id, token_user, token_password FROM
+                odoo_infrastructure_client_auth
+                WHERE token_temp=%s AND
+                expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';""",
+                (token_temp,)
+            )
+            res = cr.fetchone()
+        if  not res:
+            _logger.warning(
+                'Temp url %s does not exist', token)
+            return http.request.not_found()
+
+        auth_id, user, password = res
+        request.session.authenticate(db, user, password)
+        with registry(db).cursor() as cr:
+            cr.execute(
+                """DELETE FROM odoo_infrastructure_client_auth 
+                WHERE id = %s;""", (auth_id,)
+            )
+        return http.redirect_with_hash('/web')

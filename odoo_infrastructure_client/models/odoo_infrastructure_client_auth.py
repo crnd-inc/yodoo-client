@@ -3,6 +3,10 @@ from datetime import datetime, timedelta
 from odoo import models, fields, api
 
 
+def get_default_expire():
+    return fields.Datetime.to_string(datetime.now()+timedelta(hours=1))
+
+
 class OdooInfrasstructureClientAuth(models.Model):
     _name = 'odoo.infrastructure.client.auth'
     _description = 'Odoo Infrastructure Client Auth'
@@ -13,7 +17,7 @@ class OdooInfrasstructureClientAuth(models.Model):
     token_password = fields.Char()
     expire = fields.Datetime(
         required=True,
-        default=(fields.Datetime.to_string(datetime.now()+timedelta(hours=1))))
+        default=get_default_expire)
     token_temp = fields.Char()
 
     @api.model

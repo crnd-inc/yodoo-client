@@ -46,7 +46,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
         cls._hash_token = hashlib.sha256(
             cls._odoo_instance_token.encode('utf8')).hexdigest()
         cls._data = {
-            'odoo_infrastructure_token': cls._hash_token,
+            'token_hash': cls._hash_token,
             'ttl': 300,
             'db': cls._client.dbname
         }
@@ -82,14 +82,14 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         )
 
     def test_02_controller_odoo_infrastructure_auth(self):
-        # test incorrect request with bad odoo_infrastructure_token
+        # test incorrect request with bad token_hash
         data = self._data.copy()
         data.update({
-            'odoo_infrastructure_token': 'abracadabra'
+            'token_hash': 'abracadabra'
         })
 
         response = requests.post(self._url, data=data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
             set(response.json().keys()),
             self.incorrect_response_keys
@@ -103,7 +103,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         })
 
         response = requests.post(self._url, data=data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
             set(response.json().keys()),
             self.incorrect_response_keys
@@ -167,13 +167,13 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         # test incorrect request (url no base64)
         response = requests.get(self.url[:-1])
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
 
     def test_03_controller_odoo_infrastructure_saas_auth(self):
         # test incorrect request (bad url in base64)
         response = requests.get(self.url[:-1] + 'A')
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
 
     def test_04_controller_odoo_infrastructure_saas_auth(self):
         # check temp record existing
@@ -224,31 +224,5 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         self.assertEqual(response.status_code, 404)
 
 
-def suite():
-    _suite = unittest.TestSuite()
-    _suite.addTest(TestOdooInfrastructureAuthAuth(
-        'test_01_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthAuth(
-        'test_02_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthAuth(
-        'test_03_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthAuth(
-        'test_04_controller_odoo_infrastructure_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
-        'test_01_controller_odoo_infrastructure_saas_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
-        'test_02_controller_odoo_infrastructure_saas_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
-        'test_03_controller_odoo_infrastructure_saas_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
-        'test_04_controller_odoo_infrastructure_saas_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
-        'test_05_controller_odoo_infrastructure_saas_auth'))
-    _suite.addTest(TestOdooInfrastructureAuthSaasAuth(
-        'test_06_controller_odoo_infrastructure_saas_auth'))
-    return _suite
-
-
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
-    runner.run(suite())
