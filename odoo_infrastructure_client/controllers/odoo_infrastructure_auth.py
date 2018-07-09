@@ -50,7 +50,7 @@ class OdooInfrastructureAuth(http.Controller):
             self, db=None, ttl=3600, token_hash=None, **params):
         if not exp_db_exist(db):
             _logger.info(
-                'DB with this name: %s is not found.',db)
+                'DB with this name: %s is not found.', db)
             return Response(
                 json.dumps({'error': _('DB with this name is not found.')}),
                 status=400)
@@ -71,16 +71,14 @@ class OdooInfrastructureAuth(http.Controller):
         data = _prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
             cr.execute("""
-                INSERT INTO odoo_infrastructure_client_auth 
-                (token_user, token_password, expire, token_temp) 
-                VALUES 
-                (%(token_user)s, 
-                %(token_password)s, 
-                %(expire)s, 
+                INSERT INTO odoo_infrastructure_client_auth
+                (token_user, token_password, expire, token_temp)
+                VALUES
+                (%(token_user)s,
+                %(token_password)s,
+                %(expire)s,
                 %(token_temp)s);
-                """,
-                data
-            )
+                """, data)
         return Response(json.dumps(data), status=200)
 
     @http.route(
@@ -115,10 +113,9 @@ class OdooInfrastructureAuth(http.Controller):
                 odoo_infrastructure_client_auth
                 WHERE token_temp=%s AND
                 expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';""",
-                (token_temp,)
-            )
+                       (token_temp,))
             res = cr.fetchone()
-        if  not res:
+        if not res:
             _logger.warning(
                 'Temp url %s does not exist', token)
             return http.request.not_found()
@@ -127,7 +124,7 @@ class OdooInfrastructureAuth(http.Controller):
         request.session.authenticate(db, user, password)
         with registry(db).cursor() as cr:
             cr.execute(
-                """DELETE FROM odoo_infrastructure_client_auth 
+                """DELETE FROM odoo_infrastructure_client_auth
                 WHERE id = %s;""", (auth_id,)
             )
         return http.redirect_with_hash('/web')
