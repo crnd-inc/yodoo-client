@@ -51,6 +51,7 @@ tests:
     script:
         - cat /opt/odoo/conf/odoo.conf
         - echo "odoo_infrastructure_token = qwerty" >> /opt/odoo/conf/odoo.conf
+        - echo "server_wide_modules = base, web, odoo_infrastructure_client" >> /opt/odoo/conf/odoo.conf
         - cat /opt/odoo/conf/odoo.conf
         - odoo-helper server start
         - odoo-helper exec python -m unittest run_tests.py
