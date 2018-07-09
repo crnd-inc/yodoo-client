@@ -49,7 +49,6 @@ tests:
     before_script:
         - odoo-helper link .
     script:
-        #- bash run_tests.bash
         - echo "odoo_infrastructure_token = qwerty" >> /opt/odoo/conf/odoo.conf
         - echo "server_wide_modules = base,web,odoo_infrastructure_client" >> /opt/odoo/conf/odoo.conf
         - odoo-helper system update dev
