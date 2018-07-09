@@ -49,7 +49,12 @@ tests:
     before_script:
         - odoo-helper link .
     script:
-        - bash run_tests.bash
+        #- bash run_tests.bash
+        - odoo-helper system update dev
+        - odoo-helper server start --coverage
+        - sleep 5
+        - odoo-helper exec python -m unittest run_tests.py
+        - odoo-helper stop
         - odoo-helper exec coverage report
         - odoo-helper exec coverage html
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
