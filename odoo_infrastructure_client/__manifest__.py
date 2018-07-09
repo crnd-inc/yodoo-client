@@ -21,4 +21,10 @@
     'category': 'Odoo Infrastructure',
     'installable': True,
     'auto_install': True,
+    'external_dependencies': {
+        'python': [
+            'odoo_rpc_client',
+        ],
+    },
+
 }
