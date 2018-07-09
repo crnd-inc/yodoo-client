@@ -35,14 +35,14 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
+        cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
+        cls._odoo_port = environ.get('ODOO_PORT', '8069')
         cls._odoo_db_host = environ.get('ODOO_DB_HOST', 'localhost')
-        cls._odoo_db_user = environ.get('ODOO_DB_USER', 'odoo')
-        cls._odoo_db_password = environ.get('ODOO_DB_PASSWORD', 'odoo')
-        cls._odoo_db_port = environ.get('ODOO_DB_PORT', '8069')
+        cls._odoo_admin_pass = environ.get('ODOO_ADMIN_PASS', 'admin')
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_db_host)
         cls._client = cls._odoo_instance.services.db.create_db(
-            'admin', cls._db_name)
+            cls._odoo_admin_pass, cls._db_name)
         cls._hash_token = hashlib.sha256(
             cls._odoo_instance_token.encode('utf8')).hexdigest()
         cls._data = {
@@ -51,14 +51,15 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
             'db': cls._client.dbname
         }
         cls._url = create_url(
-            cls._odoo_db_host,
-            cls._odoo_db_port,
+            cls._odoo_host,
+            cls._odoo_port,
             '/odoo/infrastructure/auth/'
         )
 
     @classmethod
     def tearDownClass(cls):
-        cls._odoo_instance.services.db.drop_db('admin', cls._db_name)
+        cls._odoo_instance.services.db.drop_db(
+            cls._odoo_admin_pass, cls._db_name)
 
 
 class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
@@ -150,8 +151,8 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         self.response = requests.post(self._url, data=self._data)
         self.data = self.response.json()
         self.url = create_url(
-            self._odoo_db_host,
-            self._odoo_db_port,
+            self._odoo_host,
+            self._odoo_port,
             self.data["temp_url"]
         )
 
