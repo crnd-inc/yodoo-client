@@ -1,0 +1,64 @@
+image: 10.100.98.41:5000/maao-docker/maao-simple:11.0-maao
+
+variables:
+    SERIES_BRANCH: '11.0'
+    POSTGRES_USER: odoo
+    POSTGRES_PASSWORD: odoo
+
+    ODOO_DB_HOST: 10.100.98.41-maao-docker-maao-ci-postgres
+    ODOO_DB_USER: odoo
+    ODOO_DB_PASSWORD: odoo
+
+    ODOO_ADMIN_PASS: admin
+    ODOO_PORT: 8069
+    ODOO_HOST: localhost
+
+cache:
+    paths:
+        - "$HOME/.cache/pip"
+
+stages:
+    - static-test
+    - test
+    - translation
+
+build_env:
+    stage: static-test
+    script:
+        - pwd
+        - whoami
+        - python --version
+        - odoo-helper --version
+        - odoo-helper status --tools-versions --ci-tools-versions
+
+flake8:
+    stage: static-test
+    script:
+        - odoo-helper test flake8 .
+
+pylint:
+    stage: static-test
+    script:
+        - odoo-helper test pylint .
+
+tests:
+    stage: test
+    services:
+        - 10.100.98.41:5000/maao-docker/maao-ci-postgres
+
+    before_script:
+        - odoo-helper link .
+    script:
+        - echo "odoo_infrastructure_token = qwerty" >> /opt/odoo/conf/odoo.conf
+        - echo "server_wide_modules = base,web,odoo_infrastructure_client" >> /opt/odoo/conf/odoo.conf
+        - odoo-helper system update dev
+        - odoo-helper server start --coverage
+        - sleep 5
+        - odoo-helper exec python -m unittest run_tests.py
+        - odoo-helper stop
+        - odoo-helper exec coverage report
+        - odoo-helper exec coverage html
+    coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
+    artifacts:
+        paths:
+            - html-coverage
