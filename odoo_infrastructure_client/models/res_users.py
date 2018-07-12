@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from odoo import models, registry, SUPERUSER_ID, api
 
 
