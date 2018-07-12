@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 {
     'name': "Odoo Infrastructure Client",
 
@@ -8,7 +10,8 @@
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '11.0.0.0.2',
+    'version': '10.0.0.0.2',
+
 
     # any module necessary for this one to work correctly
     'depends': ['base'],
