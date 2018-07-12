@@ -4,7 +4,7 @@ from odoo import models, fields, api
 
 
 def get_default_expire():
-    return fields.Datetime.to_string(datetime.now()+timedelta(hours=1))
+    return fields.Datetime.to_string(datetime.now() + timedelta(hours=1))
 
 
 class OdooInfrasstructureClientAuth(models.Model):
@@ -13,12 +13,14 @@ class OdooInfrasstructureClientAuth(models.Model):
 
     _log_access = False
 
-    token_user = fields.Char()
-    token_password = fields.Char()
+    token_user = fields.Char(readonly=True)
+    token_password = fields.Char(readonly=True)
     expire = fields.Datetime(
+        readonly=True,
+        index=True,
         required=True,
         default=get_default_expire)
-    token_temp = fields.Char()
+    token_temp = fields.Char(readonly=True, index=True)
 
     @api.model
     def scheduler_cleanup_expired_entries(self):

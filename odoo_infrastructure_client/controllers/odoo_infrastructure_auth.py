@@ -37,6 +37,14 @@ def _prepare_temporary_auth_data(ttl, db_name, token):
             'token_temp': random_password, }
 
 
+def _check_instance_token(token_hash):
+    token = config.get('odoo_infrastructure_token')
+    if not token:
+        return None
+    token_instance_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
+    return token_instance_hash == token_hash
+
+
 class OdooInfrastructureAuth(http.Controller):
 
     @http.route(
@@ -48,26 +56,23 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def create_temporary_login_data(
             self, db=None, ttl=3600, token_hash=None, **params):
-        if not exp_db_exist(db):
+        checked_token = _check_instance_token(token_hash)
+        if checked_token is None:
             _logger.info(
-                'DB with this name: %s is not found.', db)
-            return Response(
-                json.dumps({'error': _('DB with this name is not found.')}),
-                status=400)
-
-        token = config.get('odoo_infrastructure_token')
-        if not token:
-            _logger.info(
-                'Instance token: does not exist, please configure it.')
+                'Instance token does not exist, please configure it.')
             return http.request.not_found()
-        token_instance_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
-        if token_instance_hash != token_hash:
+        elif checked_token is False:
             _logger.info(
-                'Tokens: %s and %s does not match.',
-                token_instance_hash, token_hash)
+                'The hashes of the tokens do not match.')
             return Response(
                 json.dumps({'error': _('Tokens does not match.')}),
-                status=400)
+                status=403)
+        if not exp_db_exist(db):
+            _logger.info(
+                'Database %s is not found.', db)
+            return Response(
+                json.dumps({'error': _('DB with this name is not found.')}),
+                status=404)
         data = _prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -91,22 +96,21 @@ class OdooInfrastructureAuth(http.Controller):
     def temporary_auth(self, token):
 
         try:
-            token = base64.b64decode(token).decode('utf-8')
-            db, token_temp, hash_token = token.split(':')
-        except base64.binascii.Error:
+            token = base64.b64decode(token.encode('utf-8')).decode('utf-8')
+            db, token_temp, token_hash = token.split(':')
+        except (base64.binascii.Error, ValueError):
             _logger.warning(
                 'Bad Data: url: %s not in BASE64', token)
             return Response('Bad request', status=400)
-
-        token_instance_hash = hashlib.sha256(
-            config.get('odoo_infrastructure_token').encode('utf8')
-        ).hexdigest()
-        if hash_token != token_instance_hash:
+        checked_token = _check_instance_token(token_hash)
+        if checked_token is None:
             _logger.info(
-                'Tokens: %s and %s does not match.',
-                token_instance_hash, hash_token)
-            return Response('Bad request', status=400)
-
+                'Instance token does not exist, please configure it.')
+            return http.request.not_found()
+        elif checked_token is False:
+            _logger.info(
+                'The hashes of the tokens do not match.')
+            return Response('Bad request', status=403)
         with registry(db).cursor() as cr:
             cr.execute("""
                 SELECT id, token_user, token_password FROM

@@ -8,7 +8,7 @@
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '11.0.0.0.1',
+    'version': '11.0.0.0.2',
 
     # any module necessary for this one to work correctly
     'depends': ['base'],
@@ -24,6 +24,7 @@
     'external_dependencies': {
         'python': [
             'odoo_rpc_client',
+            'six',
         ],
     },
 

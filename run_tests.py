@@ -5,7 +5,7 @@ import unittest
 from datetime import datetime, timedelta
 from random import shuffle
 from os import environ
-from urllib.parse import urlunsplit
+from six.moves.urllib.parse import urlunsplit
 
 import requests
 
@@ -21,10 +21,34 @@ def generate_random_string(length):
 
 
 def create_url(host, port, query):
+    """Creates url from pieces:
+
+        :param str host: host for url
+        :param str port: port for url
+        :param str query: query for url
+        :return: url
+        :rtype: str
+
+        For example:
+            host = 'localhost'
+            port = 8069
+            query = 'odoo/infrastructure/auth/'
+        returns 'http://localhost:8069/odoo/infrastructure/auth/'
+    """
     return urlunsplit(('http', ':'.join((host, port)), query, '', ''))
 
 
 def change_expire(expire):
+    """Subtracts one hour from expiration:
+
+            :param str expire: string of time with format "%Y-%m-%d %H:%M:%S"
+            :return: string of time with format "%Y-%m-%d %H:%M:%S"
+            :rtype: str
+
+            For example:
+                expire = '2018-07-12 08:07:36'
+            returns '2018-07-12 07:07:36'
+        """
     return (datetime.strptime(
         expire, "%Y-%m-%d %H:%M:%S") -
             timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
@@ -37,9 +61,11 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
         cls._odoo_port = environ.get('ODOO_PORT', '8069')
-        cls._odoo_admin_pass = environ.get('ODOO_ADMIN_PASS', 'admin')
+        cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
-        cls._odoo_instance = Client(cls._odoo_host)
+        cls._odoo_instance = Client(cls._odoo_host,
+                                    port=int(cls._odoo_port),
+                                    protocol=cls._odoo_rpc_protocol)
         cls._client = cls._odoo_instance.services.db.create_db(
             'admin', cls._db_name)
         cls._hash_token = hashlib.sha256(
@@ -83,13 +109,10 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
     def test_02_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad token_hash
-        data = self._data.copy()
-        data.update({
-            'token_hash': 'abracadabra'
-        })
+        data = dict(self._data, token_hash='abracadabra')
 
         response = requests.post(self._url, data=data)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(
             set(response.json().keys()),
             self.incorrect_response_keys
@@ -97,13 +120,10 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
     def test_03_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad db_name
-        data = self._data.copy()
-        data.update({
-            'db': 'abracadabra'
-        })
+        data = dict(self._data, db='abracadabra')
 
         response = requests.post(self._url, data=data)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
         self.assertEqual(
             set(response.json().keys()),
             self.incorrect_response_keys
@@ -173,7 +193,7 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         # test incorrect request (bad url in base64)
         response = requests.get(self.url[:-1] + 'A')
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_04_controller_odoo_infrastructure_saas_auth(self):
         # check temp record existing
