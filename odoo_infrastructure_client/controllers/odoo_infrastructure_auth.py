@@ -12,9 +12,13 @@ from odoo import http, registry, _, fields
 from odoo.http import request, Response
 from odoo.tools import config
 from odoo.service.db import exp_db_exist
+from odoo import release, modules
 
 _logger = logging.getLogger(__name__)
 
+SAAS_CLIENT_API_VERSION = 1
+DEFAULT_TIME_TO_LOGIN = 3600
+DEFAULT_LEN_TOKEN = 128
 
 def generate_random_password(length):
     letters = list(string.ascii_uppercase +
@@ -25,16 +29,35 @@ def generate_random_password(length):
 
 
 def _prepare_temporary_auth_data(ttl, db_name, token):
-    ttl = ttl or 3600
-    random_password = generate_random_password(128)
-    uri_token = '%s:%s:%s' % (db_name, random_password, token)
+    ttl = ttl or DEFAULT_TIME_TO_LOGIN
+    random_token = generate_random_password(DEFAULT_LEN_TOKEN)
+    uri_token = '%s:%s:%s' % (db_name, random_token, token)
     uri_token = base64.b64encode(uri_token.encode("utf-8")).decode()
     return {'token_user': str(uuid()),
             'token_password': str(uuid()),
             'temp_url': '/saas_auth/%s' % uri_token,
             'expire': fields.Datetime.to_string(
                 datetime.now() + timedelta(seconds=int(ttl))),
-            'token_temp': random_password, }
+            'token_temp': random_token, }
+
+
+def _prepare_saas_client_version_data():
+    admin_access_url, admin_access_credentials = (
+        _get_admin_access_options())
+    module_version = modules.load_information_from_description_file(
+        'odoo_infrastructure_client')['version'].split('.')
+
+    return {
+        'odoo_version': release.version,
+        'odoo_version_info': release.version_info,
+        'odoo_serie': release.serie,
+        'saas_client_version': '.'.join(module_version[-3:len(module_version)]),
+        'saas_client_api_version': SAAS_CLIENT_API_VERSION,
+        'features_enabled': {
+            'admin_access_url': admin_access_url,
+            'admin_access_credentials': admin_access_credentials,
+        }
+    }
 
 
 def _check_instance_token(token_hash):
@@ -68,7 +91,8 @@ class OdooInfrastructureAuth(http.Controller):
         csrf=False
     )
     def create_temporary_login_data(
-            self, db=None, ttl=3600, token_hash=None, **params):
+            self, db=None, ttl=DEFAULT_TIME_TO_LOGIN,
+            token_hash=None, **params):
         admin_access_url, admin_access_credentials = (
             _get_admin_access_options())
         _logger.info(
@@ -167,3 +191,26 @@ class OdooInfrastructureAuth(http.Controller):
                 WHERE id = %s;""", (auth_id,)
             )
         return http.redirect_with_hash('/web')
+
+    @http.route(
+        '/saas/client/version_info',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    def get_saas_client_version_info(self, token_hash=None, **params):
+        checked_token = _check_instance_token(token_hash)
+        if checked_token is None:
+            _logger.info(
+                'Instance token does not exist, please configure it.')
+            return http.request.not_found()
+        elif checked_token is False:
+            _logger.info(
+                'The hashes of the tokens do not match.')
+            return Response(
+                json.dumps({'error': _('Tokens does not match.')}),
+                status=403)
+        return Response(
+            json.dumps(_prepare_saas_client_version_data()),
+            status=200)
