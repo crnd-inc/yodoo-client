@@ -13,6 +13,7 @@ from odoo.http import request, Response
 from odoo.tools import config
 from odoo.service.db import exp_db_exist
 from odoo import release, modules
+from odoo.exceptions import AccessDenied
 
 _logger = logging.getLogger(__name__)
 
@@ -98,17 +99,10 @@ class OdooInfrastructureAuth(http.Controller):
             token_hash=None, **params):
         admin_access_url, admin_access_credentials = (
             _get_admin_access_options())
-        _logger.info(
-            'data: %s %s', admin_access_url, admin_access_credentials)
         if not admin_access_credentials:
             _logger.info(
                 'Was an attempt to get a time-old password and login')
-            return Response(
-                json.dumps({'error': _(
-                    'The function of obtaining a temporary login '
-                    'and password for access is disabled.'
-                )}),
-                status=403)
+            raise AccessDenied
         checked_token = _check_instance_token(token_hash)
         if checked_token is None:
             _logger.info(
@@ -150,13 +144,10 @@ class OdooInfrastructureAuth(http.Controller):
 
         admin_access_url, admin_access_credentials = (
             _get_admin_access_options())
-        _logger.info(
-            'data auth: %s %s', admin_access_url, admin_access_credentials)
         if not admin_access_url:
             _logger.info(
                 'Was an attempt to login as admin.')
-            return Response('Perhaps this feature is disabled on the client.',
-                            status=403)
+            raise AccessDenied
         try:
             token = base64.b64decode(token.encode('utf-8')).decode('utf-8')
             db, token_temp, token_hash = token.split(':')
