@@ -45,10 +45,23 @@ def _check_instance_token(token_hash):
     return token_instance_hash == token_hash
 
 
+def _get_admin_access_options():
+    """
+        Returns the admin_access options from config.
+        By default this is True.
+    :return: tuple of booleans
+            first element: admin_access_by_URL from config or default
+            second element: admin_access_attributes from config or default
+    :rtype: tuple(boolean, boolean)
+    """
+    return (config.get('admin_access_by_url', True),
+            config.get('admin_access_attributes', True))
+
+
 class OdooInfrastructureAuth(http.Controller):
 
     @http.route(
-        '/odoo/infrastructure/auth',
+        ['/odoo/infrastructure/auth', '/saas/client/auth'],
         type='http',
         auth='none',
         metods=['POST'],
@@ -56,6 +69,18 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def create_temporary_login_data(
             self, db=None, ttl=3600, token_hash=None, **params):
+        admin_access_by_url, admin_access_attributes = _get_admin_access_options()
+        _logger.info(
+            'data: %s %s', admin_access_by_url, admin_access_attributes)
+        if not admin_access_attributes:
+            _logger.info(
+                'Was an attempt to get a time-old password and login')
+            return Response(
+                json.dumps({'error': _(
+                    'The function of obtaining a temporary login '
+                    'and password for access is disabled.'
+                )}),
+                status=403)
         checked_token = _check_instance_token(token_hash)
         if checked_token is None:
             _logger.info(
@@ -87,7 +112,7 @@ class OdooInfrastructureAuth(http.Controller):
         return Response(json.dumps(data), status=200)
 
     @http.route(
-        '/saas_auth/<token>',
+        ['/saas_auth/<token>', '/saas/client/auth/<token>'],
         type='http',
         auth='none',
         metods=['GET'],
@@ -95,10 +120,18 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def temporary_auth(self, token):
 
+        admin_access_by_url, admin_access_attributes = _get_admin_access_options()
+        _logger.info(
+            'data auth: %s %s', admin_access_by_url, admin_access_attributes)
+        if not admin_access_by_url:
+            _logger.info(
+                'Was an attempt to login as admin.')
+            return Response('Perhaps this feature is disabled on the client.',
+                            status=403)
         try:
             token = base64.b64decode(token.encode('utf-8')).decode('utf-8')
             db, token_temp, token_hash = token.split(':')
-        except (base64.binascii.Error, ValueError):
+        except (base64.binascii.Error, TypeError):
             _logger.warning(
                 'Bad Data: url: %s not in BASE64', token)
             return Response('Bad request', status=400)

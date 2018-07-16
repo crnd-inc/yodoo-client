@@ -245,4 +245,4 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
 
 
 if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
+    unittest.main()
