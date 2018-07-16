@@ -20,6 +20,7 @@ SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
 DEFAULT_LEN_TOKEN = 128
 
+
 def generate_random_password(length):
     letters = list(string.ascii_uppercase +
                    string.ascii_lowercase +
@@ -51,7 +52,9 @@ def _prepare_saas_client_version_data():
         'odoo_version': release.version,
         'odoo_version_info': release.version_info,
         'odoo_serie': release.serie,
-        'saas_client_version': '.'.join(module_version[-3:len(module_version)]),
+        # receives only the last 3 version numbers
+        'saas_client_version': '.'.join(
+            module_version[-3:len(module_version)]),
         'saas_client_api_version': SAAS_CLIENT_API_VERSION,
         'features_enabled': {
             'admin_access_url': admin_access_url,
