@@ -97,8 +97,7 @@ class OdooInfrastructureAuth(http.Controller):
     def create_temporary_login_data(
             self, db=None, ttl=DEFAULT_TIME_TO_LOGIN,
             token_hash=None, **params):
-        admin_access_url, admin_access_credentials = (
-            _get_admin_access_options())
+        admin_access_credentials = _get_admin_access_options()[1]
         if not admin_access_credentials:
             _logger.info(
                 'Was an attempt to get a time-old password and login')
@@ -142,8 +141,7 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def temporary_auth(self, token):
 
-        admin_access_url, admin_access_credentials = (
-            _get_admin_access_options())
+        admin_access_url = _get_admin_access_options()[0]
         if not admin_access_url:
             _logger.info(
                 'Was an attempt to login as admin.')
