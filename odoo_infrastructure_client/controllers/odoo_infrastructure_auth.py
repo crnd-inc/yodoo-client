@@ -69,7 +69,8 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def create_temporary_login_data(
             self, db=None, ttl=3600, token_hash=None, **params):
-        admin_access_by_url, admin_access_attributes = _get_admin_access_options()
+        admin_access_by_url, admin_access_attributes = (
+            _get_admin_access_options())
         _logger.info(
             'data: %s %s', admin_access_by_url, admin_access_attributes)
         if not admin_access_attributes:
@@ -120,7 +121,8 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def temporary_auth(self, token):
 
-        admin_access_by_url, admin_access_attributes = _get_admin_access_options()
+        admin_access_by_url, admin_access_attributes = (
+            _get_admin_access_options())
         _logger.info(
             'data auth: %s %s', admin_access_by_url, admin_access_attributes)
         if not admin_access_by_url:
