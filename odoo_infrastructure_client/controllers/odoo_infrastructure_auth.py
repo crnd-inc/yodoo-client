@@ -50,12 +50,12 @@ def _get_admin_access_options():
         Returns the admin_access options from config.
         By default this is True.
     :return: tuple of booleans
-            first element: admin_access_by_URL from config or default
-            second element: admin_access_attributes from config or default
+            first element: admin_access_url from config or default
+            second element: admin_access_credentials from config or default
     :rtype: tuple(boolean, boolean)
     """
-    return (config.get('admin_access_by_url', True),
-            config.get('admin_access_attributes', True))
+    return (config.get('admin_access_url', True),
+            config.get('admin_access_credentials', True))
 
 
 class OdooInfrastructureAuth(http.Controller):
@@ -69,11 +69,11 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def create_temporary_login_data(
             self, db=None, ttl=3600, token_hash=None, **params):
-        admin_access_by_url, admin_access_attributes = (
+        admin_access_url, admin_access_credentials = (
             _get_admin_access_options())
         _logger.info(
-            'data: %s %s', admin_access_by_url, admin_access_attributes)
-        if not admin_access_attributes:
+            'data: %s %s', admin_access_url, admin_access_credentials)
+        if not admin_access_credentials:
             _logger.info(
                 'Was an attempt to get a time-old password and login')
             return Response(
@@ -121,11 +121,11 @@ class OdooInfrastructureAuth(http.Controller):
     )
     def temporary_auth(self, token):
 
-        admin_access_by_url, admin_access_attributes = (
+        admin_access_url, admin_access_credentials = (
             _get_admin_access_options())
         _logger.info(
-            'data auth: %s %s', admin_access_by_url, admin_access_attributes)
-        if not admin_access_by_url:
+            'data auth: %s %s', admin_access_url, admin_access_credentials)
+        if not admin_access_url:
             _logger.info(
                 'Was an attempt to login as admin.')
             return Response('Perhaps this feature is disabled on the client.',
