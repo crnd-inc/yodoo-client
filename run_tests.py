@@ -1,7 +1,6 @@
 import hashlib
 import string
 import unittest
-import subprocess
 
 from datetime import datetime, timedelta
 from random import shuffle

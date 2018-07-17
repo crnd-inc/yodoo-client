@@ -9,12 +9,11 @@ from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
 
-from odoo import http, registry, _, fields
+from odoo import http, registry, fields
 from odoo.http import request, Response
 from odoo.tools import config
 from odoo.service.db import exp_db_exist
 from odoo import release, modules
-from odoo.exceptions import AccessDenied
 
 _logger = logging.getLogger(__name__)
 
@@ -67,7 +66,7 @@ def _prepare_saas_client_version_data():
         'odoo_infrastructure_client')['version'].split('.')
     # module_version is a list from the version string
     module_version_tail = '.'.join(
-            module_version[-3:len(module_version)])
+        module_version[-3:len(module_version)])
     # module_version_tail is a string from the last 3 version numbers
 
     return {
@@ -86,7 +85,7 @@ def _prepare_saas_client_version_data():
 
 def _check_saas_client_token(token_hash):
     """
-    Returns True or correct response. Makes logging before returning a response.
+    Returns True or correct response. Makes logging before returning a response
 
     :param token_hash: hash of odoo_infrastructure_token from server
     :return: response or True
