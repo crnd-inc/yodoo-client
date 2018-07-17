@@ -48,6 +48,7 @@ def _prepare_saas_client_version_data():
         _get_admin_access_options())
     module_version = modules.load_information_from_description_file(
         'odoo_infrastructure_client')['version'].split('.')
+    # module_version is a list from the version string
 
     return {
         'odoo_version': release.version,
