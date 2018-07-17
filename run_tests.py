@@ -105,7 +105,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
             'temp_url',
             'token_temp'
         }
-        self.incorrect_response_keys = {'error'}
 
     def test_01_controller_odoo_infrastructure_auth(self):
         # test correct request
@@ -122,10 +121,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
         response = requests.post(self._url, data=data)
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.incorrect_response_keys
-        )
 
     def test_03_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad db_name
@@ -133,10 +128,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
         response = requests.post(self._url, data=data)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.incorrect_response_keys
-        )
 
     def test_04_controller_odoo_infrastructure_auth(self):
         # test scheduler remove row after expire
@@ -290,10 +281,6 @@ class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
 
         response = requests.post(self._version_url, data)
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.incorrect_response_keys
-        )
 
 
 if __name__ == '__main__':

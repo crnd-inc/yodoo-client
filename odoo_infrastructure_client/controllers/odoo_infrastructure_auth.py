@@ -3,6 +3,7 @@ import json
 import hashlib
 import base64
 import logging
+import werkzeug
 
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
@@ -20,6 +21,22 @@ _logger = logging.getLogger(__name__)
 SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
 DEFAULT_LEN_TOKEN = 128
+
+
+def forbidden(description=None):
+    """ Shortcut for a `HTTP 403
+    <https://tools.ietf.org/html/rfc7231#section-6.5.3>`_ (Forbidden)
+    response
+    """
+    return werkzeug.exceptions.Forbidden(description)
+
+
+def bad_request(description=None):
+    """ Shortcut for a `HTTP 400
+    <https://tools.ietf.org/html/rfc7231#section-6.5.1>`_ (BadRequest)
+    response
+    """
+    return werkzeug.exceptions.BadRequest(description)
 
 
 def generate_random_password(length):
@@ -49,14 +66,16 @@ def _prepare_saas_client_version_data():
     module_version = modules.load_information_from_description_file(
         'odoo_infrastructure_client')['version'].split('.')
     # module_version is a list from the version string
+    module_version_tail = '.'.join(
+            module_version[-3:len(module_version)])
+    # module_version_tail is a string from the last 3 version numbers
 
     return {
         'odoo_version': release.version,
         'odoo_version_info': release.version_info,
         'odoo_serie': release.serie,
         # receives only the last 3 version numbers
-        'saas_client_version': '.'.join(
-            module_version[-3:len(module_version)]),
+        'saas_client_version': module_version_tail,
         'saas_client_api_version': SAAS_CLIENT_API_VERSION,
         'features_enabled': {
             'admin_access_url': admin_access_url,
@@ -65,12 +84,27 @@ def _prepare_saas_client_version_data():
     }
 
 
-def _check_instance_token(token_hash):
-    token = config.get('odoo_infrastructure_token')
+def _check_saas_client_token(token_hash):
+    """
+    Returns True or correct response. Makes logging before returning a response.
+
+    :param token_hash: hash of odoo_infrastructure_token from server
+    :return: response or True
+    :rtype: werkzeug.exceptions response instance or boolean
+    """
+
+    desc_no_token = 'Instance token does not exist, please configure it.'
+    desc_token_not_match = 'The hashes of the tokens do not match.'
+
+    token = config.get('odoo_infrastructure_token', False)
     if not token:
-        return None
+        _logger.info(desc_no_token)
+        return http.request.not_found(desc_no_token)
     token_instance_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
-    return token_instance_hash == token_hash
+    if not token_instance_hash == token_hash:
+        _logger.info(desc_token_not_match)
+        return forbidden(desc_token_not_match)
+    return True
 
 
 def _get_admin_access_options():
@@ -98,28 +132,20 @@ class OdooInfrastructureAuth(http.Controller):
     def create_temporary_login_data(
             self, db=None, ttl=DEFAULT_TIME_TO_LOGIN,
             token_hash=None, **params):
+        result = _check_saas_client_token(token_hash)
+        # result is True or response (not_found, forbidden)
+        if result is not True:
+            return result
         admin_access_credentials = _get_admin_access_options()[1]
         if not admin_access_credentials:
-            _logger.info(
-                'Was an attempt to get a time-old password and login')
-            raise AccessDenied
-        checked_token = _check_instance_token(token_hash)
-        if checked_token is None:
-            _logger.info(
-                'Instance token does not exist, please configure it.')
-            return http.request.not_found()
-        elif checked_token is False:
-            _logger.info(
-                'The hashes of the tokens do not match.')
-            return Response(
-                json.dumps({'error': _('Tokens does not match.')}),
-                status=403)
+            desc = '''Attempt to get temporary login/password,
+            but this operation is disabled in Odoo config'''
+            _logger.warning(desc)
+            return forbidden(desc)
         if not exp_db_exist(db):
             _logger.info(
                 'Database %s is not found.', db)
-            return Response(
-                json.dumps({'error': _('DB with this name is not found.')}),
-                status=404)
+            return http.request.not_found()
         data = _prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -141,28 +167,23 @@ class OdooInfrastructureAuth(http.Controller):
         csrf=False
     )
     def temporary_auth(self, token):
-
-        admin_access_url = _get_admin_access_options()[0]
-        if not admin_access_url:
-            _logger.info(
-                'Was an attempt to login as admin.')
-            raise AccessDenied
         try:
             token = base64.b64decode(token.encode('utf-8')).decode('utf-8')
             db, token_temp, token_hash = token.split(':')
         except (base64.binascii.Error, TypeError):
             _logger.warning(
                 'Bad Data: url: %s not in BASE64', token)
-            return Response('Bad request', status=400)
-        checked_token = _check_instance_token(token_hash)
-        if checked_token is None:
-            _logger.info(
-                'Instance token does not exist, please configure it.')
-            return http.request.not_found()
-        elif checked_token is False:
-            _logger.info(
-                'The hashes of the tokens do not match.')
-            return Response('Bad request', status=403)
+            return bad_request()
+        result = _check_saas_client_token(token_hash)
+        # result is True or response (not_found, forbidden)
+        if result is not True:
+            return result
+        admin_access_url = _get_admin_access_options()[0]
+        if not admin_access_url:
+            desc = '''Attempt to login as admin via token-url,
+            but this operation is disabled in Odoo config.'''
+            _logger.warning(desc)
+            return forbidden(desc)
         with registry(db).cursor() as cr:
             cr.execute("""
                 SELECT id, token_user, token_password FROM
@@ -193,17 +214,10 @@ class OdooInfrastructureAuth(http.Controller):
         csrf=False
     )
     def get_saas_client_version_info(self, token_hash=None, **params):
-        checked_token = _check_instance_token(token_hash)
-        if checked_token is None:
-            _logger.info(
-                'Instance token does not exist, please configure it.')
-            return http.request.not_found()
-        elif checked_token is False:
-            _logger.info(
-                'The hashes of the tokens do not match.')
-            return Response(
-                json.dumps({'error': _('Tokens does not match.')}),
-                status=403)
+        result = _check_saas_client_token(token_hash)
+        # result is True or response (not_found, forbidden)
+        if result is not True:
+            return result
         return Response(
             json.dumps(_prepare_saas_client_version_data()),
             status=200)
