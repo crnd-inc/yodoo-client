@@ -60,7 +60,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
     def setUpClass(cls):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
-        cls._odoo_port = environ.get('ODOO_PORT', '10069')
+        cls._odoo_port = environ.get('ODOO_PORT', '8069')
         cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_host,
@@ -289,9 +289,9 @@ class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
             'odoo_version_info',
             'odoo_serie',
             'saas_client_version',
+            'saas_client_serie',
             'saas_client_api_version',
-            'features_enabled',
-            'saas_client_serie'
+            'features_enabled'
         }
         self.correct_features_enabled_keys = {
             'admin_access_url',
