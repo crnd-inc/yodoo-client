@@ -290,7 +290,8 @@ class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
             'odoo_serie',
             'saas_client_version',
             'saas_client_api_version',
-            'features_enabled'
+            'features_enabled',
+            'saas_client_serie'
         }
         self.correct_features_enabled_keys = {
             'admin_access_url',
