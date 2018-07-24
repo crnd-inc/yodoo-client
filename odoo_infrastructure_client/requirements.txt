@@ -1,1 +1,2 @@
 odoo-rpc-client==0.9.0
+six>=1.10.0
