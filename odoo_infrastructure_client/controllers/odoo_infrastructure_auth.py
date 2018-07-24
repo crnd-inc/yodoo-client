@@ -68,6 +68,9 @@ def _prepare_saas_client_version_data():
     module_version_tail = '.'.join(
         module_version[-3:len(module_version)])
     # module_version_tail is a string from the last 3 version numbers
+    module_version_head = '.'.join(
+        module_version[0:2])
+    # module_version_head is a string from the first 2 version numbers
 
     return {
         'odoo_version': release.version,
@@ -75,6 +78,8 @@ def _prepare_saas_client_version_data():
         'odoo_serie': release.serie,
         # receives only the last 3 version numbers
         'saas_client_version': module_version_tail,
+        # receives only the first 2 version numbers
+        'saas_client_serie': module_version_head,
         'saas_client_api_version': SAAS_CLIENT_API_VERSION,
         'features_enabled': {
             'admin_access_url': admin_access_url,
