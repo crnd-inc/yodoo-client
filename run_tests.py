@@ -10,7 +10,7 @@ from six.moves.urllib.parse import urlunsplit
 import requests
 
 from odoo_rpc_client import Client
-
+from odoo_rpc_client.exceptions import LoginException
 
 def generate_random_string(length):
     letters = list(string.ascii_uppercase +
@@ -60,7 +60,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
     def setUpClass(cls):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
-        cls._odoo_port = environ.get('ODOO_PORT', '8069')
+        cls._odoo_port = environ.get('ODOO_PORT', '10069')
         cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_host,
@@ -241,6 +241,45 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         response = requests.get(self.url)
 
         self.assertEqual(response.status_code, 404)
+
+    def test_07_controller_odoo_infrastructure_saas_auth(self):
+        # check auth true login true password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='admin',
+                    pwd='admin')
+        self.assertEqual(cl.uid, 1)
+
+        # check auth true login false password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='admin',
+                    pwd='abracadabra')
+        with self.assertRaises(LoginException) as le:
+            cl.uid
+        self.assertIsInstance(le.exception, LoginException)
+
+        # check auth false login true password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='abracadabra',
+                    pwd='admin')
+        with self.assertRaises(LoginException) as le:
+            cl.uid
+        self.assertIsInstance(le.exception, LoginException)
+
+        # check auth false login false password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='abracadabra',
+                    pwd='abracadabra')
+        with self.assertRaises(LoginException) as le:
+            cl.uid
+        self.assertIsInstance(le.exception, LoginException)
 
 
 class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
