@@ -30,7 +30,7 @@ class Users(models.Model):
                 WHERE token_password=%s
             );
         """, (password,))
-        if self.env.cr.fetchone():  # confirmed credentials
+        if self.env.cr.fetchone()[0]:  # confirmed credentials
             return
 
         return super(Users, self).check_credentials(password)
