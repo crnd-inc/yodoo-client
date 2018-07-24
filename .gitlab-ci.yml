@@ -1,7 +1,7 @@
-image: 10.100.98.41:5000/maao-docker/maao-simple:11.0-maao
+image: 10.100.98.41:5000/maao-docker/maao-simple:10.0
 
 variables:
-    SERIES_BRANCH: '11.0'
+    SERIES_BRANCH: '10.0'
     POSTGRES_USER: odoo
     POSTGRES_PASSWORD: odoo
 
@@ -54,7 +54,7 @@ tests:
         - odoo-helper system update dev
         - odoo-helper server start --coverage
         - sleep 5
-        - odoo-helper exec python -m unittest run_tests.py
+        - odoo-helper exec python -m unittest run_tests
         - odoo-helper stop
         - odoo-helper exec coverage report
         - odoo-helper exec coverage html
