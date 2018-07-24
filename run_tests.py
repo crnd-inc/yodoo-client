@@ -10,7 +10,7 @@ from six.moves.urllib.parse import urlunsplit
 import requests
 
 from odoo_rpc_client import Client
-
+from odoo_rpc_client.exceptions import LoginException
 
 def generate_random_string(length):
     letters = list(string.ascii_uppercase +
@@ -80,6 +80,14 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
             cls._odoo_port,
             '/odoo/infrastructure/auth/'
         )
+        cls._version_url = create_url(
+            cls._odoo_host,
+            cls._odoo_port,
+            '/saas/client/version_info'
+        )
+        cls._version_data = {
+            'token_hash': cls._hash_token,
+        }
 
     @classmethod
     def tearDownClass(cls):
@@ -96,7 +104,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
             'temp_url',
             'token_temp'
         }
-        self.incorrect_response_keys = {'error'}
 
     def test_01_controller_odoo_infrastructure_auth(self):
         # test correct request
@@ -113,10 +120,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
         response = requests.post(self._url, data=data)
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.incorrect_response_keys
-        )
 
     def test_03_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad db_name
@@ -124,10 +127,6 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
 
         response = requests.post(self._url, data=data)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.incorrect_response_keys
-        )
 
     def test_04_controller_odoo_infrastructure_auth(self):
         # test scheduler remove row after expire
@@ -243,6 +242,85 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_07_controller_odoo_infrastructure_saas_auth(self):
+        # check auth true login true password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='admin',
+                    pwd='admin')
+        self.assertEqual(cl.uid, 1)
+
+        # check auth true login false password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='admin',
+                    pwd='abracadabra')
+        with self.assertRaises(LoginException) as le:
+            cl.uid
+        self.assertIsInstance(le.exception, LoginException)
+
+        # check auth false login true password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='abracadabra',
+                    pwd='admin')
+        with self.assertRaises(LoginException) as le:
+            cl.uid
+        self.assertIsInstance(le.exception, LoginException)
+
+        # check auth false login false password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user='abracadabra',
+                    pwd='abracadabra')
+        with self.assertRaises(LoginException) as le:
+            cl.uid
+        self.assertIsInstance(le.exception, LoginException)
+
+
+class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
+    def setUp(self):
+        self.correct_response_keys = {
+            'odoo_version',
+            'odoo_version_info',
+            'odoo_serie',
+            'saas_client_version',
+            'saas_client_serie',
+            'saas_client_api_version',
+            'features_enabled'
+        }
+        self.correct_features_enabled_keys = {
+            'admin_access_url',
+            'admin_access_credentials'
+        }
+        self.incorrect_response_keys = {'error'}
+
+    def test_01_controller_odoo_infrastructure_saas_client_version(self):
+        # test correct request
+        response = requests.post(self._version_url, self._version_data)
+        self.assertEqual(
+            set(response.json().keys()),
+            self.correct_response_keys
+        )
+
+        self.assertEqual(
+            set(response.json()['features_enabled'].keys()),
+            self.correct_features_enabled_keys
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_02_controller_odoo_infrastructure_saas_client_version(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._version_data, token_hash='abracadabra')
+
+        response = requests.post(self._version_url, data)
+        self.assertEqual(response.status_code, 403)
+
 
 if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
+    unittest.main()
