@@ -139,25 +139,25 @@ def get_size_db(db):
     return res
 
 
-def get_active_users(db):
+def get_active_users_generator(db):
     with registry(db).cursor() as cr:
         cr.execute("""
             SELECT id, active, share
             FROM res_users
             WHERE active;
         """)
-        res = cr.fetchall()
-    return res
+        for i in range(cr.rowcount):
+            yield cr.fetchone()
 
 
 def prepare_db_statistic_data(db):
-    users = get_active_users(db)
-    active_users = len(users)
-    internal_users = reduce(
-        lambda a, x: a + 1 if x[2] is False else a, users, 0)
-    external_users = reduce(
-        lambda a, x: a + 1 if x[2] is True else a, users, 0)
-
+    active_users = get_active_users_generator(db)
+    internal_users, external_users = reduce(
+        lambda a, x: (a[0]+1, a[1]) if x[2] is False else (a[0], a[1]+1),
+        active_users,
+        (0, 0)
+    )
+    total_users = internal_users + external_users
     data_dir = config['data_dir']
     file_storage_size = get_size_storage(
         '%s/filestore/%s' % (data_dir, db))
@@ -165,6 +165,6 @@ def prepare_db_statistic_data(db):
 
     return {'db_storage': db_storage_size,
             'file_storage': file_storage_size,
-            'total_users': active_users,
+            'total_users': total_users,
             'internal_users': internal_users,
             'external_users': external_users}
