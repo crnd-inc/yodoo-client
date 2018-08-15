@@ -13,30 +13,58 @@
                 Database statistic
             </div>
             <div class="text-left">
-                <t t-set="total_users" t-value="widget.data.total_users"/>
-                <t t-if="total_users">
-                    Total users: <t t-esc="total_users"/>
-                </t>
-                <br/>
-                <t t-set="internal_users" t-value="widget.data.internal_users"/>
-                <t t-if="internal_users">
-                    Internal users: <t t-esc="internal_users"/>
-                </t>
-                <br/>
-                <t t-set="external_users" t-value="widget.data.external_users"/>
-                <t t-if="external_users">
-                    External users: <t t-esc="external_users"/>
-                </t>
-                <br/>
-                <t t-set="file_storage" t-value="widget.data.file_storage"/>
-                <t t-if="file_storage">
-                    File storage: <t t-esc="file_storage"/> Mb
-                </t>
-                <br/>
-                <t t-set="db_storage" t-value="widget.data.db_storage"/>
-                <t t-if="db_storage">
-                    Database storage: <t t-esc="db_storage"/> Mb
-                </t>
+                <table style="width:100%;">
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-users text-muted"/></td>
+                        <td>Total users:</td>
+                        <td>
+                            <t t-set="total_users" t-value="widget.data.total_users"/>
+                            <t t-if="total_users">
+                                <t t-esc="total_users"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-user-o text-muted"/></td>
+                        <td>Internal users:</td>
+                        <td>
+                            <t t-set="internal_users" t-value="widget.data.internal_users"/>
+                            <t t-if="internal_users">
+                                <t t-esc="internal_users"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-user text-muted"/></td>
+                        <td>External users:</td>
+                        <td>
+                            <t t-set="external_users" t-value="widget.data.external_users"/>
+                            <t t-if="external_users">
+                                <t t-esc="external_users"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-folder text-muted"/></td>
+                        <td>File storage:</td>
+                        <td>
+                            <t t-set="file_storage" t-value="widget.data.file_storage"/>
+                            <t t-if="file_storage">
+                                <t t-esc="file_storage"/> Mb
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-database text-muted"/></td>
+                        <td>Database storage:</td>
+                        <td>
+                            <t t-set="db_storage" t-value="widget.data.db_storage"/>
+                            <t t-if="db_storage">
+                                <t t-esc="db_storage"/> Mb
+                            </t>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </t>
