@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets_backend" name="assets"
+              inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript"
+                    src="/odoo_infrastructure_client/static/src/js/saas_dashboard.js"/>
+        </xpath>
+    </template>
+</odoo>

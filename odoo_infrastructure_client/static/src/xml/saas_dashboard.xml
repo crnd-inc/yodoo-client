@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-extend="DashboardMain">
+        <t t-jquery="div.o_web_settings_dashboard_planner" t-operation="after">
+            <div class="text-center o_web_settings_dashboard_saas"/>
+        </t>
+    </t>
+
+    <t t-name="DashboardSaaS">
+        <div class="text-center o_web_settings_dashboard_saas mt8">
+            <i class="fa fa-pie-chart fa-4x text-muted"/>
+            <div class="o_web_settings_dashboard_header">
+                Database statistic
+            </div>
+            <div class="text-left">
+                <t t-set="total_users" t-value="widget.data.total_users"/>
+                <t t-if="total_users">
+                    Total users: <t t-esc="total_users"/>
+                </t>
+                <br/>
+                <t t-set="internal_users" t-value="widget.data.internal_users"/>
+                <t t-if="internal_users">
+                    Internal users: <t t-esc="internal_users"/>
+                </t>
+                <br/>
+                <t t-set="external_users" t-value="widget.data.external_users"/>
+                <t t-if="external_users">
+                    External users: <t t-esc="external_users"/>
+                </t>
+                <br/>
+                <t t-set="file_storage" t-value="widget.data.file_storage"/>
+                <t t-if="file_storage">
+                    File storage: <t t-esc="file_storage"/> Mb
+                </t>
+                <br/>
+                <t t-set="db_storage" t-value="widget.data.db_storage"/>
+                <t t-if="db_storage">
+                    Database storage: <t t-esc="db_storage"/> Mb
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
