@@ -2,7 +2,7 @@ import json
 import logging
 
 from odoo import http
-from odoo.http import request, Response
+from odoo.http import Response
 from odoo.service.db import exp_db_exist
 from ..utils import check_saas_client_token, prepare_db_statistic_data
 

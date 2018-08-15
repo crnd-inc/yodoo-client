@@ -124,9 +124,9 @@ def get_admin_access_options():
 
 def get_size_storage(start_path='.'):
     total_size = 0
-    for dirpath, dirnames, filenames in os.walk(start_path):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
+    for storage_data in os.walk(start_path):
+        for f in storage_data[2]:
+            fp = os.path.join(storage_data[0], f)
             total_size += os.path.getsize(fp)
     return total_size
 
@@ -134,7 +134,7 @@ def get_size_storage(start_path='.'):
 def get_size_db(db):
     with registry(db).cursor() as cr:
         cr.execute(
-            "SELECT pg_database_size('%s')" % db)
+            "SELECT pg_database_size('%s')", db)
         res = cr.fetchone()[0]
     return res
 
@@ -146,14 +146,16 @@ def get_active_users_generator(db):
             FROM res_users
             WHERE active;
         """)
-        for i in range(cr.rowcount):
-            yield cr.fetchone()
+        user = True
+        while user:
+            user = cr.fetchone()
+            yield user
 
 
 def prepare_db_statistic_data(db):
     active_users = get_active_users_generator(db)
     internal_users, external_users = reduce(
-        lambda a, x: (a[0]+1, a[1]) if x[0] is False else (a[0], a[1]+1),
+        lambda a, x: (a[0] + 1, a[1]) if x[0] is False else (a[0], a[1] + 1),
         active_users,
         (0, 0)
     )

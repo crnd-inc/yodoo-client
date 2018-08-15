@@ -12,14 +12,12 @@
 
     # any module necessary for this one to work correctly
     'depends': ['base',
-                'web_settings_dashboard',
-                ],
+                'web_settings_dashboard', ],
 
     # always loaded
     'data': ['security/ir.model.access.csv',
              'data/ir_cron_data.xml',
-             'views/saas_statistic.xml',
-             ],
+             'views/saas_statistic.xml', ],
     # only loaded in demonstration mode
     'demo': [],
     'qweb': [
