@@ -1,6 +1,7 @@
 import hashlib
 import string
 import unittest
+import logging
 
 from datetime import datetime, timedelta
 from random import shuffle
@@ -11,6 +12,9 @@ import requests
 
 from odoo_rpc_client import Client
 from odoo_rpc_client.exceptions import LoginException
+
+_logger = logging.getLogger(__name__)
+
 
 def generate_random_string(length):
     letters = list(string.ascii_uppercase +
@@ -60,7 +64,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
     def setUpClass(cls):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
-        cls._odoo_port = environ.get('ODOO_PORT', '8069')
+        cls._odoo_port = environ.get('ODOO_PORT', '11069')
         cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_host,
@@ -88,6 +92,11 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
         cls._version_data = {
             'token_hash': cls._hash_token,
         }
+        cls._statistic_url = create_url(
+            cls._odoo_host,
+            cls._odoo_port,
+            '/saas/client/db/stat'
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -320,6 +329,40 @@ class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
 
         response = requests.post(self._version_url, data)
         self.assertEqual(response.status_code, 403)
+
+
+class TestOdooInfrastructureSaasClientDBStatistic(TestOdooInfrastructureAuth):
+    def setUp(self):
+        self.correct_response_keys = {
+            'db_storage',
+            'file_storage',
+            'total_users',
+            'internal_users',
+            'external_users'
+        }
+
+    def test_01_controller_odoo_infrastructure_db_statistic(self):
+        # test correct request
+        response = requests.post(self._statistic_url, self._data)
+        self.assertEqual(
+            set(response.json().keys()),
+            self.correct_response_keys
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_02_controller_odoo_infrastructure_db_statistic(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._data, token_hash='abracadabra')
+
+        response = requests.post(self._statistic_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_db_statistic(self):
+        # test incorrect request with bad db_name
+        data = dict(self._data, db='abracadabra')
+
+        response = requests.post(self._statistic_url, data)
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == '__main__':
