@@ -142,7 +142,7 @@ def get_size_db(db):
 def get_active_users_generator(db):
     with registry(db).cursor() as cr:
         cr.execute("""
-            SELECT id, active, share
+            SELECT share
             FROM res_users
             WHERE active;
         """)
@@ -153,7 +153,7 @@ def get_active_users_generator(db):
 def prepare_db_statistic_data(db):
     active_users = get_active_users_generator(db)
     internal_users, external_users = reduce(
-        lambda a, x: (a[0]+1, a[1]) if x[2] is False else (a[0], a[1]+1),
+        lambda a, x: (a[0]+1, a[1]) if x is False else (a[0], a[1]+1),
         active_users,
         (0, 0)
     )
