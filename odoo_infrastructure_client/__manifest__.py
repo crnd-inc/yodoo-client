@@ -8,7 +8,7 @@
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '11.0.0.0.5',
+    'version': '11.0.0.1.0',
 
     # any module necessary for this one to work correctly
     'depends': ['base',
