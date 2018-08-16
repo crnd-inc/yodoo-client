@@ -134,37 +134,38 @@ def get_size_storage(start_path='.'):
 def get_size_db(db):
     with registry(db).cursor() as cr:
         cr.execute(
-            "SELECT pg_database_size('%s')", db)
+            "SELECT pg_database_size(%s)", (db,))
         res = cr.fetchone()[0]
     return res
 
 
-def get_active_users_generator(db):
+def get_active_users(db):
     with registry(db).cursor() as cr:
         cr.execute("""
-            SELECT share
+            SELECT count(*), share
             FROM res_users
-            WHERE active;
+            WHERE active
+            GROUP BY share;
         """)
-        user = True
-        while user:
-            user = cr.fetchone()
-            yield user
+        res = cr.fetchall()
+    return res
 
 
 def prepare_db_statistic_data(db):
-    active_users = get_active_users_generator(db)
-    internal_users, external_users = reduce(
-        lambda a, x: (a[0] + 1, a[1]) if x[0] is False else (a[0], a[1] + 1),
-        active_users,
-        (0, 0)
-    )
-    total_users = internal_users + external_users
     data_dir = config['data_dir']
     file_storage_size = get_size_storage(
         '%s/filestore/%s' % (data_dir, db))
     db_storage_size = get_size_db(db)
-
+    active_users = get_active_users(db)
+    external_users, internal_users, total_users = reduce(
+        lambda a, x:
+        (a[0] + x[0], a[1], a[2] + x[0])
+        if x[1]
+        else
+        (a[0], a[1] + x[0], a[2] + x[0]),
+        active_users,
+        (0, 0, 0)
+    )
     return {'db_storage': db_storage_size,
             'file_storage': file_storage_size,
             'total_users': total_users,

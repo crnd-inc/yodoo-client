@@ -344,11 +344,15 @@ class TestOdooInfrastructureSaasClientDBStatistic(TestOdooInfrastructureAuth):
     def test_01_controller_odoo_infrastructure_db_statistic(self):
         # test correct request
         response = requests.post(self._statistic_url, self._data)
+        data = response.json()
         self.assertEqual(
-            set(response.json().keys()),
+            set(data.keys()),
             self.correct_response_keys
         )
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['internal_users'], 1)
+        self.assertEqual(data['external_users'], 0)
+        self.assertEqual(data['total_users'], 1)
 
     def test_02_controller_odoo_infrastructure_db_statistic(self):
         # test incorrect request with bad token_hash
