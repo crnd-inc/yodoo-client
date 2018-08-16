@@ -4,7 +4,8 @@ import base64
 import hashlib
 import werkzeug
 import logging
-from functools import reduce
+import platform
+import psutil
 
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
@@ -131,6 +132,19 @@ def get_size_storage(start_path='.'):
     return total_size
 
 
+def get_count_db(user):
+    with registry('postgres').cursor() as cr:
+        cr.execute("""
+            SELECT count(datname)
+            FROM pg_database d
+            LEFT JOIN pg_user u
+            ON d.datdba = usesysid
+            WHERE u.usename = %s;
+        """, (user,))
+        res = cr.fetchone()[0]
+    return res
+
+
 def get_size_db(db):
     with registry(db).cursor() as cr:
         cr.execute(
@@ -162,3 +176,41 @@ def prepare_db_statistic_data(db):
             'total_users': sum([active_users[i] for i in active_users]),
             'internal_users': active_users.get(False, 0),
             'external_users': active_users.get(True, 0)}
+
+
+def prepare_server_slow_statistic_data():
+    platform_data = dict(platform.uname()._asdict())
+    disc_data = dict(psutil.disk_usage('/')._asdict())
+    database_count = get_count_db(config['db_user'])
+    return {'used_disc_space': disc_data['used'],
+            'free_disc_space': disc_data['free'],
+            'total_disc_space': disc_data['total'],
+            'os_name': platform_data['system'],
+            'os_machine': platform_data['machine'],
+            'os_version': platform_data['version'],
+            'os_node': platform_data['node'],
+            'database_count': database_count}
+
+
+def prepare_server_fast_statistic_data():
+    cpu_data = dict(psutil.cpu_times()._asdict())
+    mem_data = dict(psutil.virtual_memory()._asdict())
+    swap_data = dict(psutil.swap_memory()._asdict())
+    cpu_load_average = os.getloadavg()
+    return {'cpu_load_average': cpu_load_average,
+            'cpu_us': cpu_data['user'],
+            'cpu_sy': cpu_data['system'],
+            'cpu_id': cpu_data['idle'],
+            'cpu_ni': cpu_data.get('nice', None),
+            'cpu_wa': cpu_data.get('iowait', None),
+            'cpu_hi': cpu_data.get('irq', None),
+            'cpu_si': cpu_data.get('softirq', None),
+            'cpu_st': cpu_data.get('steal', None),
+            'mem_total': mem_data['total'],
+            'mem_free': mem_data['free'],
+            'mem_used': mem_data['used'],
+            'mem_buffers': mem_data.get('buffers', None),
+            'mem_available': mem_data['available'],
+            'swap_total': swap_data['total'],
+            'swap_free': swap_data['free'],
+            'swap_used': swap_data['used']}

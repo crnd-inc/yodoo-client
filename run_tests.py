@@ -58,7 +58,7 @@ def change_expire(expire):
             timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
 
 
-class TestOdooInfrastructureAuth(unittest.TestCase):
+class TestOdooInfrastructureClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -92,10 +92,20 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
         cls._version_data = {
             'token_hash': cls._hash_token,
         }
-        cls._statistic_url = create_url(
+        cls._db_statistic_url = create_url(
             cls._odoo_host,
             cls._odoo_port,
             '/saas/client/db/stat'
+        )
+        cls._server_slow_statistic_url = create_url(
+            cls._odoo_host,
+            cls._odoo_port,
+            '/saas/client/server/slow/stat'
+        )
+        cls._server_fast_statistic_url = create_url(
+            cls._odoo_host,
+            cls._odoo_port,
+            '/saas/client/server/fast/stat'
         )
 
     @classmethod
@@ -104,7 +114,7 @@ class TestOdooInfrastructureAuth(unittest.TestCase):
             'admin', cls._db_name)
 
 
-class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
+class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
     def setUp(self):
         self.correct_response_keys = {
             'token_password',
@@ -173,7 +183,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureAuth):
         self.assertEqual(len(temp_rows), 0)
 
 
-class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
+class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
     def setUp(self):
         self.response = requests.post(self._url, data=self._data)
         self.data = self.response.json()
@@ -291,7 +301,7 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureAuth):
         self.assertIsInstance(le.exception, LoginException)
 
 
-class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
+class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureClient):
     def setUp(self):
         self.correct_response_keys = {
             'odoo_version',
@@ -331,7 +341,7 @@ class TestOdooInfrastructureSaasClientVersionInfo(TestOdooInfrastructureAuth):
         self.assertEqual(response.status_code, 403)
 
 
-class TestOdooInfrastructureSaasClientDBStatistic(TestOdooInfrastructureAuth):
+class TestOdooInfrastructureSaasClientDBStatistic(TestOdooInfrastructureClient):
     def setUp(self):
         self.correct_response_keys = {
             'db_storage',
@@ -343,7 +353,7 @@ class TestOdooInfrastructureSaasClientDBStatistic(TestOdooInfrastructureAuth):
 
     def test_01_controller_odoo_infrastructure_db_statistic(self):
         # test correct request
-        response = requests.post(self._statistic_url, self._data)
+        response = requests.post(self._db_statistic_url, self._data)
         data = response.json()
         self.assertEqual(
             set(data.keys()),
@@ -358,15 +368,71 @@ class TestOdooInfrastructureSaasClientDBStatistic(TestOdooInfrastructureAuth):
         # test incorrect request with bad token_hash
         data = dict(self._data, token_hash='abracadabra')
 
-        response = requests.post(self._statistic_url, data)
+        response = requests.post(self._db_statistic_url, data)
         self.assertEqual(response.status_code, 403)
 
     def test_03_controller_odoo_infrastructure_db_statistic(self):
         # test incorrect request with bad db_name
         data = dict(self._data, db='abracadabra')
 
-        response = requests.post(self._statistic_url, data)
+        response = requests.post(self._db_statistic_url, data)
         self.assertEqual(response.status_code, 404)
+
+
+class TestOdooInfrastructureSaasClientServerSlowStatistic(
+        TestOdooInfrastructureClient):
+    def setUp(self):
+        self.correct_response_keys = {
+            'used_disc_space',
+            'free_disc_space',
+            'total_disc_space',
+            'os_name',
+            'os_machine',
+            'os_version',
+            'os_node',
+            'database_count'
+        }
+
+    def test_01_controller_odoo_infrastructure_server_slow_statistic(self):
+        # test correct request
+        response = requests.post(self._server_slow_statistic_url, self._data)
+        self.assertEqual(
+            set(response.json().keys()),
+            self.correct_response_keys
+        )
+
+
+class TestOdooInfrastructureSaasClientServerFastStatistic(
+        TestOdooInfrastructureClient):
+    def setUp(self):
+        self.correct_response_keys = {
+            'cpu_load_average',
+            'cpu_us',
+            'cpu_sy',
+            'cpu_id',
+            'cpu_ni',
+            'cpu_wa',
+            'cpu_hi',
+            'cpu_si',
+            'cpu_st',
+            'mem_total',
+            'mem_free',
+            'mem_used',
+            'mem_buffers',
+            'mem_available',
+            'swap_total',
+            'swap_free',
+            'swap_used'
+        }
+
+    def test_01_controller_odoo_infrastructure_server_fast_statistic(self):
+        # test correct request
+        response = requests.post(self._server_fast_statistic_url, self._data)
+        print(response.json())
+        self.assertEqual(
+            set(response.json().keys()),
+            self.correct_response_keys
+        )
 
 
 if __name__ == '__main__':
