@@ -142,7 +142,7 @@ def get_size_db(db):
 def get_active_users(db):
     with registry(db).cursor() as cr:
         cr.execute("""
-            SELECT count(*), share
+            SELECT share, count(*)
             FROM res_users
             WHERE active
             GROUP BY share;
@@ -156,18 +156,9 @@ def prepare_db_statistic_data(db):
     file_storage_size = get_size_storage(
         '%s/filestore/%s' % (data_dir, db))
     db_storage_size = get_size_db(db)
-    active_users = get_active_users(db)
-    external_users, internal_users, total_users = reduce(
-        lambda a, x:
-        (a[0] + x[0], a[1], a[2] + x[0])
-        if x[1]
-        else
-        (a[0], a[1] + x[0], a[2] + x[0]),
-        active_users,
-        (0, 0, 0)
-    )
+    active_users = dict(get_active_users(db))
     return {'db_storage': db_storage_size,
             'file_storage': file_storage_size,
-            'total_users': total_users,
-            'internal_users': internal_users,
-            'external_users': external_users}
+            'total_users': sum([active_users[i] for i in active_users]),
+            'internal_users': active_users.get(False, 0),
+            'external_users': active_users.get(True, 0)}
