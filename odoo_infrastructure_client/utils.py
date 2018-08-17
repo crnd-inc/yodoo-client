@@ -179,8 +179,8 @@ def prepare_db_statistic_data(db):
 
 
 def prepare_server_slow_statistic_data():
-    platform_data = dict(platform.uname()._asdict())
-    disc_data = dict(psutil.disk_usage('/')._asdict())
+    platform_data = platform.uname()._asdict()
+    disc_data = psutil.disk_usage('/')._asdict()
     database_count = get_count_db(config['db_user'])
     return {'used_disc_space': disc_data['used'],
             'free_disc_space': disc_data['free'],
@@ -193,9 +193,9 @@ def prepare_server_slow_statistic_data():
 
 
 def prepare_server_fast_statistic_data():
-    cpu_data = dict(psutil.cpu_times()._asdict())
-    mem_data = dict(psutil.virtual_memory()._asdict())
-    swap_data = dict(psutil.swap_memory()._asdict())
+    cpu_data = psutil.cpu_times()._asdict()
+    mem_data = psutil.virtual_memory()._asdict()
+    swap_data = psutil.swap_memory()._asdict()
     cpu_load_average = os.getloadavg()
     return {'cpu_load_average': cpu_load_average,
             'cpu_us': cpu_data['user'],

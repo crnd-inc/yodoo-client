@@ -374,8 +374,8 @@ class TestOdooInfrastructureSaasClientDBStatistic(
         self.assertEqual(data['internal_users'], 1)
         self.assertEqual(data['external_users'], 0)
         self.assertEqual(data['total_users'], 1)
-        self.assertEqual(type(data['db_storage']), int)
-        self.assertEqual(type(data['file_storage']), int)
+        self.assertTrue(isinstance(data['db_storage'], int))
+        self.assertTrue(isinstance(data['file_storage'], int))
 
     def test_02_controller_odoo_infrastructure_db_statistic(self):
         # test incorrect request with bad token_hash
@@ -424,14 +424,14 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
             set(data.keys()),
             self.correct_response_keys
         )
-        self.assertEqual(type(data['used_disc_space']), int)
-        self.assertEqual(type(data['free_disc_space']), int)
-        self.assertEqual(type(data['total_disc_space']), int)
-        self.assertEqual(type(data['os_name']), str)
-        self.assertEqual(type(data['os_machine']), str)
-        self.assertEqual(type(data['os_version']), str)
-        self.assertEqual(type(data['os_node']), str)
-        self.assertEqual(type(data['database_count']), int)
+        self.assertTrue(isinstance(data['used_disc_space'], int))
+        self.assertTrue(isinstance(data['free_disc_space'], int))
+        self.assertTrue(isinstance(data['total_disc_space'], int))
+        self.assertTrue(isinstance(data['os_name'], str))
+        self.assertTrue(isinstance(data['os_machine'], str))
+        self.assertTrue(isinstance(data['os_version'], str))
+        self.assertTrue(isinstance(data['os_node'], str))
+        self.assertTrue(isinstance(data['database_count'], int))
 
 
 class TestOdooInfrastructureSaasClientServerFastStatistic(
@@ -468,6 +468,7 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
 
     def test_01_controller_odoo_infrastructure_server_fast_statistic(self):
         # test correct request
+        NoneType = type(None)
         response = requests.post(
             self._server_fast_statistic_url, self._server_fast_statistic_data)
         data = response.json()
@@ -475,23 +476,23 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
             set(data.keys()),
             self.correct_response_keys
         )
-        self.assertEqual(type(data['cpu_load_average']), list)
-        self.assertEqual(type(data['cpu_us']), float)
-        self.assertEqual(type(data['cpu_sy']), float)
-        self.assertEqual(type(data['cpu_id']), float)
-        self.assertEqual(type(data['cpu_ni']), float)
-        self.assertEqual(type(data['cpu_wa']), float)
-        self.assertEqual(type(data['cpu_hi']), float)
-        self.assertEqual(type(data['cpu_si']), float)
-        self.assertEqual(type(data['cpu_st']), float)
-        self.assertEqual(type(data['mem_total']), int)
-        self.assertEqual(type(data['mem_free']), int)
-        self.assertEqual(type(data['mem_used']), int)
-        self.assertEqual(type(data['mem_buffers']), int)
-        self.assertEqual(type(data['mem_available']), int)
-        self.assertEqual(type(data['swap_total']), int)
-        self.assertEqual(type(data['swap_free']), int)
-        self.assertEqual(type(data['swap_used']), int)
+        self.assertTrue(isinstance(data['cpu_load_average'], list))
+        self.assertTrue(isinstance(data['cpu_us'], float))
+        self.assertTrue(isinstance(data['cpu_sy'], float))
+        self.assertTrue(isinstance(data['cpu_id'], float))
+        self.assertTrue(isinstance(data['cpu_ni'], (float, NoneType)))
+        self.assertTrue(isinstance(data['cpu_wa'], (float, NoneType)))
+        self.assertTrue(isinstance(data['cpu_hi'], (float, NoneType)))
+        self.assertTrue(isinstance(data['cpu_si'], (float, NoneType)))
+        self.assertTrue(isinstance(data['cpu_st'], (float, NoneType)))
+        self.assertTrue(isinstance(data['mem_total'], int))
+        self.assertTrue(isinstance(data['mem_free'], int))
+        self.assertTrue(isinstance(data['mem_used'], int))
+        self.assertTrue(isinstance(data['mem_buffers'], (int, NoneType)))
+        self.assertTrue(isinstance(data['mem_available'], int))
+        self.assertTrue(isinstance(data['swap_total'], int))
+        self.assertTrue(isinstance(data['swap_free'], int))
+        self.assertTrue(isinstance(data['swap_used'], int))
 
 
 if __name__ == '__main__':
