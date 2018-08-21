@@ -10,7 +10,6 @@ import psutil
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
-from itertools import zip_longest
 
 from odoo import http, fields, registry, release, modules
 from odoo.tools import config
@@ -212,7 +211,7 @@ def get_db_module_data(db):
             WHERE state = 'installed';
 
         """)
-        res = cr.fetchall()
+        res = cr.dictfetchall()
     return res
 
 
@@ -293,8 +292,4 @@ def prepare_db_module_info_data(db):
         'write_date': date_of_last_manipulations
     }]
     """
-    return list(
-        map(lambda x: dict(zip_longest(
-            ('id', 'name', 'latest_version', 'application', 'write_date'), x)),
-            get_db_module_data(db))
-    )
+    return get_db_module_data(db)
