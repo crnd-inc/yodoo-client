@@ -20,8 +20,8 @@ class SaaSWebSettingsDashboard(WebSettingsDashboard):
 
         data = prepare_db_statistic_data(request.env.cr.dbname)
         data.update(
-            {'db_storage': int(data['db_storage'] / (1024 * 1024)),
-             'file_storage': int(data['file_storage'] / (1024 * 1024))}
+            {'db_storage': int(data['db_storage']),
+             'file_storage': int(data['file_storage'])}
         )
         result.update({'saas': data})
         return result

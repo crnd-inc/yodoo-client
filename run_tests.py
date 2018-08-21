@@ -347,9 +347,13 @@ class TestOdooInfrastructureSaasClientDBStatistic(
         self.correct_response_keys = {
             'db_storage',
             'file_storage',
-            'total_users',
-            'internal_users',
-            'external_users'
+            'users_total_count',
+            'users_internal_count',
+            'users_external_count',
+            'login_date',
+            'login_internal_date',
+            'installed_apps_db_count',
+            'installed_modules_db_count'
         }
         self._db_statistic_url = create_url(
             self._odoo_host,
@@ -371,11 +375,15 @@ class TestOdooInfrastructureSaasClientDBStatistic(
             self.correct_response_keys
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['internal_users'], 1)
-        self.assertEqual(data['external_users'], 0)
-        self.assertEqual(data['total_users'], 1)
-        self.assertTrue(isinstance(data['db_storage'], int))
-        self.assertTrue(isinstance(data['file_storage'], int))
+        self.assertEqual(data['users_internal_count'], 1)
+        self.assertEqual(data['users_external_count'], 0)
+        self.assertEqual(data['users_total_count'], 1)
+        self.assertTrue(isinstance(data['db_storage'], float))
+        self.assertTrue(isinstance(data['file_storage'], float))
+        self.assertTrue(isinstance(data['login_date'], list))
+        self.assertTrue(isinstance(data['login_internal_date'], list))
+        self.assertTrue(isinstance(data['installed_apps_db_count'], int))
+        self.assertTrue(isinstance(data['installed_modules_db_count'], int))
 
     def test_02_controller_odoo_infrastructure_db_statistic(self):
         # test incorrect request with bad token_hash
@@ -404,7 +412,7 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
             'os_machine',
             'os_version',
             'os_node',
-            'database_count'
+            'db_count'
         }
         self._server_slow_statistic_url = create_url(
             self._odoo_host,
@@ -424,14 +432,14 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
             set(data.keys()),
             self.correct_response_keys
         )
-        self.assertTrue(isinstance(data['used_disc_space'], int))
-        self.assertTrue(isinstance(data['free_disc_space'], int))
-        self.assertTrue(isinstance(data['total_disc_space'], int))
+        self.assertTrue(isinstance(data['used_disc_space'], float))
+        self.assertTrue(isinstance(data['free_disc_space'], float))
+        self.assertTrue(isinstance(data['total_disc_space'], float))
         self.assertTrue(isinstance(data['os_name'], str))
         self.assertTrue(isinstance(data['os_machine'], str))
         self.assertTrue(isinstance(data['os_version'], str))
         self.assertTrue(isinstance(data['os_node'], str))
-        self.assertTrue(isinstance(data['database_count'], int))
+        self.assertTrue(isinstance(data['db_count'], int))
 
 
 class TestOdooInfrastructureSaasClientServerFastStatistic(
@@ -439,7 +447,9 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
 
     def setUp(self):
         self.correct_response_keys = {
-            'cpu_load_average',
+            'cpu_load_average_1',
+            'cpu_load_average_5',
+            'cpu_load_average_15',
             'cpu_us',
             'cpu_sy',
             'cpu_id',
@@ -476,7 +486,9 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
             set(data.keys()),
             self.correct_response_keys
         )
-        self.assertTrue(isinstance(data['cpu_load_average'], list))
+        self.assertTrue(isinstance(data['cpu_load_average_1'], float))
+        self.assertTrue(isinstance(data['cpu_load_average_5'], float))
+        self.assertTrue(isinstance(data['cpu_load_average_15'], float))
         self.assertTrue(isinstance(data['cpu_us'], float))
         self.assertTrue(isinstance(data['cpu_sy'], float))
         self.assertTrue(isinstance(data['cpu_id'], float))
@@ -485,14 +497,14 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
         self.assertTrue(isinstance(data['cpu_hi'], (float, NoneType)))
         self.assertTrue(isinstance(data['cpu_si'], (float, NoneType)))
         self.assertTrue(isinstance(data['cpu_st'], (float, NoneType)))
-        self.assertTrue(isinstance(data['mem_total'], int))
-        self.assertTrue(isinstance(data['mem_free'], int))
-        self.assertTrue(isinstance(data['mem_used'], int))
-        self.assertTrue(isinstance(data['mem_buffers'], (int, NoneType)))
-        self.assertTrue(isinstance(data['mem_available'], int))
-        self.assertTrue(isinstance(data['swap_total'], int))
-        self.assertTrue(isinstance(data['swap_free'], int))
-        self.assertTrue(isinstance(data['swap_used'], int))
+        self.assertTrue(isinstance(data['mem_total'], float))
+        self.assertTrue(isinstance(data['mem_free'], float))
+        self.assertTrue(isinstance(data['mem_used'], float))
+        self.assertTrue(isinstance(data['mem_buffers'], float))
+        self.assertTrue(isinstance(data['mem_available'], float))
+        self.assertTrue(isinstance(data['swap_total'], float))
+        self.assertTrue(isinstance(data['swap_free'], float))
+        self.assertTrue(isinstance(data['swap_used'], float))
 
 
 if __name__ == '__main__':
