@@ -209,7 +209,17 @@ def get_db_module_data(db):
             SELECT id, name, latest_version, application, write_date
             FROM ir_module_module
             WHERE state = 'installed';
+        """)
+        res = cr.dictfetchall()
+    return res
 
+
+def get_db_users_data(db):
+    with registry(db).cursor() as cr:
+        cr.execute("""
+            SELECT id, login, partner_id, share, write_uid
+            FROM res_users
+            WHERE active;
         """)
         res = cr.dictfetchall()
     return res
@@ -276,7 +286,7 @@ def prepare_server_fast_statistic_data():
 
 def prepare_saas_module_info_data():
     """
-    :return: dict {module_name: adapt_version}
+    :return: dict {module_name: adapt_version, ...}
     """
     return module.get_modules_with_version()
 
@@ -293,3 +303,17 @@ def prepare_db_module_info_data(db):
     }]
     """
     return get_db_module_data(db)
+
+
+def prepare_db_users_info_data(db):
+    """
+    :param db: str name of database
+    :return: list of dicts [{
+        'id': user_id,
+        'login': user_login,
+        'partner_id': user_partner_id,
+        'share': True or False user_share,
+        'write_uid': user_write_uid
+    }]
+    """
+    return get_db_users_data(db)

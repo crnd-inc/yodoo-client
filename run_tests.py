@@ -599,5 +599,54 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 404)
 
 
+class TestOdooInfrastructureDBUsersInfo(TestOdooInfrastructureClient):
+    def setUp(self):
+        self.correct_response_keys = {
+            'id',
+            'login',
+            'partner_id',
+            'share',
+            'write_uid'
+        }
+        self._db_info_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/users/info'
+        )
+        self._db_info_data = {
+            'token_hash': self._hash_token,
+            'db': self._client.dbname
+        }
+
+    def test_01_controller_odoo_infrastructure_db_users_info(self):
+        response = requests.post(
+            self._db_info_url, self._db_info_data)
+        modules = response.json()
+        for module in modules:
+            self.assertEqual(
+                set(module.keys()),
+                self.correct_response_keys
+            )
+            self.assertTrue(isinstance(module['id'], int))
+            self.assertTrue(isinstance(module['login'], str))
+            self.assertTrue(isinstance(module['partner_id'], int))
+            self.assertTrue(isinstance(module['share'], bool))
+            self.assertTrue(isinstance(module['write_uid'], int))
+
+    def test_02_controller_odoo_infrastructure_db_users_info(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._db_info_data, token_hash='abracadabra')
+
+        response = requests.post(self._db_info_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_db_users_info(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_info_data, db='abracadabra')
+
+        response = requests.post(self._db_info_url, data)
+        self.assertEqual(response.status_code, 404)
+
+
 if __name__ == '__main__':
     unittest.main()
