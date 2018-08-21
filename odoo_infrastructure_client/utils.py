@@ -10,9 +10,11 @@ import psutil
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
+from itertools import zip_longest
 
 from odoo import http, fields, registry, release, modules
 from odoo.tools import config
+from odoo.modules import module
 
 SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
@@ -202,6 +204,18 @@ def get_installed_module_count(db):
     return res
 
 
+def get_db_module_data(db):
+    with registry(db).cursor() as cr:
+        cr.execute("""
+            SELECT id, name, latest_version, application, write_date
+            FROM ir_module_module
+            WHERE state = 'installed';
+
+        """)
+        res = cr.fetchall()
+    return res
+
+
 def prepare_db_statistic_data(db):
     data_dir = config['data_dir']
     file_storage_size = get_size_storage(
@@ -259,3 +273,28 @@ def prepare_server_fast_statistic_data():
             'swap_total': swap_data['total'] / (1024 * 1024),
             'swap_free': swap_data['free'] / (1024 * 1024),
             'swap_used': swap_data['used'] / (1024 * 1024)}
+
+
+def prepare_saas_module_info_data():
+    """
+    :return: dict {module_name: adapt_version}
+    """
+    return module.get_modules_with_version()
+
+
+def prepare_db_module_info_data(db):
+    """
+    :param db: str name of database
+    :return: list of dicts [{
+        'id': module_id,
+        'name': module_name,
+        'latest_version': module_version,
+        'application': True or False,
+        'write_date': date_of_last_manipulations
+    }]
+    """
+    return list(
+        map(lambda x: dict(zip_longest(
+            ('id', 'name', 'latest_version', 'application', 'write_date'), x)),
+            get_db_module_data(db))
+    )

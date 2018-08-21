@@ -441,6 +441,14 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
         self.assertTrue(isinstance(data['os_node'], str))
         self.assertTrue(isinstance(data['db_count'], int))
 
+    def test_02_controller_odoo_infrastructure_server_slow_statistic(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._server_slow_statistic_data, token_hash='abracadabra')
+
+        response = requests.post(self._server_slow_statistic_url, data)
+        self.assertEqual(response.status_code, 403)
+
+
 
 class TestOdooInfrastructureSaasClientServerFastStatistic(
         TestOdooInfrastructureClient):
@@ -505,6 +513,90 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
         self.assertTrue(isinstance(data['swap_total'], float))
         self.assertTrue(isinstance(data['swap_free'], float))
         self.assertTrue(isinstance(data['swap_used'], float))
+
+    def test_02_controller_odoo_infrastructure_server_fast_statistic(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._server_fast_statistic_data, token_hash='abracadabra')
+
+        response = requests.post(self._server_fast_statistic_url, data)
+        self.assertEqual(response.status_code, 403)
+
+
+class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
+    def setUp(self):
+        self._module_info_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/module/info'
+        )
+        self._module_info_data = {
+            'token_hash': self._hash_token
+        }
+
+    def test_01_controller_odoo_infrastructure_instance_module_info(self):
+        response = requests.post(
+            self._module_info_url, self._module_info_data)
+        data = response.json()
+        self.assertTrue(len(data) != 0)
+        base_version = data.get('base', None)
+        self.assertIsNotNone(base_version)
+        self.assertTrue(isinstance(base_version, str))
+
+    def test_02_controller_odoo_infrastructure_instance_module_info(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._module_info_data, token_hash='abracadabra')
+
+        response = requests.post(self._module_info_url, data)
+        self.assertEqual(response.status_code, 403)
+
+
+class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
+    def setUp(self):
+        self.correct_response_keys = {
+            'id',
+            'name',
+            'latest_version',
+            'application',
+            'write_date'
+        }
+        self._db_info_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/module/info'
+        )
+        self._db_info_data = {
+            'token_hash': self._hash_token,
+            'db': self._client.dbname
+        }
+
+    def test_01_controller_odoo_infrastructure_db_module_info(self):
+        response = requests.post(
+            self._db_info_url, self._db_info_data)
+        modules = response.json()
+        for module in modules:
+            self.assertEqual(
+                set(module.keys()),
+                self.correct_response_keys
+            )
+            self.assertTrue(isinstance(module['id'], int))
+            self.assertTrue(isinstance(module['name'], str))
+            self.assertTrue(isinstance(module['latest_version'], str))
+            self.assertTrue(isinstance(module['application'], bool))
+            self.assertTrue(isinstance(module['write_date'], str))
+
+    def test_02_controller_odoo_infrastructure_db_module_info(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._db_info_data, token_hash='abracadabra')
+
+        response = requests.post(self._db_info_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_db_module_info(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_info_data, db='abracadabra')
+
+        response = requests.post(self._db_info_url, data)
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == '__main__':
