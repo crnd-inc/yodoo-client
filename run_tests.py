@@ -553,11 +553,12 @@ class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
 class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
     def setUp(self):
         self.correct_response_keys = {
-            'id',
             'name',
+            'summary',
+            'state',
             'latest_version',
             'application',
-            'write_date'
+            'published_version'
         }
         self._db_info_url = create_url(
             self._odoo_host,
@@ -570,6 +571,7 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
         }
 
     def test_01_controller_odoo_infrastructure_db_module_info(self):
+        NoneType = type(None)
         response = requests.post(
             self._db_info_url, self._db_info_data)
         modules = response.json()
@@ -578,11 +580,13 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
                 set(module.keys()),
                 self.correct_response_keys
             )
-            self.assertTrue(isinstance(module['id'], int))
+            self.assertTrue(isinstance(module['summary'], str))
             self.assertTrue(isinstance(module['name'], str))
             self.assertTrue(isinstance(module['latest_version'], str))
             self.assertTrue(isinstance(module['application'], bool))
-            self.assertTrue(isinstance(module['write_date'], str))
+            self.assertTrue(isinstance(module['state'], str))
+            self.assertTrue(
+                isinstance(module['published_version'], (str, NoneType)))
 
     def test_02_controller_odoo_infrastructure_db_module_info(self):
         # test incorrect request with bad token_hash

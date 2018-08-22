@@ -206,7 +206,8 @@ def get_installed_module_count(db):
 def get_db_module_data(db):
     with registry(db).cursor() as cr:
         cr.execute("""
-            SELECT id, name, latest_version, application, write_date
+            SELECT name, summary, state, latest_version,
+                    application, published_version
             FROM ir_module_module
             WHERE state = 'installed';
         """)
