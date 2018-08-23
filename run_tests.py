@@ -449,7 +449,6 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
         self.assertEqual(response.status_code, 403)
 
 
-
 class TestOdooInfrastructureSaasClientServerFastStatistic(
         TestOdooInfrastructureClient):
 
@@ -649,6 +648,129 @@ class TestOdooInfrastructureDBUsersInfo(TestOdooInfrastructureClient):
         data = dict(self._db_info_data, db='abracadabra')
 
         response = requests.post(self._db_info_url, data)
+        self.assertEqual(response.status_code, 404)
+
+
+class TestOdooInfrastructureDBModuleInstall(TestOdooInfrastructureClient):
+    def setUp(self):
+        self._db_module_install_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/module/install'
+        )
+        self._db_module_install_data = {
+            'token_hash': self._hash_token,
+            'db': self._client.dbname,
+            'module_name': 'account'
+        }
+
+    def test_01_controller_odoo_infrastructure_db_module_install(self):
+        # check if module is installed
+        OdooInfrastructureClientAuth = self._client[
+            'ir.module.module']
+        account_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'account')])
+        self.assertEqual('uninstalled', account_module[0].state)
+        # install request
+        response = requests.post(
+            self._db_module_install_url, self._db_module_install_data)
+        self.assertEqual(response.status_code, 200)
+        # check if module is installed
+        OdooInfrastructureClientAuth = self._client[
+            'ir.module.module']
+        account_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'account')])
+        self.assertEqual('installed', account_module[0].state)
+
+    def test_02_controller_odoo_infrastructure_db_module_install(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._db_module_install_data, token_hash='abracadabra')
+
+        response = requests.post(self._db_module_install_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_db_module_install(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_module_install_data, db='abracadabra')
+
+        response = requests.post(self._db_module_install_url, data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_04_controller_odoo_infrastructure_db_module_install(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_module_install_data)
+        del data['module_name']
+
+        response = requests.post(self._db_module_install_url, data)
+        self.assertEqual(response.status_code, 404)
+
+
+class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
+    def setUp(self):
+        self._db_module_install_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/module/install'
+        )
+        self._db_module_uninstall_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/module/uninstall'
+        )
+        self._db_module_data = {
+            'token_hash': self._hash_token,
+            'db': self._client.dbname,
+            'module_name': 'account'
+        }
+
+    def test_01_controller_odoo_infrastructure_db_module_uninstall(self):
+        # check if module is installed
+        OdooInfrastructureClientAuth = self._client[
+            'ir.module.module']
+        account_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'account')])
+        self.assertEqual('uninstalled', account_module[0].state)
+        # install request
+        response = requests.post(
+            self._db_module_install_url, self._db_module_data)
+        self.assertEqual(response.status_code, 200)
+        # check if module is installed
+        OdooInfrastructureClientAuth = self._client[
+            'ir.module.module']
+        account_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'account')])
+        self.assertEqual('installed', account_module[0].state)
+        # uninstall request
+        response = requests.post(
+            self._db_module_uninstall_url, self._db_module_data)
+        self.assertEqual(response.status_code, 200)
+        # check if module is installed
+        OdooInfrastructureClientAuth = self._client[
+            'ir.module.module']
+        account_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'account')])
+        self.assertEqual('uninstalled', account_module[0].state)
+
+    def test_02_controller_odoo_infrastructure_db_module_uninstall(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._db_module_data, token_hash='abracadabra')
+
+        response = requests.post(self._db_module_uninstall_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_db_module_uninstall(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_module_data, db='abracadabra')
+
+        response = requests.post(self._db_module_uninstall_url, data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_04_controller_odoo_infrastructure_db_module_uninstall(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_module_data)
+        del data['module_name']
+
+        response = requests.post(self._db_module_uninstall_url, data)
         self.assertEqual(response.status_code, 404)
 
 
