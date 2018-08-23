@@ -40,5 +40,5 @@ class OdooInfrastructureDBModuleUninstall(http.Controller):
             env = Environment(cr, SUPERUSER_ID, context={})
             module = env['ir.module.module'].search(
                 [('name', '=', module_name)])
-            module.module_uninstall()
+            module.button_immediate_uninstall()
         return Response('successfully', status=200)

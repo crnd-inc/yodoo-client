@@ -205,7 +205,7 @@ def get_last_login_date(db):
             SELECT max(create_date)
             FROM res_users_log;
         """)
-        res = cr.fetchone()
+        res = cr.fetchone()[0]
     return res
 
 
@@ -220,7 +220,7 @@ def get_last_internal_login_date(db):
                 WHERE active = TRUE
                 AND share = FALSE);
         """)
-        res = cr.fetchone()
+        res = cr.fetchone()[0]
     return res
 
 
