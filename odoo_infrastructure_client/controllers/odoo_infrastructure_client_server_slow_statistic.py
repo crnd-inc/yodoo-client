@@ -8,7 +8,7 @@ from ..utils import check_saas_client_token, prepare_server_slow_statistic_data
 _logger = logging.getLogger(__name__)
 
 
-class OdooInfrastructureClientServerSlowStatistic(http.Controller):
+class SAASClientServerSlowStat(http.Controller):
 
     @http.route(
         '/saas/client/server/slow/stat',

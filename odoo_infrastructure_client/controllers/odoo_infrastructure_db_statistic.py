@@ -9,7 +9,7 @@ from ..utils import check_saas_client_token, prepare_db_statistic_data
 _logger = logging.getLogger(__name__)
 
 
-class OdooInfrastructureDBStatistic(http.Controller):
+class SAASClientDBStat(http.Controller):
 
     @http.route(
         '/saas/client/db/stat',
