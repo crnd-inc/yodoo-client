@@ -127,9 +127,9 @@ def check_db_module_state(db, module_name, allowed_states):
     if not state:
         _logger.info(desc_no_module)
         return http.request.not_found(desc_no_module)
-    elif state not in allowed_states:
-        _logger.info(desc_state_not_allowed, state)
-        return forbidden(desc_state_not_allowed % state)
+    elif state[0] not in allowed_states:
+        _logger.info(desc_state_not_allowed, state[0])
+        return forbidden(desc_state_not_allowed % state[0])
     return True
 
 
@@ -162,7 +162,7 @@ def get_module_state(db, module_name):
             FROM ir_module_module
             WHERE name = %s;
         """, (module_name,))
-        res = cr.fetchone()[0]
+        res = cr.fetchone()
     return res
 
 
@@ -322,7 +322,9 @@ def prepare_saas_module_info_data():
     """
     :return: dict {module_name: adapt_version, ...}
     """
-    return module.get_modules_with_version()
+    return {mod:
+            module.load_information_from_description_file(mod)
+            for mod in module.get_modules()}
 
 
 def prepare_db_module_info_data(db):
