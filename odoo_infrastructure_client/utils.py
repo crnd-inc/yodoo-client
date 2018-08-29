@@ -320,7 +320,12 @@ def prepare_server_fast_statistic_data():
 
 def prepare_saas_module_info_data():
     """
-    :return: dict {module_name: adapt_version, ...}
+    :return: dict {module_name: {
+                                'name': module_name,
+                                'version': module_version,
+                                'author': module_author,
+                                etc...},
+                    etc...}
     """
     return {mod:
             module.load_information_from_description_file(mod)

@@ -84,13 +84,6 @@ class TestOdooInfrastructureClient(unittest.TestCase):
 class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
 
     def setUp(self):
-        self.correct_response_keys = {
-            'token_password',
-            'token_user',
-            'expire',
-            'temp_url',
-            'token_temp'
-        }
         self._url = create_url(
             self._odoo_host,
             self._odoo_port,
@@ -106,10 +99,12 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
         # test correct request
         response = requests.post(self._url, data=self._data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.correct_response_keys
-        )
+        data = response.json()
+        self.assertTrue(isinstance(data['token_password'], str))
+        self.assertTrue(isinstance(data['token_user'], str))
+        self.assertTrue(isinstance(data['expire'], str))
+        self.assertTrue(isinstance(data['temp_url'], str))
+        self.assertTrue(isinstance(data['token_temp'], str))
 
     def test_02_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad token_hash
@@ -294,19 +289,6 @@ class TestOdooInfrastructureSaasClientVersionInfo(
         TestOdooInfrastructureClient):
 
     def setUp(self):
-        self.correct_response_keys = {
-            'odoo_version',
-            'odoo_version_info',
-            'odoo_serie',
-            'saas_client_version',
-            'saas_client_serie',
-            'saas_client_api_version',
-            'features_enabled'
-        }
-        self.correct_features_enabled_keys = {
-            'admin_access_url',
-            'admin_access_credentials'
-        }
         self.incorrect_response_keys = {'error'}
         self._version_url = create_url(
             self._odoo_host,
@@ -320,17 +302,19 @@ class TestOdooInfrastructureSaasClientVersionInfo(
     def test_01_controller_odoo_infrastructure_saas_client_version(self):
         # test correct request
         response = requests.post(self._version_url, self._version_data)
-        self.assertEqual(
-            set(response.json().keys()),
-            self.correct_response_keys
-        )
-
-        self.assertEqual(
-            set(response.json()['features_enabled'].keys()),
-            self.correct_features_enabled_keys
-        )
-
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(isinstance(data['odoo_version'], str))
+        self.assertTrue(isinstance(data['odoo_version_info'], list))
+        self.assertTrue(isinstance(data['odoo_serie'], str))
+        self.assertTrue(isinstance(data['saas_client_version'], str))
+        self.assertTrue(isinstance(data['saas_client_serie'], str))
+        self.assertTrue(isinstance(data['saas_client_api_version'], int))
+        self.assertTrue(isinstance(data['features_enabled'], dict))
+        features_enabled = data['features_enabled']
+        self.assertTrue(isinstance(features_enabled['admin_access_url'], bool))
+        self.assertTrue(
+            isinstance(features_enabled['admin_access_credentials'], bool))
 
     def test_02_controller_odoo_infrastructure_saas_client_version(self):
         # test incorrect request with bad token_hash
@@ -344,17 +328,6 @@ class TestOdooInfrastructureSaasClientDBStatistic(
         TestOdooInfrastructureClient):
 
     def setUp(self):
-        self.correct_response_keys = {
-            'db_storage',
-            'file_storage',
-            'users_total_count',
-            'users_internal_count',
-            'users_external_count',
-            'login_date',
-            'login_internal_date',
-            'installed_apps_db_count',
-            'installed_modules_db_count'
-        }
         self._db_statistic_url = create_url(
             self._odoo_host,
             self._odoo_port,
@@ -371,10 +344,6 @@ class TestOdooInfrastructureSaasClientDBStatistic(
         response = requests.post(
             self._db_statistic_url, self._db_statistic_data)
         data = response.json()
-        self.assertEqual(
-            set(data.keys()),
-            self.correct_response_keys
-        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['users_internal_count'], 1)
         self.assertEqual(data['users_external_count'], 0)
@@ -406,16 +375,6 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
         TestOdooInfrastructureClient):
 
     def setUp(self):
-        self.correct_response_keys = {
-            'used_disc_space',
-            'free_disc_space',
-            'total_disc_space',
-            'os_name',
-            'os_machine',
-            'os_version',
-            'os_node',
-            'db_count'
-        }
         self._server_slow_statistic_url = create_url(
             self._odoo_host,
             self._odoo_port,
@@ -429,11 +388,8 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
         # test correct request
         response = requests.post(
             self._server_slow_statistic_url, self._server_slow_statistic_data)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(
-            set(data.keys()),
-            self.correct_response_keys
-        )
         self.assertTrue(isinstance(data['used_disc_space'], float))
         self.assertTrue(isinstance(data['free_disc_space'], float))
         self.assertTrue(isinstance(data['total_disc_space'], float))
@@ -455,27 +411,6 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
         TestOdooInfrastructureClient):
 
     def setUp(self):
-        self.correct_response_keys = {
-            'cpu_load_average_1',
-            'cpu_load_average_5',
-            'cpu_load_average_15',
-            'cpu_us',
-            'cpu_sy',
-            'cpu_id',
-            'cpu_ni',
-            'cpu_wa',
-            'cpu_hi',
-            'cpu_si',
-            'cpu_st',
-            'mem_total',
-            'mem_free',
-            'mem_used',
-            'mem_buffers',
-            'mem_available',
-            'swap_total',
-            'swap_free',
-            'swap_used'
-        }
         self._server_fast_statistic_url = create_url(
             self._odoo_host,
             self._odoo_port,
@@ -490,11 +425,8 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
         NoneType = type(None)
         response = requests.post(
             self._server_fast_statistic_url, self._server_fast_statistic_data)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(
-            set(data.keys()),
-            self.correct_response_keys
-        )
         self.assertTrue(isinstance(data['cpu_load_average_1'], float))
         self.assertTrue(isinstance(data['cpu_load_average_5'], float))
         self.assertTrue(isinstance(data['cpu_load_average_15'], float))
@@ -537,11 +469,23 @@ class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
     def test_01_controller_odoo_infrastructure_instance_module_info(self):
         response = requests.post(
             self._module_info_url, self._module_info_data)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(len(data) != 0)
-        base_version = data.get('base', None)
-        self.assertIsNotNone(base_version)
-        self.assertTrue(isinstance(base_version, str))
+        base_info = data.get('base', None)
+        self.assertIsNotNone(base_info)
+        self.assertTrue(isinstance(base_info, dict))
+        self.assertTrue(isinstance(base_info['version'], str))
+        self.assertTrue(isinstance(base_info['name'], str))
+        self.assertTrue(isinstance(base_info['author'], str))
+        self.assertTrue(isinstance(base_info['summary'], str))
+        self.assertTrue(isinstance(base_info['license'], str))
+        self.assertTrue(isinstance(base_info['application'], bool))
+        self.assertTrue(isinstance(base_info['installable'], bool))
+        self.assertTrue(isinstance(base_info['auto_install'], bool))
+        self.assertTrue(isinstance(base_info['category'], str))
+        self.assertTrue(isinstance(base_info['website'], str))
+        self.assertTrue(isinstance(base_info['sequence'], int))
 
     def test_02_controller_odoo_infrastructure_instance_module_info(self):
         # test incorrect request with bad token_hash
@@ -553,14 +497,6 @@ class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
 
 class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
     def setUp(self):
-        self.correct_response_keys = {
-            'name',
-            'summary',
-            'state',
-            'latest_version',
-            'application',
-            'published_version'
-        }
         self._db_info_url = create_url(
             self._odoo_host,
             self._odoo_port,
@@ -575,12 +511,9 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
         NoneType = type(None)
         response = requests.post(
             self._db_info_url, self._db_info_data)
+        self.assertEqual(response.status_code, 200)
         modules = response.json()
         for module in modules:
-            self.assertEqual(
-                set(module.keys()),
-                self.correct_response_keys
-            )
             self.assertTrue(isinstance(module['summary'], str))
             self.assertTrue(isinstance(module['name'], str))
             self.assertTrue(isinstance(module['latest_version'], str))
@@ -606,50 +539,40 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
 
 class TestOdooInfrastructureDBUsersInfo(TestOdooInfrastructureClient):
     def setUp(self):
-        self.correct_response_keys = {
-            'id',
-            'login',
-            'partner_id',
-            'share',
-            'write_uid'
-        }
-        self._db_info_url = create_url(
+        self._user_info_url = create_url(
             self._odoo_host,
             self._odoo_port,
             '/saas/client/db/users/info'
         )
-        self._db_info_data = {
+        self._user_info_data = {
             'token_hash': self._hash_token,
             'db': self._client.dbname
         }
 
     def test_01_controller_odoo_infrastructure_db_users_info(self):
         response = requests.post(
-            self._db_info_url, self._db_info_data)
-        modules = response.json()
-        for module in modules:
-            self.assertEqual(
-                set(module.keys()),
-                self.correct_response_keys
-            )
-            self.assertTrue(isinstance(module['id'], int))
-            self.assertTrue(isinstance(module['login'], str))
-            self.assertTrue(isinstance(module['partner_id'], int))
-            self.assertTrue(isinstance(module['share'], bool))
-            self.assertTrue(isinstance(module['write_uid'], int))
+            self._user_info_url, self._user_info_data)
+        self.assertEqual(response.status_code, 200)
+        users = response.json()
+        for user in users:
+            self.assertTrue(isinstance(user['id'], int))
+            self.assertTrue(isinstance(user['login'], str))
+            self.assertTrue(isinstance(user['partner_id'], int))
+            self.assertTrue(isinstance(user['share'], bool))
+            self.assertTrue(isinstance(user['write_uid'], int))
 
     def test_02_controller_odoo_infrastructure_db_users_info(self):
         # test incorrect request with bad token_hash
-        data = dict(self._db_info_data, token_hash='abracadabra')
+        data = dict(self._user_info_data, token_hash='abracadabra')
 
-        response = requests.post(self._db_info_url, data)
+        response = requests.post(self._user_info_url, data)
         self.assertEqual(response.status_code, 403)
 
     def test_03_controller_odoo_infrastructure_db_users_info(self):
         # test incorrect request with bad db_name
-        data = dict(self._db_info_data, db='abracadabra')
+        data = dict(self._user_info_data, db='abracadabra')
 
-        response = requests.post(self._db_info_url, data)
+        response = requests.post(self._user_info_url, data)
         self.assertEqual(response.status_code, 404)
 
 
@@ -699,9 +622,16 @@ class TestOdooInfrastructureDBModuleInstall(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 404)
 
     def test_04_controller_odoo_infrastructure_db_module_install(self):
-        # test incorrect request with bad db_name
+        # test incorrect request without module name
         data = dict(self._db_module_install_data)
         del data['module_name']
+
+        response = requests.post(self._db_module_install_url, data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_05_controller_odoo_infrastructure_db_module_install(self):
+        # test incorrect request wit bad module name
+        data = dict(self._db_module_install_data, module_name='abracadabra')
 
         response = requests.post(self._db_module_install_url, data)
         self.assertEqual(response.status_code, 404)
@@ -719,7 +649,7 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
             self._odoo_port,
             '/saas/client/db/module/uninstall'
         )
-        self._db_module_data = {
+        self._db_module_uninstall_data = {
             'token_hash': self._hash_token,
             'db': self._client.dbname,
             'module_name': 'account'
@@ -734,7 +664,7 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
         self.assertEqual('uninstalled', account_module[0].state)
         # install request
         response = requests.post(
-            self._db_module_install_url, self._db_module_data)
+            self._db_module_install_url, self._db_module_uninstall_data)
         self.assertEqual(response.status_code, 200)
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
@@ -744,7 +674,7 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
         self.assertEqual('installed', account_module[0].state)
         # uninstall request
         response = requests.post(
-            self._db_module_uninstall_url, self._db_module_data)
+            self._db_module_uninstall_url, self._db_module_uninstall_data)
         self.assertEqual(response.status_code, 200)
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
@@ -755,24 +685,80 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
 
     def test_02_controller_odoo_infrastructure_db_module_uninstall(self):
         # test incorrect request with bad token_hash
-        data = dict(self._db_module_data, token_hash='abracadabra')
+        data = dict(self._db_module_uninstall_data, token_hash='abracadabra')
 
         response = requests.post(self._db_module_uninstall_url, data)
         self.assertEqual(response.status_code, 403)
 
     def test_03_controller_odoo_infrastructure_db_module_uninstall(self):
         # test incorrect request with bad db_name
-        data = dict(self._db_module_data, db='abracadabra')
+        data = dict(self._db_module_uninstall_data, db='abracadabra')
 
         response = requests.post(self._db_module_uninstall_url, data)
         self.assertEqual(response.status_code, 404)
 
     def test_04_controller_odoo_infrastructure_db_module_uninstall(self):
-        # test incorrect request with bad db_name
-        data = dict(self._db_module_data)
+        # test incorrect request without module name
+        data = dict(self._db_module_uninstall_data)
         del data['module_name']
 
         response = requests.post(self._db_module_uninstall_url, data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_05_controller_odoo_infrastructure_db_module_uninstall(self):
+        # test incorrect request wit bad module name
+        data = dict(self._db_module_uninstall_data, module_name='abracadabra')
+
+        response = requests.post(self._db_module_uninstall_url, data)
+        self.assertEqual(response.status_code, 404)
+
+
+class TestOdooInfrastructureDBModuleUpgrade(TestOdooInfrastructureClient):
+    def setUp(self):
+        self._db_module_upgrade_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/module/upgrade'
+        )
+        self._db_module_upgrade_data = {
+            'token_hash': self._hash_token,
+            'db': self._client.dbname,
+            'module_name': 'base'
+        }
+
+    def test_01_controller_odoo_infrastructure_db_module_upgrade(self):
+        # upgrade request
+        response = requests.post(
+            self._db_module_upgrade_url, self._db_module_upgrade_data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_02_controller_odoo_infrastructure_db_module_upgrade(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._db_module_upgrade_data, token_hash='abracadabra')
+
+        response = requests.post(self._db_module_upgrade_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_db_module_upgrade(self):
+        # test incorrect request with bad db_name
+        data = dict(self._db_module_upgrade_data, db='abracadabra')
+
+        response = requests.post(self._db_module_upgrade_url, data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_04_controller_odoo_infrastructure_db_module_upgrade(self):
+        # test incorrect request without module name
+        data = dict(self._db_module_upgrade_data)
+        del data['module_name']
+
+        response = requests.post(self._db_module_upgrade_url, data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_05_controller_odoo_infrastructure_db_module_upgrade(self):
+        # test incorrect request wit bad module name
+        data = dict(self._db_module_upgrade_data, module_name='abracadabra')
+
+        response = requests.post(self._db_module_upgrade_url, data)
         self.assertEqual(response.status_code, 404)
 
 
