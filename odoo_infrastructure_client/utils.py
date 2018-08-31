@@ -208,6 +208,16 @@ def get_size_db(db):
 
 
 def get_active_users_count(db):
+    """
+        Returns dict {
+            'external: count_external_users(int),
+            'internal: count_internal_users(int),
+            'total: sum_of_internal_and_external_users(int)}.
+        Makes calculation of internal, external and all active users
+        for the database.
+        :param db: str name of database
+        :return: dict
+        """
     with registry(db).cursor() as cr:
         cr.execute("""
             SELECT share, count(*)
@@ -215,8 +225,14 @@ def get_active_users_count(db):
             WHERE active
             GROUP BY share;
         """)
-        res = cr.fetchall()
-    return res
+        res = cr.fetchall()  # res: tuple of tuples
+    # res_dict: {True: external_users(int), False: internal_users(int)}
+    res_dict = dict(res)
+    return {
+        'internal': res_dict.get(False, 0),
+        'external': res_dict.get(True, 0),
+        'total': sum([res_dict[i] for i in res_dict])
+    }
 
 
 def get_last_login_date(db):
@@ -246,14 +262,12 @@ def get_last_internal_login_date(db):
 
 def get_installed_module_count(db):
     """
-    Returns tuple of tuples ((application(bool), count(int)),
-                             (application(bool), count(int))).
-    May be: ((False, int)) or ((True, int), (False, int)).
-    Makes calculation of application modules, and not applications
+    Returns dict {'apps': count_apps(int), 'total': sum_of_installed_modules}.
+    Makes calculation of application modules, and all installed modules
     for the database.
 
     :param db: str name of database
-    :return: tuple of tuples
+    :return: dict
     """
     with registry(db).cursor() as cr:
         cr.execute("""
@@ -262,8 +276,13 @@ def get_installed_module_count(db):
             WHERE state = 'installed'
             GROUP BY application;
         """)
-        res = cr.fetchall()
-    return res
+        res = cr.fetchall()  # res: tuple of tuples
+    # res_dict: {True: apps(int), False: not_apps(int)}
+    res_dict = dict(res)
+    return {
+        'apps': res_dict.get(True, 0),
+        'total': sum([res_dict[i] for i in res_dict])
+    }
 
 
 def get_db_module_data(db):
@@ -294,19 +313,18 @@ def prepare_db_statistic_data(db):
     file_storage_size = get_size_storage(
         '%s/filestore/%s' % (data_dir, db))
     db_storage_size = get_size_db(db)
-    active_users = dict(get_active_users_count(db))
-    installed_modules = dict(get_installed_module_count(db))
+    active_users = get_active_users_count(db)
+    installed_modules = get_installed_module_count(db)
     return {
         'db_storage': db_storage_size,
         'file_storage': file_storage_size,
-        'users_total_count': sum([active_users[i] for i in active_users]),
-        'users_internal_count': active_users.get(False, 0),
-        'users_external_count': active_users.get(True, 0),
+        'users_total_count': active_users['total'],
+        'users_internal_count': active_users['internal'],
+        'users_external_count': active_users['external'],
         'login_date': get_last_login_date(db),
         'login_internal_date': get_last_internal_login_date(db),
-        'installed_apps_db_count': installed_modules.get(True, 0),
-        'installed_modules_db_count':
-            sum([installed_modules[i] for i in installed_modules]),
+        'installed_apps_db_count': installed_modules['apps'],
+        'installed_modules_db_count': installed_modules['total'],
     }
 
 
