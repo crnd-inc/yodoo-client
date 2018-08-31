@@ -3,7 +3,7 @@ import logging
 
 from odoo import http
 from odoo.http import Response
-from ..utils import check_saas_client_token, prepare_server_fast_statistic_data
+from ..utils import require_saas_token, prepare_server_fast_statistic_data
 
 _logger = logging.getLogger(__name__)
 
@@ -17,10 +17,7 @@ class SAASClientServerFastStat(http.Controller):
         metods=['POST'],
         csrf=False
     )
-    def get_server_fast_statistic(self, token_hash=None, **params):
-        result = check_saas_client_token(token_hash)
-        # result is True or response (not_found, forbidden)
-        if result is not True:
-            return result
+    @require_saas_token
+    def get_server_fast_statistic(self, **params):
         data = prepare_server_fast_statistic_data()
         return Response(json.dumps(data), status=200)

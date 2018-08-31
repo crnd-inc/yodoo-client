@@ -4,8 +4,9 @@ import logging
 
 from odoo import http, registry
 from odoo.http import request, Response
-from odoo.service.db import exp_db_exist
 from ..utils import (DEFAULT_TIME_TO_LOGIN,
+                     require_saas_token,
+                     require_db_param,
                      check_saas_client_token,
                      get_admin_access_options,
                      forbidden,
@@ -25,23 +26,17 @@ class OdooInfrastructureAuth(http.Controller):
         metods=['POST'],
         csrf=False
     )
+    @require_saas_token
+    @require_db_param
     def create_temporary_login_data(
             self, db=None, ttl=DEFAULT_TIME_TO_LOGIN,
             token_hash=None, **params):
-        result = check_saas_client_token(token_hash)
-        # result is True or response (not_found, forbidden)
-        if result is not True:
-            return result
         admin_access_credentials = get_admin_access_options()[1]
         if not admin_access_credentials:
             desc = '''Attempt to get temporary login/password,
             but this operation is disabled in Odoo config'''
             _logger.warning(desc)
             return forbidden(desc)
-        if not exp_db_exist(db):
-            _logger.info(
-                'Database %s is not found.', db)
-            return http.request.not_found()
         data = prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -109,11 +104,8 @@ class OdooInfrastructureAuth(http.Controller):
         metods=['POST'],
         csrf=False
     )
-    def get_saas_client_version_info(self, token_hash=None, **params):
-        result = check_saas_client_token(token_hash)
-        # result is True or response (not_found, forbidden)
-        if result is not True:
-            return result
+    @require_saas_token
+    def get_saas_client_version_info(self, **params):
         return Response(
             json.dumps(prepare_saas_client_version_data()),
             status=200)

@@ -10,10 +10,12 @@ import psutil
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
+from functools import wraps
 
 from odoo import http, fields, registry, release, modules
 from odoo.tools import config
 from odoo.modules import module
+from odoo.service.db import exp_db_exist
 
 SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
@@ -51,12 +53,14 @@ def prepare_temporary_auth_data(ttl, db_name, token):
     random_token = generate_random_password(DEFAULT_LEN_TOKEN)
     uri_token = '%s:%s:%s' % (db_name, random_token, token)
     uri_token = base64.b64encode(uri_token.encode("utf-8")).decode()
-    return {'token_user': str(uuid()),
-            'token_password': str(uuid()),
-            'temp_url': '/saas_auth/%s' % uri_token,
-            'expire': fields.Datetime.to_string(
-                datetime.now() + timedelta(seconds=int(ttl))),
-            'token_temp': random_token, }
+    return {
+        'token_user': str(uuid()),
+        'token_password': str(uuid()),
+        'temp_url': '/saas_auth/%s' % uri_token,
+        'expire': fields.Datetime.to_string(
+            datetime.now() + timedelta(seconds=int(ttl))),
+        'token_temp': random_token,
+    }
 
 
 def prepare_saas_client_version_data():
@@ -84,7 +88,7 @@ def prepare_saas_client_version_data():
         'features_enabled': {
             'admin_access_url': admin_access_url,
             'admin_access_credentials': admin_access_credentials,
-        }
+        },
     }
 
 
@@ -127,9 +131,9 @@ def check_db_module_state(db, module_name, allowed_states):
     if not state:
         _logger.info(desc_no_module)
         return http.request.not_found(desc_no_module)
-    elif state[0] not in allowed_states:
-        _logger.info(desc_state_not_allowed, state[0])
-        return forbidden(desc_state_not_allowed % state[0])
+    elif state not in allowed_states:
+        _logger.info(desc_state_not_allowed, state)
+        return forbidden(desc_state_not_allowed % state)
     return True
 
 
@@ -146,16 +150,31 @@ def get_admin_access_options():
             config.get('admin_access_credentials', True))
 
 
-def get_size_storage(start_path='.'):
+def get_size_storage(start_path):
     total_size = 0
+    os_path_join = os.path.join
+    os_getsize = os.path.getsize
     for storage_data in os.walk(start_path):
         for f in storage_data[2]:
-            fp = os.path.join(storage_data[0], f)
-            total_size += os.path.getsize(fp)
+            fp = os_path_join(storage_data[0], f)
+            total_size += os_getsize(fp)
     return total_size
 
 
 def get_module_state(db, module_name):
+    """
+    Returns state of module:
+            'install',
+            'uninstall',
+            'uninstallable',
+            'to upgrade',
+            'to remove',
+            'to install'.
+    :param db: str name of database
+    :param module_name: str name of module
+    :return: str state of module or None if module not exists
+    :rtype: str or NoneType
+    """
     with registry(db).cursor() as cr:
         cr.execute("""
             SELECT state
@@ -163,6 +182,7 @@ def get_module_state(db, module_name):
             WHERE name = %s;
         """, (module_name,))
         res = cr.fetchone()
+    res = res[0] if res is not None else res
     return res
 
 
@@ -225,6 +245,16 @@ def get_last_internal_login_date(db):
 
 
 def get_installed_module_count(db):
+    """
+    Returns tuple of tuples ((application(bool), count(int)),
+                             (application(bool), count(int))).
+    May be: ((False, int)) or ((True, int), (False, int)).
+    Makes calculation of application modules, and not applications
+    for the database.
+
+    :param db: str name of database
+    :return: tuple of tuples
+    """
     with registry(db).cursor() as cr:
         cr.execute("""
             SELECT application, count(*)
@@ -253,7 +283,7 @@ def get_db_users_data(db):
         cr.execute("""
             SELECT id, login, partner_id, share, write_uid
             FROM res_users
-            WHERE active;
+            WHERE active = true;
         """)
         res = cr.dictfetchall()
     return res
@@ -266,30 +296,34 @@ def prepare_db_statistic_data(db):
     db_storage_size = get_size_db(db)
     active_users = dict(get_active_users_count(db))
     installed_modules = dict(get_installed_module_count(db))
-    return {'db_storage': db_storage_size / (1024 * 1024),
-            'file_storage': file_storage_size / (1024 * 1024),
-            'users_total_count': sum([active_users[i] for i in active_users]),
-            'users_internal_count': active_users.get(False, 0),
-            'users_external_count': active_users.get(True, 0),
-            'login_date': get_last_login_date(db),
-            'login_internal_date': get_last_internal_login_date(db),
-            'installed_apps_db_count': installed_modules.get(True, 0),
-            'installed_modules_db_count':
-                sum([installed_modules[i] for i in installed_modules])}
+    return {
+        'db_storage': db_storage_size,
+        'file_storage': file_storage_size,
+        'users_total_count': sum([active_users[i] for i in active_users]),
+        'users_internal_count': active_users.get(False, 0),
+        'users_external_count': active_users.get(True, 0),
+        'login_date': get_last_login_date(db),
+        'login_internal_date': get_last_internal_login_date(db),
+        'installed_apps_db_count': installed_modules.get(True, 0),
+        'installed_modules_db_count':
+            sum([installed_modules[i] for i in installed_modules]),
+    }
 
 
 def prepare_server_slow_statistic_data():
     platform_data = platform.uname()._asdict()
     disc_data = psutil.disk_usage('/')._asdict()
     database_count = get_count_db(config['db_user'])
-    return {'used_disc_space': disc_data['used'] / (1024 * 1024),
-            'free_disc_space': disc_data['free'] / (1024 * 1024),
-            'total_disc_space': disc_data['total'] / (1024 * 1024),
-            'os_name': platform_data['system'],
-            'os_machine': platform_data['machine'],
-            'os_version': platform_data['version'],
-            'os_node': platform_data['node'],
-            'db_count': database_count}
+    return {
+        'used_disc_space': disc_data['used'],
+        'free_disc_space': disc_data['free'],
+        'total_disc_space': disc_data['total'],
+        'os_name': platform_data['system'],
+        'os_machine': platform_data['machine'],
+        'os_version': platform_data['version'],
+        'os_node': platform_data['node'],
+        'db_count': database_count,
+    }
 
 
 def prepare_server_fast_statistic_data():
@@ -297,25 +331,28 @@ def prepare_server_fast_statistic_data():
     mem_data = psutil.virtual_memory()._asdict()
     swap_data = psutil.swap_memory()._asdict()
     cpu_load_average = os.getloadavg()
-    return {'cpu_load_average_1': cpu_load_average[0],
-            'cpu_load_average_5': cpu_load_average[1],
-            'cpu_load_average_15': cpu_load_average[2],
-            'cpu_us': cpu_data['user'],
-            'cpu_sy': cpu_data['system'],
-            'cpu_id': cpu_data['idle'],
-            'cpu_ni': cpu_data.get('nice', None),
-            'cpu_wa': cpu_data.get('iowait', None),
-            'cpu_hi': cpu_data.get('irq', None),
-            'cpu_si': cpu_data.get('softirq', None),
-            'cpu_st': cpu_data.get('steal', None),
-            'mem_total': mem_data['total'] / (1024 * 1024),
-            'mem_free': mem_data['free'] / (1024 * 1024),
-            'mem_used': mem_data['used'] / (1024 * 1024),
-            'mem_buffers': mem_data['buffers'] / (1024 * 1024),
-            'mem_available': mem_data['available'] / (1024 * 1024),
-            'swap_total': swap_data['total'] / (1024 * 1024),
-            'swap_free': swap_data['free'] / (1024 * 1024),
-            'swap_used': swap_data['used'] / (1024 * 1024)}
+    # returns triple of load average (1m, 5m 15m)
+    return {
+        'cpu_load_average_1': cpu_load_average[0],
+        'cpu_load_average_5': cpu_load_average[1],
+        'cpu_load_average_15': cpu_load_average[2],
+        'cpu_us': cpu_data['user'],
+        'cpu_sy': cpu_data['system'],
+        'cpu_id': cpu_data['idle'],
+        'cpu_ni': cpu_data.get('nice', None),
+        'cpu_wa': cpu_data.get('iowait', None),
+        'cpu_hi': cpu_data.get('irq', None),
+        'cpu_si': cpu_data.get('softirq', None),
+        'cpu_st': cpu_data.get('steal', None),
+        'mem_total': mem_data['total'],
+        'mem_free': mem_data['free'],
+        'mem_used': mem_data['used'],
+        'mem_buffers': mem_data['buffers'],
+        'mem_available': mem_data['available'],
+        'swap_total': swap_data['total'],
+        'swap_free': swap_data['free'],
+        'swap_used': swap_data['used'],
+    }
 
 
 def prepare_saas_module_info_data():
@@ -336,11 +373,12 @@ def prepare_db_module_info_data(db):
     """
     :param db: str name of database
     :return: list of dicts [{
-        'id': module_id,
         'name': module_name,
+        'summary': module_summary,
+        'state': module_state,
         'latest_version': module_version,
         'application': True or False,
-        'write_date': date_of_last_manipulations
+        'published_version': date_of_last_manipulations
     }]
     """
     return get_db_module_data(db)
@@ -358,3 +396,36 @@ def prepare_db_users_info_data(db):
     }]
     """
     return get_db_users_data(db)
+
+
+def require_saas_token(func):
+    """
+    Decorate the controller method that requires check_saas_client_token.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        token_hash = kwargs.get('token_hash', None)
+        result = check_saas_client_token(token_hash)
+        if result is not True:
+            return result
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def require_db_param(func):
+    """
+    Decorate the controller method that requires exp_db_exist.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        db = kwargs.get('db', None)
+        if not exp_db_exist(db):
+            _logger.info(
+                'Database %s is not found.', db)
+            return http.request.not_found()
+        return func(*args, **kwargs)
+
+    return wrapper
