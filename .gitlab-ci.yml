@@ -21,6 +21,7 @@ stages:
     - static-test
     - test
     - translation
+    - build
 
 build_env:
     stage: static-test
@@ -62,3 +63,24 @@ tests:
     artifacts:
         paths:
             - html-coverage
+
+build-docker:
+    image: docker:stable
+    stage: build
+    services:
+        - name: docker:dind
+          command:
+            - "--mtu"
+            - "1356"
+    tags:
+        - docker
+        - dind
+    before_script:
+        - docker info
+    script:
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG} .
+        - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}
+
+        - docker logout $CI_REGISTRY
