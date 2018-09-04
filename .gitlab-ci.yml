@@ -64,7 +64,7 @@ tests:
         paths:
             - html-coverage
 
-build-docker:
+.build-docker: &build-docker-definition
     image: docker:stable
     stage: build
     services:
@@ -80,7 +80,21 @@ build-docker:
     script:
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG} .
-        - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${RESULT_IMAGE_TAG} --build-arg ODOO_BASE_IMAGE=$ODOO_BASE_IMAGE --build-arg ODOO_BASE_TAG=$ODOO_BASE_TAG .
+        - docker push $CI_REGISTRY_IMAGE:${RESULT_IMAGE_TAG}
 
         - docker logout $CI_REGISTRY
+
+build-client:
+    variables:
+        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
+        ODOO_BASE_TAG: "11.0"
+        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_SLUG}"
+    <<: *build-docker-definition
+
+build-client-ci:
+    variables:
+        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-ci"
+        ODOO_BASE_TAG: "11.0"
+        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_SLUG}-ci"
+    <<: *build-docker-definition
