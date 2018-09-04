@@ -89,12 +89,12 @@ build-client:
     variables:
         ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
         ODOO_BASE_TAG: "11.0"
-        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_SLUG}"
+        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
     <<: *build-docker-definition
 
 build-client-ci:
     variables:
         ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-ci"
         ODOO_BASE_TAG: "11.0"
-        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_SLUG}-ci"
+        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}-ci"
     <<: *build-docker-definition
