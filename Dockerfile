@@ -8,3 +8,5 @@ COPY ./odoo_infrastructure_client /opt/odoo/repositories/odoo_infrastructure_cli
 RUN odoo-helper link /opt/odoo/repositories && \
     odoo-helper exec python -m compileall -q /opt/odoo/repositories
 
+ENV ODOO_SERVER_WIDE_MODULES='base,web,odoo_infrastructure_client' \
+    ODOO_EXTRA_CONFIG='odoo_infrastructure_token = tokenZ'
