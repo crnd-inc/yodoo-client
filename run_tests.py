@@ -798,6 +798,13 @@ class TestOdooInfrastructureCreateDB(TestOdooInfrastructureClient):
         response = requests.post(self._create_db_url, data)
         self.assertEqual(response.status_code, 409)
 
+    def test_04_controller_odoo_infrastructure_instance_create_db(self):
+        # test request without dbname
+        data = dict(self._create_db_data, dbname=None)
+
+        response = requests.post(self._create_db_url, data)
+        self.assertEqual(response.status_code, 400)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -7,7 +7,7 @@ from odoo.sql_db import db_connect
 from odoo.http import Response
 from odoo.service import db as service_db
 from odoo.modules import db as modules_db
-from ..utils import require_saas_token, conflict, not_satisfiable
+from ..utils import require_saas_token, conflict, bad_request, server_error
 
 _logger = logging.getLogger(__name__)
 
@@ -31,7 +31,8 @@ class OdooInfrastructureDBCreate(http.Controller):
                          country_code=None,
                          template_dbname=None,
                          **params):
-        dbname = dbname.strip() or 'db_created_%s' % fields.Datetime.now()
+        if not dbname:
+            return bad_request(description='Missing parameter: dbname')
         try:
             service_db._create_empty_database(dbname)
         except service_db.DatabaseExists as bd_ex:
@@ -42,5 +43,5 @@ class OdooInfrastructureDBCreate(http.Controller):
         with closing(db.cursor()) as cr:
             db_init = modules_db.is_initialized(cr)
         if not db_init:
-            return not_satisfiable(description='Database not initialized.')
+            return server_error(description='Database not initialized.')
         return Response('successfully', status=200)
