@@ -2,7 +2,7 @@ import logging
 
 from contextlib import closing
 
-from odoo import http, fields
+from odoo import http
 from odoo.sql_db import db_connect
 from odoo.http import Response
 from odoo.service import db as service_db
