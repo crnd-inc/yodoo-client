@@ -65,6 +65,7 @@ class TestOdooInfrastructureClient(unittest.TestCase):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
         cls._odoo_port = environ.get('ODOO_PORT', '11069')
+        cls._odoo_admin_pass = environ.get('ODOO_ADMIN_PASS', 'admin')
         cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
         cls._odoo_instance = Client(cls._odoo_host,
@@ -781,7 +782,8 @@ class TestOdooInfrastructureCreateDB(TestOdooInfrastructureClient):
             self._create_db_url, self._create_db_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
-        self._odoo_instance.services.db.drop_db('admin', 'test_db')
+        self._odoo_instance.services.db.drop_db(
+            self._odoo_admin_pass, 'test_db')
         self.assertFalse(self._odoo_instance.services.db.db_exist('test_db'))
 
     def test_02_controller_odoo_infrastructure_instance_create_db(self):
