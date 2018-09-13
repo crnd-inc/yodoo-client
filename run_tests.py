@@ -762,5 +762,42 @@ class TestOdooInfrastructureDBModuleUpgrade(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 404)
 
 
+class TestOdooInfrastructureCreateDB(TestOdooInfrastructureClient):
+    def setUp(self):
+        self._create_db_url = create_url(
+            self._odoo_host,
+            self._odoo_port,
+            '/saas/client/db/create'
+        )
+        self._create_db_data = {
+            'token_hash': self._hash_token,
+            'dbname': 'test_db',
+            'user_login': 'test_user',
+            'user_password': 'test_password',
+        }
+
+    def test_01_controller_odoo_infrastructure_instance_create_db(self):
+        response = requests.post(
+            self._create_db_url, self._create_db_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
+        self._odoo_instance.services.db.drop_db('admin', 'test_db')
+        self.assertFalse(self._odoo_instance.services.db.db_exist('test_db'))
+
+    def test_02_controller_odoo_infrastructure_instance_create_db(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._create_db_data, token_hash='abracadabra')
+
+        response = requests.post(self._create_db_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_03_controller_odoo_infrastructure_instance_create_db(self):
+        # test request with existing dbname
+        data = dict(self._create_db_data, dbname=self._client.dbname)
+
+        response = requests.post(self._create_db_url, data)
+        self.assertEqual(response.status_code, 409)
+
+
 if __name__ == '__main__':
     unittest.main()
