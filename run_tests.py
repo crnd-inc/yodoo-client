@@ -64,7 +64,7 @@ class TestOdooInfrastructureClient(unittest.TestCase):
     def setUpClass(cls):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
-        cls._odoo_port = environ.get('ODOO_PORT', '11069')
+        cls._odoo_port = environ.get('ODOO_PORT', '8069')
         cls._odoo_admin_pass = environ.get('ODOO_ADMIN_PASS', 'admin')
         cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
