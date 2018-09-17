@@ -4,6 +4,7 @@ variables:
     SERIES_BRANCH: '11.0'
     ODOO_MAX_CRON_THREADS: 0
     ODOO_SERVER_WIDE_MODULES: "base,web,odoo_infrastructure_client"
+    ODOO_EXTRA_CONFIG: "odoo_infrastructure_token = qwerty"
 
 cache:
     paths:
@@ -39,7 +40,6 @@ tests:
     before_script:
         - odoo-helper link .
     script:
-        - echo "odoo_infrastructure_token = qwerty" >> /opt/odoo/conf/odoo.conf
         - odoo-helper server start --coverage
         - sleep 5
         - odoo-helper exec python -m unittest run_tests.py
