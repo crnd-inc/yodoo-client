@@ -50,7 +50,7 @@
                         <td>
                             <t t-set="file_storage" t-value="widget.data.file_storage"/>
                             <t t-if="file_storage">
-                                <t t-esc="file_storage"/> Mb
+                                <t t-esc="file_storage"/>
                             </t>
                         </td>
                     </tr>
@@ -60,7 +60,7 @@
                         <td>
                             <t t-set="db_storage" t-value="widget.data.db_storage"/>
                             <t t-if="db_storage">
-                                <t t-esc="db_storage"/> Mb
+                                <t t-esc="db_storage"/>
                             </t>
                         </td>
                     </tr>
