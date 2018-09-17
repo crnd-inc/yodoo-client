@@ -44,6 +44,7 @@ tests:
         - sleep 5
         - odoo-helper exec python -m unittest run_tests.py
         - odoo-helper stop
+        - odoo-helper exec coverage combine
         - odoo-helper exec coverage report
         - odoo-helper exec coverage html
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
