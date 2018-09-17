@@ -40,7 +40,7 @@ tests:
     before_script:
         - odoo-helper link .
     script:
-        - odoo-helper server start --coverage
+        - odoo-helper server run --coverage
         - sleep 5
         - odoo-helper exec python -m unittest run_tests.py
         - odoo-helper stop
