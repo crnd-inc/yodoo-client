@@ -35,7 +35,7 @@ class OdooInfrastructureAuth(http.Controller):
         if not admin_access_credentials:
             desc = '''Attempt to get temporary login/password,
             but this operation is disabled in Odoo config'''
-            _logger.warning(desc)
+            _logger.warning(desc)  # nosec
             return forbidden(desc)
         data = prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
@@ -63,7 +63,7 @@ class OdooInfrastructureAuth(http.Controller):
             db, token_temp, token_hash = token.split(':')
         except (base64.binascii.Error, TypeError):
             _logger.warning(
-                'Bad Data: url: %s not in BASE64', token)
+                'Bad Data: url: %s not in BASE64', token)  # nosec
             return bad_request()
         result = check_saas_client_token(token_hash)
         # result is True or response (not_found, forbidden)
@@ -73,7 +73,7 @@ class OdooInfrastructureAuth(http.Controller):
         if not admin_access_url:
             desc = '''Attempt to login as admin via token-url,
             but this operation is disabled in Odoo config.'''
-            _logger.warning(desc)
+            _logger.warning(desc)  # nosec
             return forbidden(desc)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -85,7 +85,7 @@ class OdooInfrastructureAuth(http.Controller):
             res = cr.fetchone()
         if not res:
             _logger.warning(
-                'Temp url %s does not exist', token)
+                'Temp url %s does not exist', token)  # nosec
             return http.request.not_found()
 
         auth_id, user, password = res
