@@ -85,8 +85,8 @@ class OdooInfrastructureAuth(http.Controller):
             res = cr.fetchone()
         if not res:
             _logger.warning(
-                'Temp url %s does not exist.', token)
-            return forbidden('Temp url does not exist.')
+                'Temp url %s does not exist', token)
+            return http.request.not_found()
 
         auth_id, user, password = res
         request.session.authenticate(db, user, password)
