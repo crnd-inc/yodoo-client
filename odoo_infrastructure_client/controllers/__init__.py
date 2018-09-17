@@ -9,3 +9,4 @@ from . import odoo_infrastructure_db_users_info
 from . import odoo_infrastructure_db_install_module
 from . import odoo_infrastructure_db_uninstall_module
 from . import odoo_infrastructure_db_upgrade_module
+from . import odoo_infrastructure_db_create

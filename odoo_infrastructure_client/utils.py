@@ -40,6 +40,22 @@ def bad_request(description=None):
     return werkzeug.exceptions.BadRequest(description)
 
 
+def server_error(description=None):
+    """ Shortcut for a `HTTP 500
+    <https://tools.ietf.org/html/rfc7231#section-6.6.1>`_
+     (Internal Server Error) response
+    """
+    return werkzeug.exceptions.InternalServerError(description)
+
+
+def conflict(description=None):
+    """ Shortcut for a `HTTP 409
+        <https://tools.ietf.org/html/rfc7231#section-6.5.8>`_ (Conflict)
+        response
+        """
+    return werkzeug.exceptions.Conflict(description)
+
+
 def generate_random_password(length):
     letters = list(string.ascii_uppercase +
                    string.ascii_lowercase +
