@@ -13,6 +13,8 @@ variables:
     ODOO_PORT: 8069
     ODOO_HOST: localhost
 
+    ODOO_MAX_CRON_THREADS: 0
+
 cache:
     paths:
         - "$HOME/.cache/pip"
