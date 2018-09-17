@@ -3,6 +3,7 @@ import logging
 from ..utils import prepare_db_statistic_data
 
 from odoo import http
+from odoo.tools import human_size
 from odoo.http import request
 from odoo.addons.web_settings_dashboard.controllers.main import (
     WebSettingsDashboard)
@@ -20,8 +21,8 @@ class SaaSWebSettingsDashboard(WebSettingsDashboard):
 
         data = prepare_db_statistic_data(request.env.cr.dbname)
         data.update(
-            {'db_storage': int(data['db_storage']),
-             'file_storage': int(data['file_storage'])}
+            {'db_storage': human_size(data['db_storage']),
+             'file_storage': human_size(data['file_storage'])}
         )
         result.update({'saas': data})
         return result

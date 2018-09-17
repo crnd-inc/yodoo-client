@@ -64,7 +64,7 @@ class TestOdooInfrastructureClient(unittest.TestCase):
     def setUpClass(cls):
         cls._odoo_instance_token = environ.get('ODOO_INSTANCE_TOKEN', 'qwerty')
         cls._odoo_host = environ.get('ODOO_HOST', 'localhost')
-        cls._odoo_port = environ.get('ODOO_PORT', '11069')
+        cls._odoo_port = environ.get('ODOO_PORT', '8069')
         cls._odoo_admin_pass = environ.get('ODOO_ADMIN_PASS', 'admin')
         cls._odoo_rpc_protocol = 'json-rpc'
         cls._db_name = generate_random_string(10)
@@ -587,16 +587,16 @@ class TestOdooInfrastructureDBModuleInstall(TestOdooInfrastructureClient):
         self._db_module_install_data = {
             'token_hash': self._hash_token,
             'db': self._client.dbname,
-            'module_name': 'calendar'
+            'module_name': 'board'
         }
 
     def test_01_controller_odoo_infrastructure_db_module_install(self):
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
             'ir.module.module']
-        calendar_module = OdooInfrastructureClientAuth.search_records(
-            [('name', '=', 'calendar')])
-        self.assertEqual('uninstalled', calendar_module[0].state)
+        board_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'board')])
+        self.assertEqual('uninstalled', board_module[0].state)
         # install request
         response = requests.post(
             self._db_module_install_url, self._db_module_install_data)
@@ -604,9 +604,9 @@ class TestOdooInfrastructureDBModuleInstall(TestOdooInfrastructureClient):
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
             'ir.module.module']
-        calendar_module = OdooInfrastructureClientAuth.search_records(
-            [('name', '=', 'calendar')])
-        self.assertEqual('installed', calendar_module[0].state)
+        board_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'board')])
+        self.assertEqual('installed', board_module[0].state)
 
     def test_02_controller_odoo_infrastructure_db_module_install(self):
         # test incorrect request with bad token_hash
@@ -653,16 +653,16 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
         self._db_module_uninstall_data = {
             'token_hash': self._hash_token,
             'db': self._client.dbname,
-            'module_name': 'calendar'
+            'module_name': 'board'
         }
 
     def test_01_controller_odoo_infrastructure_db_module_uninstall(self):
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
             'ir.module.module']
-        calendar_module = OdooInfrastructureClientAuth.search_records(
-            [('name', '=', 'calendar')])
-        self.assertEqual('uninstalled', calendar_module[0].state)
+        board_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'board')])
+        self.assertEqual('uninstalled', board_module[0].state)
         # install request
         response = requests.post(
             self._db_module_install_url, self._db_module_uninstall_data)
@@ -670,9 +670,9 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
             'ir.module.module']
-        calendar_module = OdooInfrastructureClientAuth.search_records(
-            [('name', '=', 'calendar')])
-        self.assertEqual('installed', calendar_module[0].state)
+        board_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'board')])
+        self.assertEqual('installed', board_module[0].state)
         # uninstall request
         response = requests.post(
             self._db_module_uninstall_url, self._db_module_uninstall_data)
@@ -680,9 +680,9 @@ class TestOdooInfrastructureDBModuleUninstall(TestOdooInfrastructureClient):
         # check if module is installed
         OdooInfrastructureClientAuth = self._client[
             'ir.module.module']
-        calendar_module = OdooInfrastructureClientAuth.search_records(
-            [('name', '=', 'calendar')])
-        self.assertEqual('uninstalled', calendar_module[0].state)
+        board_module = OdooInfrastructureClientAuth.search_records(
+            [('name', '=', 'board')])
+        self.assertEqual('uninstalled', board_module[0].state)
 
     def test_02_controller_odoo_infrastructure_db_module_uninstall(self):
         # test incorrect request with bad token_hash
