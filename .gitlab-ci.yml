@@ -1,7 +1,7 @@
-image: registry.crnd.pro/crnd/docker/odoo-ci:11.0
+image: registry.crnd.pro/crnd/docker/odoo-ci:12.0
 
 variables:
-    SERIES_BRANCH: '11.0'
+    SERIES_BRANCH: '12.0'
     ODOO_MAX_CRON_THREADS: 0
     ODOO_SERVER_WIDE_MODULES: "base,web,odoo_infrastructure_client"
     ODOO_EXTRA_CONFIG: "odoo_infrastructure_token = qwerty"
@@ -76,13 +76,13 @@ tests:
 build-client:
     variables:
         ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
-        ODOO_BASE_TAG: "11.0"
+        ODOO_BASE_TAG: "${SERIES_BRANCH}"
         RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
     <<: *build-docker-definition
 
 build-client-ci:
     variables:
         ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-ci"
-        ODOO_BASE_TAG: "11.0"
+        ODOO_BASE_TAG: "${SERIES_BRANCH}"
         RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}-ci"
     <<: *build-docker-definition
