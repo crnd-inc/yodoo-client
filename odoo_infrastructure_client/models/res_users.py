@@ -22,7 +22,7 @@ class Users(models.Model):
         return super(Users, cls)._login(db, login, password)
 
     @api.model
-    def check_credentials(self, password):
+    def _check_credentials(self, password):
         self.env.cr.execute("""
             SELECT EXISTS(
                 SELECT id
@@ -33,4 +33,4 @@ class Users(models.Model):
         if self.env.cr.fetchone()[0]:  # confirmed credentials
             return
 
-        return super(Users, self).check_credentials(password)
+        return super(Users, self)._check_credentials(password)
