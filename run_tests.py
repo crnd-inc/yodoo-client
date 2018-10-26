@@ -253,7 +253,7 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
                     port=self._odoo_port,
                     user='admin',
                     pwd='admin')
-        self.assertEqual(cl.uid, 1)
+        self.assertEqual(cl.uid, 2)
 
         # check auth true login false password
         cl = Client(host=self._odoo_host,
