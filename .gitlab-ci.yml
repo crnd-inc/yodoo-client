@@ -49,7 +49,7 @@ tests:
         - odoo-helper exec coverage report
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
 
-.build-docker: &build-docker-definition
+build-docker:
     image: docker:stable
     stage: build
     services:
@@ -57,6 +57,10 @@ tests:
           command:
             - "--mtu"
             - "1356"
+    variables:
+        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
+        ODOO_BASE_TAG: "11.0"
+        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
     tags:
         - docker
         - dind
@@ -65,21 +69,10 @@ tests:
     script:
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${RESULT_IMAGE_TAG} --build-arg ODOO_BASE_IMAGE=$ODOO_BASE_IMAGE --build-arg ODOO_BASE_TAG=$ODOO_BASE_TAG .
-        - docker push $CI_REGISTRY_IMAGE:${RESULT_IMAGE_TAG}
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-simple" --build-arg ODOO_BASE_TAG=11.0 .
+        - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}
+
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-ci" --build-arg ODOO_BASE_TAG=11.0 .
+        - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
-
-build-client:
-    variables:
-        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
-        ODOO_BASE_TAG: "11.0"
-        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
-    <<: *build-docker-definition
-
-build-client-ci:
-    variables:
-        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-ci"
-        ODOO_BASE_TAG: "11.0"
-        RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}-ci"
-    <<: *build-docker-definition
