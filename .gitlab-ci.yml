@@ -1,4 +1,4 @@
-image: registry.crnd.pro/crnd/docker/odoo-ci:11.0
+image: registry.crnd.pro/crnd/docker/odoo-ci-x:11.0-simple
 
 variables:
     SERIES_BRANCH: '11.0'
@@ -36,6 +36,7 @@ pylint:
         - odoo-helper test pylint .
 
 tests:
+    image: registry.crnd.pro/crnd/docker/odoo-ci-x:11.0-ci
     stage: test
     before_script:
         - odoo-helper link .
@@ -46,11 +47,7 @@ tests:
         - odoo-helper stop
         - odoo-helper exec coverage combine
         - odoo-helper exec coverage report
-        - odoo-helper exec coverage html
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
-    artifacts:
-        paths:
-            - html-coverage
 
 .build-docker: &build-docker-definition
     image: docker:stable
