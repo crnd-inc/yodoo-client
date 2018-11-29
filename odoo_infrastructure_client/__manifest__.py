@@ -2,6 +2,7 @@
     'name': "Odoo Infrastructure Client",
 
     'summary': """
+        Manage remote Odoo infrastructure via RPC
     """,
 
     'author': "Center of Research & Development",
