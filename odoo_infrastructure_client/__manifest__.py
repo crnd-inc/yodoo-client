@@ -31,4 +31,12 @@
     'category': 'Odoo Infrastructure',
     'installable': True,
     'auto_install': True,
+    'images': ['static/description/banner.png'],
+    'external_dependencies': {
+        'python': [
+            'odoo_rpc_client',
+            'six',
+        ],
+    },
+
 }
