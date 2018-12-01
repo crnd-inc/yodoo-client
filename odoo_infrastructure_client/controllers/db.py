@@ -1,8 +1,9 @@
+import re
 import json
 import logging
 from contextlib import closing
 
-from odoo import http
+from odoo import http, api, registry, SUPERUSER_ID
 from odoo.sql_db import db_connect
 from odoo.http import Response
 from odoo.service import db as service_db
@@ -53,7 +54,38 @@ class SAASClientDb(http.Controller):
             db_init = modules_db.is_initialized(cr)
         if not db_init:
             return server_error(description='Database not initialized.')
-        return Response('successfully', status=200)
+        return Response('OK', status=200)
+
+    @http.route(
+        '/saas/client/db/configure/base_url',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def get_db_configure(self, db=None, base_url=None, **params):
+        if base_url:
+            return bad_request('Base URL not provided!')
+
+        # TODO: it seems that this url have no sense
+        m = re.match(
+            r"(?:(?:http|https)://)?"
+            r"(?P<host>([\w\d-]+\.?)+[\w\d-]+)(?:.*)?",
+            base_url)
+        if not m:
+            return bad_request
+        else:
+            hostname = m.groupdict()['host']
+
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            env['ir.config_parameter'].set_param(
+                'web.base.url', base_url)
+            env['ir.config.parameter'].set_param(
+                'mail.catchall.domain', hostname)
+        return http.Response('OK', status=200)
 
     @http.route(
         '/saas/client/db/stat',

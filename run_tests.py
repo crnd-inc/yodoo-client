@@ -576,6 +576,38 @@ class TestOdooInfrastructureDBUsersInfo(TestOdooInfrastructureClient):
         response = requests.post(self._user_info_url, data)
         self.assertEqual(response.status_code, 404)
 
+    def test_04_db_configure_basu_url_ok(self):
+        response = requests.post(
+            create_url(
+                self._odoo_host, self._odoo_port,
+                '/saas/client/db/configure/base_url'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'base_url': "http://test.test",
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            self._client['ir.config.parameter'].get_param(
+                'web.base.url'),
+            'http://test.test')
+        self.assertEqual(
+            self._client['ir.config.parameter'].get_param(
+                'mail.catchall.domain'),
+            'http://test.test')
+
+    def test_05_db_configure_basu_url_fail_no_param(self):
+        response = requests.post(
+            create_url(
+                self._odoo_host, self._odoo_port,
+                '/saas/client/db/configure/base_url'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'base_url': "",
+            })
+        self.assertEqual(response.status_code, 400)
+
 
 class TestOdooInfrastructureDBModuleInstall(TestOdooInfrastructureClient):
     def setUp(self):
