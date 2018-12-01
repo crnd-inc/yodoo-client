@@ -72,7 +72,7 @@ def prepare_temporary_auth_data(ttl, db_name, token):
     return {
         'token_user': str(uuid()),
         'token_password': str(uuid()),
-        'temp_url': '/saas_auth/%s' % uri_token,
+        'temp_url': '/saas/client/auth/%s' % uri_token,
         'expire': fields.Datetime.to_string(
             datetime.now() + timedelta(seconds=int(ttl))),
         'token_temp': random_token,

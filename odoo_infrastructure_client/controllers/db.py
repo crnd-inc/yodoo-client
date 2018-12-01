@@ -1,5 +1,5 @@
+import json
 import logging
-
 from contextlib import closing
 
 from odoo import http
@@ -7,12 +7,21 @@ from odoo.sql_db import db_connect
 from odoo.http import Response
 from odoo.service import db as service_db
 from odoo.modules import db as modules_db
-from ..utils import require_saas_token, conflict, bad_request, server_error
+
+from ..utils import (
+    require_saas_token,
+    require_db_param,
+    conflict,
+    bad_request,
+    server_error,
+    prepare_db_users_info_data,
+    prepare_db_statistic_data,
+)
 
 _logger = logging.getLogger(__name__)
 
 
-class OdooInfrastructureDBCreate(http.Controller):
+class SAASClientDb(http.Controller):
 
     @http.route(
         '/saas/client/db/create',
@@ -45,3 +54,29 @@ class OdooInfrastructureDBCreate(http.Controller):
         if not db_init:
             return server_error(description='Database not initialized.')
         return Response('successfully', status=200)
+
+    @http.route(
+        '/saas/client/db/stat',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def get_db_statistic(self, db=None, **params):
+        data = prepare_db_statistic_data(db)
+        return Response(json.dumps(data), status=200)
+
+    @http.route(
+        '/saas/client/db/users/info',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def get_client_db_users_info(self, db=None, **params):
+        data = prepare_db_users_info_data(db)
+        return Response(json.dumps(data), status=200)

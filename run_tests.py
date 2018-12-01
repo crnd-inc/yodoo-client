@@ -88,7 +88,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
         self._url = create_url(
             self._odoo_host,
             self._odoo_port,
-            '/odoo/infrastructure/auth/'
+            '/saas/client/auth/'
         )
         self._data = {
             'token_hash': self._hash_token,
@@ -168,7 +168,7 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
         self._url = create_url(
             self._odoo_host,
             self._odoo_port,
-            '/odoo/infrastructure/auth/'
+            '/saas/client/auth/'
         )
         self.response = requests.post(self._url, data=self._data)
         self.data = self.response.json()
