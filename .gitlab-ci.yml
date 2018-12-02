@@ -44,7 +44,7 @@ tests:
     script:
         - odoo-helper server start --coverage
         - sleep 5
-        - odoo-helper exec python -m unittest run_tests.py
+        - odoo-helper exec python -m unittest tests
         - odoo-helper stop
         - odoo-helper exec coverage combine
         - odoo-helper exec coverage report

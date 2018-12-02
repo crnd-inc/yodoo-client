@@ -66,7 +66,7 @@ class SAASClientDb(http.Controller):
     @require_saas_token
     @require_db_param
     def get_db_configure(self, db=None, base_url=None, **params):
-        if base_url:
+        if not base_url:
             return bad_request('Base URL not provided!')
 
         # TODO: it seems that this url have no sense
@@ -75,7 +75,7 @@ class SAASClientDb(http.Controller):
             r"(?P<host>([\w\d-]+\.?)+[\w\d-]+)(?:.*)?",
             base_url)
         if not m:
-            return bad_request
+            return bad_request('Wrong base URL')
         else:
             hostname = m.groupdict()['host']
 
@@ -83,7 +83,7 @@ class SAASClientDb(http.Controller):
             env = api.Environment(cr, SUPERUSER_ID, context={})
             env['ir.config_parameter'].set_param(
                 'web.base.url', base_url)
-            env['ir.config.parameter'].set_param(
+            env['ir.config_parameter'].set_param(
                 'mail.catchall.domain', hostname)
         return http.Response('OK', status=200)
 

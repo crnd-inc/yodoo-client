@@ -11,7 +11,8 @@ set -e;
     cd "$SCRIPT_DIR" && \
     odoo-helper start --coverage -- -p 8069 && \
     sleep 5 && \
-    odoo-helper exec python -m unittest run_tests.py && \
+    odoo-helper exec python -m unittest tests && \
+    odoo-helper stop && \
     odoo-helper exec coverage combine && \
     odoo-helper exec coverage report && \
     odoo-helper stop
