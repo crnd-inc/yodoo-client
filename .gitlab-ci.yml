@@ -42,13 +42,13 @@ stylelint:
     script:
         - odoo-helper lint style .
 
-bandit:
-    stage: static-test
-    <<: *pip_cache_definition
-    before_script:
-        - odoo-helper pip install bandit
-    script:
-        - odoo-helper exec bandit -r .
+#bandit:
+    #stage: static-test
+    #<<: *pip_cache_definition
+    #before_script:
+        #- odoo-helper pip install bandit
+    #script:
+        #- odoo-helper exec bandit -r .
 
 check-versions:
     stage: static-test
