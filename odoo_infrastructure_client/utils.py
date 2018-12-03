@@ -131,28 +131,6 @@ def check_saas_client_token(token_hash):
     return True
 
 
-def check_db_module_state(db, module_name, allowed_states):
-    """
-    :param db: str name of database
-    :param module_name: str name of module
-    :param allowed_states: tuple of strings of allowed states of module
-    :return: response or True
-    :rtype: werkzeug.exceptions response instance or boolean
-    """
-    desc_no_module = (
-        'There was an attempt to get the status of a non-existent module.')
-    desc_state_not_allowed = (
-        'State of the module in unsupported states for this request: (%s).')
-    state = get_module_state(db, module_name)
-    if not state:
-        _logger.info(desc_no_module)
-        return http.request.not_found(desc_no_module)
-    elif state not in allowed_states:
-        _logger.info(desc_state_not_allowed, state)
-        return forbidden(desc_state_not_allowed % state)
-    return True
-
-
 def get_admin_access_options():
     """
         Returns the admin_access options from config.
