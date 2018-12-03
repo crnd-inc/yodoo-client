@@ -2,13 +2,16 @@
     'name': "Odoo Infrastructure Client",
 
     'summary': """
+        It is the client addon for the yodoo.systems. Connect your Odoo
+        instance to yodoo.systems and get the SaaS portal for
+        your clients.
     """,
 
     'author': "Center of Research & Development",
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '11.0.0.5.5',
+    'version': '11.0.0.5.6',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -31,4 +34,5 @@
     'category': 'Odoo Infrastructure',
     'installable': True,
     'auto_install': True,
+    'images': ['static/description/banner.png'],
 }

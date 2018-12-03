@@ -33,7 +33,7 @@ flake8:
 pylint:
     stage: static-test
     script:
-        - odoo-helper test pylint .
+        - odoo-helper lint pylint .
 
 tests:
     image: registry.crnd.pro/crnd/docker/odoo-ci-x:11.0-ci
