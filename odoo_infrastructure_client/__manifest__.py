@@ -2,7 +2,7 @@
     'name': "Odoo Infrastructure Client",
 
     'summary': """
-        Manage remote Odoo infrastructure via RPC
+        Odoo client for the yodoo.systems portal
     """,
 
     'author': "Center of Research & Development",
