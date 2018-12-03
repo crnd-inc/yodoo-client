@@ -2,7 +2,9 @@
     'name': "Odoo Infrastructure Client",
 
     'summary': """
-        Odoo client for the yodoo.systems portal
+        Odoo client for yodoo.systems. Connect your Odoo
+        instance to yodoo.systems and get the SaaS portal for
+        your clients.
     """,
 
     'author': "Center of Research & Development",
