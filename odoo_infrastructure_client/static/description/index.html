@@ -12,14 +12,13 @@
 
 <section style="margin: 0 auto; max-width: 896px;">
 <div>
-<p>Odoo Infrastructure Client is an application developed by the <a href="https://crnd.pro/">Center of Research &amp; Development</a> company.
+<p>Odoo Infrastructure Client is an application developed by the <a href="https://crnd.pro/">Center of Research &amp; Development</a> company. It is the Odoo client for the <i>yodoo.systems</i> portal.
 </p>
-<p>It allows you to manage remote Odoo infrastructure via RPC (remote procedure call).
+<p>Connect your platform to our Odoo instance. With a little configuration you will get a SaaS portal for your databases.
 </p>
-<p>With a little configuration, you can provide your customers with the final SaaS product.
 </div>
 <div style="padding: 0.3em 0.6em; font-size: 120%;">
-<i><b> Key features: </b></i>
+<i><b>Key features</b></i>
 <ul>
 <li>High-level server management</li>
 <li>Pre-configured database templates</li>
@@ -29,10 +28,37 @@
 <li>Customer portal (users can create, drop db, manage backups, etc.)</li>
 </ul>
 </div>
-
+<div>
+<p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Configuration</b></i></p>
+<p>The configuration has several steps.</p>
+<ol>
+<li><p>Set <code>odoo_infrastructure_token</code> to the <code>odoo.conf</code> file. This is a series of random ascii characters. This is the same as the <code>odoo_instance_token</code> field on the remote server.</p>
+<pre><code>odoo_infrastructure_token = Your_random_token</code></pre>
+</li>
+<li><p>Set <code>admin_access_url</code> and <code>admin_access_credentials</code> to the <code>odoo.conf</code> file.</p>
+<p>Enables full administrator access from the remote server via the button.</p>
+<pre><code>admin_access_url = True
+admin_access_credentials = True</code></pre>
+<p>Enables administrator access from the remote server via a temporary login and password.</p>
+<pre><code>admin_access_url = False
+admin_access_credentials = True</code></pre>
+<p>Disabled administrator access from the remote server.</p>
+<pre><code>admin_access_url = False
+admin_access_credentials = False</code></pre>
+</li>
+<li><p>Set <code>server_wide_modules</code> to <code>odoo.conf</code> file.</p>
+<pre><code>server_wide_modules = base,web,odoo_infrastructure_client</code></pre>
+</li>
+</ol>
+</div>
+<div><p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Installation</b></i></p>
+<p>This module is automatically installed with the base module.</p>
+</div>
 </section>
 
 <section style="max-width: 896px; margin: 0 auto;">
+<div><p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Workflow examples</b></i></p>
+</div>
 <div>
 <p><i>Configure Odoo Instance Server</i>
 </p>
@@ -92,8 +118,8 @@
 
 <section align="center" style="max-width: 896px; margin: 0 auto;">
 <div>
-<h2 style="color:#875A7B;">Launch your own ITSM system in 60 seconds:</h2>
-<p>Create your own <a href="https://yodoo.systems/saas/template/itsm-16">Bureaucrat ITSM</a> database
+<h2 style="color:#875A7B;">Launching SaaS is Fast and Easy</h2>
+<p><a href="https://yodoo.systems/">LAUNCH</a> with Yodoo
 <a href="https://yodoo.systems"><img alt="yodoo.systems" src="https://img.shields.io/badge/powered%20by-yodoo.systems-00a09d.png"/></a>
 </p> 
 </div>

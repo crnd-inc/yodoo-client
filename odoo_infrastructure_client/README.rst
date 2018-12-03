@@ -14,19 +14,64 @@ Odoo Infrastructure Client
 
 |badge4| |badge5|
 
-The Odoo Infrastructure Client application allows you to manage remote Odoo infrastructure via RPC (remote procedure call). 
+The Odoo Infrastructure Client application is the Odoo client for the yodoo.systems portal.
+Connect your platform to our Odoo instance. With a little configuration you will get a SaaS portal for your databases.
+
+Configuration
+'''''''''''''
+The configuration has several steps.
+
+1. Set `odoo_infrastructure_token` to the `odoo.conf` file.
+    This is a series of random ascii characters.
+    This is the same as the `odoo_instance_token` field on the remote server.
+
+    .. code::
+    
+        odoo_infrastructure_token = Your_random_token
+
+2. Set `admin_access_url` and `admin_access_credentials` to the `odoo.conf` file.
+    Enables full administrator access from the remote server via the button.
+
+    .. code::
+
+        admin_access_url = True
+        admin_access_credentials = True
+
+    Enables administrator access from the remote server via a temporary login and password.
+
+    .. code::
+
+        admin_access_url = False
+        admin_access_credentials = True
+
+    Disabled administrator access from the remote server.
+
+    .. code::
+
+        admin_access_url = False
+        admin_access_credentials = False
+
+3. Set `server_wide_modules` to `odoo.conf` file.
+
+    .. code::
+
+        server_wide_modules = base,web,odoo_infrastructure_client
+
+
+Installation
+''''''''''''
+This module is automatically installed with the base module.
+
 
 Read the `Odoo Infrastructure Client <http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/>`__ Module Guide for more information.
 
-This module is part of the Bureaucrat ITSM project. 
-You can try it by the references below.
 
-Launch your own ITSM system in 60 seconds:
-''''''''''''''''''''''''''''''''''''''''''
+Launching SaaS is fast and easy:
+''''''''''''''''''''''''''''''''
 
-Create your own `Bureaucrat ITSM <https://yodoo.systems/saas/template/itsm-16>`__ database
+`LAUNCH <https://yodoo.systems/`__
 
-|badge3| 
+|badge3|
 
 
 Bug Tracker
