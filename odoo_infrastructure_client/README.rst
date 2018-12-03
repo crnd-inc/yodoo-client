@@ -14,8 +14,7 @@ Odoo Infrastructure Client
 
 |badge4| |badge5|
 
-The Odoo Infrastructure Client application is the Odoo client for the yodoo.systems.
-Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
+The Odoo Infrastructure Client application is the client addon for the `yodoo.systems <https://yodoo.systems/`__. Connect your Odoo instance to `yodoo.systems <https://yodoo.systems/`__ and get the SaaS portal for your clients.
 
 Configuration
 '''''''''''''

@@ -2,7 +2,7 @@
     'name': "Odoo Infrastructure Client",
 
     'summary': """
-        Odoo client for yodoo.systems. Connect your Odoo
+        It is the client addon for the yodoo.systems. Connect your Odoo
         instance to yodoo.systems and get the SaaS portal for
         your clients.
     """,
@@ -35,11 +35,4 @@
     'installable': True,
     'auto_install': True,
     'images': ['static/description/banner.png'],
-    'external_dependencies': {
-        'python': [
-            'odoo_rpc_client',
-            'six',
-        ],
-    },
-
 }
