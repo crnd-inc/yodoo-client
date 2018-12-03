@@ -14,8 +14,8 @@ Odoo Infrastructure Client
 
 |badge4| |badge5|
 
-The Odoo Infrastructure Client application is the Odoo client for the yodoo.systems portal.
-Connect your platform to our Odoo instance. With a little configuration you will get a SaaS portal for your databases.
+The Odoo Infrastructure Client application is the Odoo client for the yodoo.systems.
+Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
 
 Configuration
 '''''''''''''
@@ -25,35 +25,35 @@ The configuration has several steps.
     This is a series of random ascii characters.
     This is the same as the `odoo_instance_token` field on the remote server.
 
-    .. code::
+    .. code-block:: xml
     
         odoo_infrastructure_token = Your_random_token
 
 2. Set `admin_access_url` and `admin_access_credentials` to the `odoo.conf` file.
-    Enables full administrator access from the remote server via the button.
+Enables full administrator access from the remote server via the button.
 
-    .. code::
+    .. code-block:: xml
 
         admin_access_url = True
         admin_access_credentials = True
 
-    Enables administrator access from the remote server via a temporary login and password.
+Enables administrator access from the remote server via a temporary login and password.
 
-    .. code::
+    .. code-block:: xml
 
         admin_access_url = False
         admin_access_credentials = True
 
-    Disabled administrator access from the remote server.
+Disabled administrator access from the remote server.
 
-    .. code::
+    .. code-block:: xml
 
         admin_access_url = False
         admin_access_credentials = False
 
 3. Set `server_wide_modules` to `odoo.conf` file.
 
-    .. code::
+    .. code-block:: xml
 
         server_wide_modules = base,web,odoo_infrastructure_client
 
