@@ -25,35 +25,35 @@ The configuration has several steps.
     This is a series of random ascii characters.
     This is the same as the `odoo_instance_token` field on the remote server.
 
-    .. code-block:: xml
+    .. code:: 
     
         odoo_infrastructure_token = Your_random_token
 
 2. Set `admin_access_url` and `admin_access_credentials` to the `odoo.conf` file.
-Enables full administrator access from the remote server via the button.
+    Enables full administrator access from the remote server via the button.
 
-    .. code-block:: xml
+    .. code::
 
         admin_access_url = True
         admin_access_credentials = True
 
-Enables administrator access from the remote server via a temporary login and password.
+    Enables administrator access from the remote server via a temporary login and password.
 
-    .. code-block:: xml
+    .. code::
 
         admin_access_url = False
         admin_access_credentials = True
 
-Disabled administrator access from the remote server.
+    Disabled administrator access from the remote server.
 
-    .. code-block:: xml
+    .. code::
 
         admin_access_url = False
         admin_access_credentials = False
 
 3. Set `server_wide_modules` to `odoo.conf` file.
 
-    .. code-block:: xml
+    .. code::
 
         server_wide_modules = base,web,odoo_infrastructure_client
 
@@ -69,7 +69,6 @@ Read the `Odoo Infrastructure Client <http://review-docs.10.100.34.40.xip.io/rev
 Launching SaaS is fast and easy:
 ''''''''''''''''''''''''''''''''
 
-`LAUNCH <https://yodoo.systems/`__
 
 |badge3|
 
