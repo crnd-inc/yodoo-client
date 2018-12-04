@@ -15,7 +15,6 @@ from ..utils import (
     conflict,
     bad_request,
     server_error,
-    prepare_db_users_info_data,
     prepare_db_statistic_data,
 )
 
@@ -32,17 +31,12 @@ class SAASClientDb(http.Controller):
         csrf=False
     )
     @require_saas_token
-    def client_db_create(self,
-                         dbname=None,
-                         demo=False,
-                         lang='en_US',
-                         user_password='admin',
-                         user_login='admin',
-                         country_code=None,
-                         template_dbname=None,
-                         **params):
+    def client_db_create(self, dbname=None, demo=False, lang='en_US',
+                         user_password='admin', user_login='admin',
+                         country_code=None, template_dbname=None, **params):
         if not dbname:
             return bad_request(description='Missing parameter: dbname')
+        _logger.info("Create database: %s (demo=%s)", dbname, demo)
         try:
             service_db._create_empty_database(dbname)
         except service_db.DatabaseExists as bd_ex:
@@ -65,7 +59,7 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
-    def get_db_configure(self, db=None, base_url=None, **params):
+    def client_db_configure_base_url(self, db=None, base_url=None, **params):
         if not base_url:
             return bad_request('Base URL not provided!')
 
@@ -96,7 +90,7 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
-    def get_db_statistic(self, db=None, **params):
+    def client_db_statistic(self, db=None, **params):
         data = prepare_db_statistic_data(db)
         return Response(json.dumps(data), status=200)
 
@@ -109,6 +103,22 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
-    def get_client_db_users_info(self, db=None, **params):
-        data = prepare_db_users_info_data(db)
+    def client_db_users_info(self, db=None, **params):
+        """ Return list of database users
+            :param db: str name of database
+            :return: list of dicts [{
+                'id': user_id,
+                'login': user_login,
+                'partner_id': user_partner_id,
+                'share': True or False user_share,
+                'write_uid': user_write_uid
+            }]
+        """
+        with registry(db).cursor() as cr:
+            cr.execute("""
+                SELECT id, login, partner_id, share, write_uid
+                FROM res_users
+                WHERE active = true;
+            """)
+            data = cr.dictfetchall()
         return Response(json.dumps(data), status=200)

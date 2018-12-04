@@ -8,7 +8,6 @@ from odoo.api import Environment
 from ..utils import (
     require_saas_token,
     require_db_param,
-    prepare_db_module_info_data,
 )
 
 _logger = logging.getLogger(__name__)
@@ -34,7 +33,26 @@ class SAASClientDbModule(http.Controller):
     @require_saas_token
     @require_db_param
     def get_client_db_module_info(self, db=None, **params):
-        data = prepare_db_module_info_data(db)
+        """ Return list of database modules
+
+            :param db: str name of database
+            :return: list of dicts [{
+                'name': module_name,
+                'summary': module_summary,
+                'state': module_state,
+                'latest_version': module_version,
+                'application': True or False,
+                'published_version': date_of_last_manipulations
+            }]
+        """
+        with registry(db).cursor() as cr:
+            cr.execute("""
+                SELECT name, summary, state, latest_version,
+                        application, published_version
+                FROM ir_module_module
+                WHERE state = 'installed';
+            """)
+            data = cr.dictfetchall()
         return Response(json.dumps(data), status=200)
 
     @http.route(
