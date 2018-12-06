@@ -24,11 +24,11 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
         response = requests.post(self._url, data=self._data)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue(isinstance(data['token_password'], str))
-        self.assertTrue(isinstance(data['token_user'], str))
-        self.assertTrue(isinstance(data['expire'], str))
-        self.assertTrue(isinstance(data['temp_url'], str))
-        self.assertTrue(isinstance(data['token_temp'], str))
+        self.assertIsInstance(data['token_password'], str)
+        self.assertIsInstance(data['token_user'], str)
+        self.assertIsInstance(data['expire'], str)
+        self.assertIsInstance(data['temp_url'], str)
+        self.assertIsInstance(data['token_temp'], str)
 
     def test_02_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad token_hash
@@ -196,17 +196,17 @@ class TestOdooInfrastructureSaasClientVersionInfo(
         response = requests.post(self._version_url, self._version_data)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue(isinstance(data['odoo_version'], str))
-        self.assertTrue(isinstance(data['odoo_version_info'], list))
-        self.assertTrue(isinstance(data['odoo_serie'], str))
-        self.assertTrue(isinstance(data['saas_client_version'], str))
-        self.assertTrue(isinstance(data['saas_client_serie'], str))
-        self.assertTrue(isinstance(data['saas_client_api_version'], int))
-        self.assertTrue(isinstance(data['features_enabled'], dict))
+        self.assertIsInstance(data['odoo_version'], str)
+        self.assertIsInstance(data['odoo_version_info'], list)
+        self.assertIsInstance(data['odoo_serie'], str)
+        self.assertIsInstance(data['saas_client_version'], str)
+        self.assertIsInstance(data['saas_client_serie'], str)
+        self.assertIsInstance(data['saas_client_api_version'], int)
+        self.assertIsInstance(data['features_enabled'], dict)
         features_enabled = data['features_enabled']
-        self.assertTrue(isinstance(features_enabled['admin_access_url'], bool))
-        self.assertTrue(
-            isinstance(features_enabled['admin_access_credentials'], bool))
+        self.assertIsInstance(features_enabled['admin_access_url'], bool)
+        self.assertIsInstance(
+            features_enabled['admin_access_credentials'], bool)
 
     def test_02_controller_odoo_infrastructure_saas_client_version(self):
         # test incorrect request with bad token_hash
