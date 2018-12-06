@@ -20,6 +20,7 @@ from odoo.service.db import exp_db_exist
 SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
 DEFAULT_LEN_TOKEN = 128
+SAAS_TOKEN_FIELD = 'odoo_infrastructure_token'
 
 _logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ def prepare_temporary_auth_data(ttl, db_name, token):
     return {
         'token_user': str(uuid()),
         'token_password': str(uuid()),
-        'temp_url': '/saas_auth/%s' % uri_token,
+        'temp_url': '/saas/client/auth/%s' % uri_token,
         'expire': fields.Datetime.to_string(
             datetime.now() + timedelta(seconds=int(ttl))),
         'token_temp': random_token,
@@ -112,7 +113,7 @@ def check_saas_client_token(token_hash):
     """
     Returns True or correct response. Makes logging before returning a response
 
-    :param token_hash: hash of odoo_infrastructure_token from server
+    :param token_hash: hash of SaaS token from server
     :return: response or True
     :rtype: werkzeug.exceptions response instance or boolean
     """
@@ -120,7 +121,7 @@ def check_saas_client_token(token_hash):
     desc_no_token = 'Instance token does not exist, please configure it.'
     desc_token_not_match = 'The hashes of the tokens do not match.'
 
-    token = config.get('odoo_infrastructure_token', False)
+    token = config.get(SAAS_TOKEN_FIELD, False)
     if not token:
         _logger.info(desc_no_token)
         return http.request.not_found(desc_no_token)
@@ -128,28 +129,6 @@ def check_saas_client_token(token_hash):
     if not token_instance_hash == token_hash:
         _logger.info(desc_token_not_match)
         return forbidden(desc_token_not_match)
-    return True
-
-
-def check_db_module_state(db, module_name, allowed_states):
-    """
-    :param db: str name of database
-    :param module_name: str name of module
-    :param allowed_states: tuple of strings of allowed states of module
-    :return: response or True
-    :rtype: werkzeug.exceptions response instance or boolean
-    """
-    desc_no_module = (
-        'There was an attempt to get the status of a non-existent module.')
-    desc_state_not_allowed = (
-        'State of the module in unsupported states for this request: (%s).')
-    state = get_module_state(db, module_name)
-    if not state:
-        _logger.info(desc_no_module)
-        return http.request.not_found(desc_no_module)
-    elif state not in allowed_states:
-        _logger.info(desc_state_not_allowed, state)
-        return forbidden(desc_state_not_allowed % state)
     return True
 
 
@@ -175,31 +154,6 @@ def get_size_storage(start_path):
             fp = os_path_join(storage_data[0], f)
             total_size += os_getsize(fp)
     return total_size
-
-
-def get_module_state(db, module_name):
-    """
-    Returns state of module:
-            'install',
-            'uninstall',
-            'uninstallable',
-            'to upgrade',
-            'to remove',
-            'to install'.
-    :param db: str name of database
-    :param module_name: str name of module
-    :return: str state of module or None if module not exists
-    :rtype: str or NoneType
-    """
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT state
-            FROM ir_module_module
-            WHERE name = %s;
-        """, (module_name,))
-        res = cr.fetchone()
-    res = res[0] if res is not None else res
-    return res
 
 
 def get_count_db(user):
@@ -301,33 +255,10 @@ def get_installed_module_count(db):
     }
 
 
-def get_db_module_data(db):
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT name, summary, state, latest_version,
-                    application, published_version
-            FROM ir_module_module
-            WHERE state = 'installed';
-        """)
-        res = cr.dictfetchall()
-    return res
-
-
-def get_db_users_data(db):
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT id, login, partner_id, share, write_uid
-            FROM res_users
-            WHERE active = true;
-        """)
-        res = cr.dictfetchall()
-    return res
-
-
 def prepare_db_statistic_data(db):
     data_dir = config['data_dir']
     file_storage_size = get_size_storage(
-        '%s/filestore/%s' % (data_dir, db))
+        os.path.join(data_dir, 'filestore', db))
     db_storage_size = get_size_db(db)
     active_users = get_active_users_count(db)
     installed_modules = get_installed_module_count(db)
@@ -346,12 +277,12 @@ def prepare_db_statistic_data(db):
 
 def prepare_server_slow_statistic_data():
     platform_data = platform.uname()._asdict()
-    disc_data = psutil.disk_usage('/')._asdict()
+    disk_data = psutil.disk_usage('/')._asdict()
     database_count = get_count_db(config['db_user'])
     return {
-        'used_disc_space': disc_data['used'],
-        'free_disc_space': disc_data['free'],
-        'total_disc_space': disc_data['total'],
+        'used_disk_space': disk_data['used'],
+        'free_disk_space': disk_data['free'],
+        'total_disk_space': disk_data['total'],
         'os_name': platform_data['system'],
         'os_machine': platform_data['machine'],
         'os_version': platform_data['version'],
@@ -401,35 +332,6 @@ def prepare_saas_module_info_data():
     return {mod:
             module.load_information_from_description_file(mod)
             for mod in module.get_modules()}
-
-
-def prepare_db_module_info_data(db):
-    """
-    :param db: str name of database
-    :return: list of dicts [{
-        'name': module_name,
-        'summary': module_summary,
-        'state': module_state,
-        'latest_version': module_version,
-        'application': True or False,
-        'published_version': date_of_last_manipulations
-    }]
-    """
-    return get_db_module_data(db)
-
-
-def prepare_db_users_info_data(db):
-    """
-    :param db: str name of database
-    :return: list of dicts [{
-        'id': user_id,
-        'login': user_login,
-        'partner_id': user_partner_id,
-        'share': True or False user_share,
-        'write_uid': user_write_uid
-    }]
-    """
-    return get_db_users_data(db)
 
 
 def require_saas_token(func):

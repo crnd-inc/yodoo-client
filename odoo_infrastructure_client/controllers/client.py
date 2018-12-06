@@ -4,20 +4,35 @@ import logging
 
 from odoo import http, registry
 from odoo.http import request, Response
-from ..utils import (DEFAULT_TIME_TO_LOGIN,
-                     require_saas_token,
-                     require_db_param,
-                     check_saas_client_token,
-                     get_admin_access_options,
-                     forbidden,
-                     bad_request,
-                     prepare_temporary_auth_data,
-                     prepare_saas_client_version_data)
+from ..utils import (
+    DEFAULT_TIME_TO_LOGIN,
+    require_saas_token,
+    require_db_param,
+    check_saas_client_token,
+    get_admin_access_options,
+    forbidden,
+    bad_request,
+    prepare_temporary_auth_data,
+    prepare_saas_client_version_data,
+)
 
 _logger = logging.getLogger(__name__)
 
 
-class OdooInfrastructureAuth(http.Controller):
+class SAASClient(http.Controller):
+
+    @http.route(
+        '/saas/client/version_info',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    def get_saas_client_version_info(self, **params):
+        return http.Response(
+            json.dumps(prepare_saas_client_version_data()),
+            status=200)
 
     @http.route(
         ['/odoo/infrastructure/auth', '/saas/client/auth'],
@@ -96,16 +111,3 @@ class OdooInfrastructureAuth(http.Controller):
                 WHERE id = %s;""", (auth_id,)
             )
         return http.redirect_with_hash('/web')
-
-    @http.route(
-        '/saas/client/version_info',
-        type='http',
-        auth='none',
-        metods=['POST'],
-        csrf=False
-    )
-    @require_saas_token
-    def get_saas_client_version_info(self, **params):
-        return Response(
-            json.dumps(prepare_saas_client_version_data()),
-            status=200)
