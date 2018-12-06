@@ -278,17 +278,17 @@ def prepare_db_statistic_data(db):
 
 
 def prepare_server_slow_statistic_data():
-    platform_data = platform.uname()._asdict()
+    (system, node, _, version, machine, _) = platform.uname()
     disk_data = psutil.disk_usage('/')._asdict()
     database_count = get_count_db(config['db_user'])
     return {
         'used_disk_space': disk_data['used'],
         'free_disk_space': disk_data['free'],
         'total_disk_space': disk_data['total'],
-        'os_name': platform_data['system'],
-        'os_machine': platform_data['machine'],
-        'os_version': platform_data['version'],
-        'os_node': platform_data['node'],
+        'os_name': system,
+        'os_machine': machine,
+        'os_version': version,
+        'os_node': node,
         'db_count': database_count,
     }
 
