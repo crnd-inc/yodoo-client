@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-extend="DashboardMain">
+        <t t-jquery="div.o_web_settings_dashboard_planner" t-operation="after">
+            <div class="text-center o_web_settings_dashboard_saas"/>
+        </t>
+    </t>
+
+    <t t-name="DashboardSaaS">
+        <div class="text-center o_web_settings_dashboard_saas mt8">
+            <i class="fa fa-pie-chart fa-4x text-muted"/>
+            <div class="o_web_settings_dashboard_header">
+                Database statistic
+            </div>
+            <div class="text-left">
+                <table style="width:100%;">
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-users text-muted"/></td>
+                        <td>Total users:</td>
+                        <td>
+                            <t t-set="users_total_count" t-value="widget.data.users_total_count"/>
+                            <t t-if="users_total_count">
+                                <t t-esc="users_total_count"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-user-o text-muted"/></td>
+                        <td>Internal users:</td>
+                        <td>
+                            <t t-set="users_internal_count" t-value="widget.data.users_internal_count"/>
+                            <t t-if="users_internal_count">
+                                <t t-esc="users_internal_count"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-user text-muted"/></td>
+                        <td>External users:</td>
+                        <td>
+                            <t t-set="users_external_count" t-value="widget.data.users_external_count"/>
+                            <t t-if="users_external_count">
+                                <t t-esc="users_external_count"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-folder text-muted"/></td>
+                        <td>File storage:</td>
+                        <td>
+                            <t t-set="file_storage" t-value="widget.data.file_storage"/>
+                            <t t-if="file_storage">
+                                <t t-esc="file_storage"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;"><i class="fa fa-database text-muted"/></td>
+                        <td>Database storage:</td>
+                        <td>
+                            <t t-set="db_storage" t-value="widget.data.db_storage"/>
+                            <t t-if="db_storage">
+                                <t t-esc="db_storage"/>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>
