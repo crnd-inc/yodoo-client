@@ -29,13 +29,12 @@ class TestOdooInfrastructureSaasClientDBStatistic(
         self.assertEqual(data['users_internal_count'], 1)
         self.assertEqual(data['users_external_count'], 0)
         self.assertEqual(data['users_total_count'], 1)
-        self.assertTrue(isinstance(data['db_storage'], int))
-        self.assertTrue(isinstance(data['file_storage'], int))
-        self.assertTrue(isinstance(data['login_date'], (str, NoneType)))
-        self.assertTrue(
-            isinstance(data['login_internal_date'], (str, NoneType)))
-        self.assertTrue(isinstance(data['installed_apps_db_count'], int))
-        self.assertTrue(isinstance(data['installed_modules_db_count'], int))
+        self.assertIsInstance(data['db_storage'], int)
+        self.assertIsInstance(data['file_storage'], int)
+        self.assertIsInstance(data['login_date'], (str, NoneType))
+        self.assertIsInstance(data['login_internal_date'], (str, NoneType))
+        self.assertIsInstance(data['installed_apps_db_count'], int)
+        self.assertIsInstance(data['installed_modules_db_count'], int)
 
     def test_02_controller_odoo_infrastructure_db_statistic(self):
         # test incorrect request with bad token_hash
@@ -67,13 +66,13 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 200)
         modules = response.json()
         for module in modules:
-            self.assertTrue(isinstance(module['summary'], str))
-            self.assertTrue(isinstance(module['name'], str))
-            self.assertTrue(isinstance(module['latest_version'], str))
-            self.assertTrue(isinstance(module['application'], bool))
-            self.assertTrue(isinstance(module['state'], str))
-            self.assertTrue(
-                isinstance(module['published_version'], (str, NoneType)))
+            self.assertIsInstance(module['summary'], str)
+            self.assertIsInstance(module['name'], str)
+            self.assertIsInstance(module['latest_version'], str)
+            self.assertIsInstance(module['application'], bool)
+            self.assertIsInstance(module['state'], str)
+            self.assertIsInstance(
+                module['published_version'], (str, NoneType))
 
     def test_02_controller_odoo_infrastructure_db_module_info(self):
         # test incorrect request with bad token_hash
@@ -104,11 +103,11 @@ class TestOdooInfrastructureDBUsersInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 200)
         users = response.json()
         for user in users:
-            self.assertTrue(isinstance(user['id'], int))
-            self.assertTrue(isinstance(user['login'], str))
-            self.assertTrue(isinstance(user['partner_id'], int))
-            self.assertTrue(isinstance(user['share'], bool))
-            self.assertTrue(isinstance(user['write_uid'], int))
+            self.assertIsInstance(user['id'], int)
+            self.assertIsInstance(user['login'], str)
+            self.assertIsInstance(user['partner_id'], int)
+            self.assertIsInstance(user['share'], bool)
+            self.assertIsInstance(user['write_uid'], int)
 
     def test_02_controller_odoo_infrastructure_db_users_info(self):
         # test incorrect request with bad token_hash
