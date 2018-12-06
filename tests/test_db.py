@@ -1,3 +1,4 @@
+import six
 import requests
 
 from odoo_rpc_client import Client
@@ -66,11 +67,11 @@ class TestOdooInfrastructureDBModuleInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 200)
         modules = response.json()
         for module in modules:
-            self.assertIsInstance(module['summary'], str)
-            self.assertIsInstance(module['name'], str)
-            self.assertIsInstance(module['latest_version'], str)
+            self.assertIsInstance(module['summary'], six.string_types)
+            self.assertIsInstance(module['name'], six.string_types)
+            self.assertIsInstance(module['latest_version'], six.string_types)
             self.assertIsInstance(module['application'], bool)
-            self.assertIsInstance(module['state'], str)
+            self.assertIsInstance(module['state'], six.string_types)
             self.assertIsInstance(
                 module['published_version'], (str, NoneType))
 
@@ -104,7 +105,7 @@ class TestOdooInfrastructureDBUsersInfo(TestOdooInfrastructureClient):
         users = response.json()
         for user in users:
             self.assertIsInstance(user['id'], int)
-            self.assertIsInstance(user['login'], str)
+            self.assertIsInstance(user['login'], six.string_types)
             self.assertIsInstance(user['partner_id'], int)
             self.assertIsInstance(user['share'], bool)
             self.assertIsInstance(user['write_uid'], int)

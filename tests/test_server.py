@@ -1,3 +1,4 @@
+import six
 import requests
 
 from .common import TestOdooInfrastructureClient
@@ -22,10 +23,10 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
         self.assertIsInstance(data['used_disk_space'], int)
         self.assertIsInstance(data['free_disk_space'], int)
         self.assertIsInstance(data['total_disk_space'], int)
-        self.assertIsInstance(data['os_name'], str)
-        self.assertIsInstance(data['os_machine'], str)
-        self.assertIsInstance(data['os_version'], str)
-        self.assertIsInstance(data['os_node'], str)
+        self.assertIsInstance(data['os_name'], six.string_types)
+        self.assertIsInstance(data['os_machine'], six.string_types)
+        self.assertIsInstance(data['os_version'], six.string_types)
+        self.assertIsInstance(data['os_node'], six.string_types)
         self.assertIsInstance(data['db_count'], int)
 
     def test_02_controller_odoo_infrastructure_server_slow_statistic(self):
@@ -97,16 +98,16 @@ class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
         base_info = data.get('base', None)
         self.assertIsNotNone(base_info)
         self.assertIsInstance(base_info, dict)
-        self.assertIsInstance(base_info['version'], str)
-        self.assertIsInstance(base_info['name'], str)
-        self.assertIsInstance(base_info['author'], str)
-        self.assertIsInstance(base_info['summary'], str)
-        self.assertIsInstance(base_info['license'], str)
+        self.assertIsInstance(base_info['version'], six.string_types)
+        self.assertIsInstance(base_info['name'], six.string_types)
+        self.assertIsInstance(base_info['author'], six.string_types)
+        self.assertIsInstance(base_info['summary'], six.string_types)
+        self.assertIsInstance(base_info['license'], six.string_types)
         self.assertIsInstance(base_info['application'], bool)
         self.assertIsInstance(base_info['installable'], bool)
         self.assertIsInstance(base_info['auto_install'], bool)
-        self.assertIsInstance(base_info['category'], str)
-        self.assertIsInstance(base_info['website'], str)
+        self.assertIsInstance(base_info['category'], six.string_types)
+        self.assertIsInstance(base_info['website'], six.string_types)
         self.assertIsInstance(base_info['sequence'], int)
 
     def test_02_controller_odoo_infrastructure_instance_module_info(self):
