@@ -4,5 +4,6 @@
 *~
 .ropeproject/
 .coverage
+.coverage*
 htmlcov
 venv/
