@@ -2,6 +2,8 @@ import json
 import base64
 import logging
 
+import werkzeug.exceptions
+
 import odoo
 from odoo import http, registry
 from odoo.http import request, Response
@@ -12,8 +14,6 @@ from ..utils import (
     require_db_param,
     check_saas_client_token,
     get_admin_access_options,
-    forbidden,
-    bad_request,
     prepare_temporary_auth_data,
 )
 
@@ -68,10 +68,10 @@ class SAASClient(http.Controller):
             token_hash=None, **params):
         admin_access_credentials = get_admin_access_options()[1]
         if not admin_access_credentials:
-            desc = '''Attempt to get temporary login/password,
-            but this operation is disabled in Odoo config'''
-            _logger.warning(desc)
-            return forbidden(desc)
+            _logger.warning(
+                "Attempt to get temporary login/password, "
+                "but this operation is disabled in Odoo config")
+            raise werkzeug.exceptions.Forbidden(description='Feature disabled')
         data = prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -99,17 +99,17 @@ class SAASClient(http.Controller):
         except (base64.binascii.Error, TypeError):
             _logger.warning(
                 'Bad Data: url: %s not in BASE64', token)
-            return bad_request()
-        result = check_saas_client_token(token_hash)
-        # result is True or response (not_found, forbidden)
-        if result is not True:
-            return result
+            raise werkzeug.exceptions.BadRequest()
+
+        check_saas_client_token(token_hash)
         admin_access_url = get_admin_access_options()[0]
         if not admin_access_url:
-            desc = '''Attempt to login as admin via token-url,
-            but this operation is disabled in Odoo config.'''
-            _logger.warning(desc)
-            return forbidden(desc)
+            _logger.warning(
+                "Attempt to login as admin via token-url, "
+                "but this operation is disabled in Odoo config.")
+            raise werkzeug.exceptions.Forbidden(
+                description='Feature disabled')
+
         with registry(db).cursor() as cr:
             cr.execute("""
                 SELECT id, token_user, token_password FROM

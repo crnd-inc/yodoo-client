@@ -26,38 +26,6 @@ SAAS_TOKEN_FIELD = 'odoo_infrastructure_token'
 _logger = logging.getLogger(__name__)
 
 
-def forbidden(description=None):
-    """ Shortcut for a `HTTP 403
-    <https://tools.ietf.org/html/rfc7231#section-6.5.3>`_ (Forbidden)
-    response
-    """
-    return werkzeug.exceptions.Forbidden(description)
-
-
-def bad_request(description=None):
-    """ Shortcut for a `HTTP 400
-    <https://tools.ietf.org/html/rfc7231#section-6.5.1>`_ (BadRequest)
-    response
-    """
-    return werkzeug.exceptions.BadRequest(description)
-
-
-def server_error(description=None):
-    """ Shortcut for a `HTTP 500
-    <https://tools.ietf.org/html/rfc7231#section-6.6.1>`_
-     (Internal Server Error) response
-    """
-    return werkzeug.exceptions.InternalServerError(description)
-
-
-def conflict(description=None):
-    """ Shortcut for a `HTTP 409
-        <https://tools.ietf.org/html/rfc7231#section-6.5.8>`_ (Conflict)
-        response
-        """
-    return werkzeug.exceptions.Conflict(description)
-
-
 def generate_random_password(length):
     letters = list(string.ascii_uppercase +
                    string.ascii_lowercase +
@@ -87,21 +55,17 @@ def check_saas_client_token(token_hash):
 
     :param token_hash: hash of SaaS token from server
     :return: response or True
-    :rtype: werkzeug.exceptions response instance or boolean
+    :raises werkzeug.exceptions.*: raised in case when no/wrong token
     """
-
-    desc_no_token = 'Instance token does not exist, please configure it.'
-    desc_token_not_match = 'The hashes of the tokens do not match.'
-
     token = config.get(SAAS_TOKEN_FIELD, False)
     if not token:
-        _logger.info(desc_no_token)
-        return http.request.not_found(desc_no_token)
+        _logger.info('Instance token does not exist, please configure it.')
+        raise werkzeug.exceptions.NotFound(description='Token not configured')
+
     token_instance_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
     if not token_instance_hash == token_hash:
-        _logger.info(desc_token_not_match)
-        return forbidden(desc_token_not_match)
-    return True
+        _logger.info('The hashes of the tokens do not match.')
+        raise werkzeug.exceptions.Forbidden(description='Token not match')
 
 
 def get_admin_access_options():
@@ -262,9 +226,7 @@ def require_saas_token(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         token_hash = kwargs.get('token_hash', None)
-        result = check_saas_client_token(token_hash)
-        if result is not True:
-            return result
+        check_saas_client_token(token_hash)
         return func(*args, **kwargs)
 
     return wrapper
