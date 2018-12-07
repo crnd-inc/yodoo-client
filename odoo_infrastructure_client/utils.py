@@ -13,7 +13,7 @@ from random import shuffle
 from functools import wraps
 from contextlib import closing
 
-from odoo import http, fields, sql_db
+from odoo import fields, sql_db
 from odoo.tools import config
 from odoo.modules import module
 from odoo.service.db import exp_db_exist
@@ -24,6 +24,13 @@ DEFAULT_LEN_TOKEN = 128
 SAAS_TOKEN_FIELD = 'odoo_infrastructure_token'
 
 _logger = logging.getLogger(__name__)
+
+
+class DatabaseNotExists(werkzeug.exceptions.HTTPException):
+    code = 440
+    description = (
+        "Database not found"
+    )
 
 
 def generate_random_password(length):
@@ -240,10 +247,12 @@ def require_db_param(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         db = kwargs.get('db', None)
+        if not db:
+            raise werkzeug.exceptions.BadRequest("Database not specified")
         if not exp_db_exist(db):
             _logger.info(
                 'Database %s is not found.', db)
-            return http.request.not_found()
+            raise DatabaseNotExists()
         return func(*args, **kwargs)
 
     return wrapper
