@@ -9,7 +9,7 @@ from .common import (
 )
 
 
-class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
+class TestClientAuth(TestOdooInfrastructureClient):
 
     def setUp(self):
         self._url = self.create_url('/saas/client/auth/')
@@ -60,7 +60,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
         OdooInfrastructureClientAuth.scheduler_cleanup_expired_entries()
 
 
-class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
+class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
 
     def setUp(self):
         self._data = {
@@ -181,8 +181,7 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
         self.assertIsInstance(le.exception, LoginException)
 
 
-class TestOdooInfrastructureSaasClientVersionInfo(
-        TestOdooInfrastructureClient):
+class TestClientVersionInfo(TestOdooInfrastructureClient):
 
     def setUp(self):
         self.incorrect_response_keys = {'error'}

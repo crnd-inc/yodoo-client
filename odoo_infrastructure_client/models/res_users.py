@@ -1,4 +1,4 @@
-from odoo import models, registry, SUPERUSER_ID, api
+from odoo import models, SUPERUSER_ID, api
 
 
 class Users(models.Model):
@@ -9,7 +9,7 @@ class Users(models.Model):
         if not password or not login:
             return False
 
-        with registry(db).cursor() as cr:
+        with cls.pool.cursor() as cr:
             cr.execute("""
                 SELECT id
                 FROM odoo_infrastructure_client_auth
