@@ -23,6 +23,18 @@ _logger = logging.getLogger(__name__)
 class SAASClientDb(http.Controller):
 
     @http.route(
+        '/saas/client/db/exists',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_exists(self, db=None, **params):
+        return Response(status=200)
+
+    @http.route(
         '/saas/client/db/create',
         type='http',
         auth='none',
