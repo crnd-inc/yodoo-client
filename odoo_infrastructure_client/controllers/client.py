@@ -2,10 +2,12 @@ import json
 import base64
 import logging
 
+import odoo
 from odoo import http, registry
 from odoo.http import request, Response
 from ..utils import (
     DEFAULT_TIME_TO_LOGIN,
+    SAAS_CLIENT_API_VERSION,
     require_saas_token,
     require_db_param,
     check_saas_client_token,
@@ -13,7 +15,6 @@ from ..utils import (
     forbidden,
     bad_request,
     prepare_temporary_auth_data,
-    prepare_saas_client_version_data,
 )
 
 _logger = logging.getLogger(__name__)
@@ -30,9 +31,28 @@ class SAASClient(http.Controller):
     )
     @require_saas_token
     def get_saas_client_version_info(self, **params):
-        return http.Response(
-            json.dumps(prepare_saas_client_version_data()),
-            status=200)
+        admin_access_url, admin_access_credentials = (
+            get_admin_access_options())
+        module_version_info = (
+            odoo.modules.load_information_from_description_file(
+                'odoo_infrastructure_client')['version'].split('.')
+        )
+        module_version_serie = '.'.join(module_version_info[0:2])
+        module_version = '.'.join(module_version_info[-3:])
+
+        data = {
+            'odoo_version': odoo.release.version,
+            'odoo_version_info': odoo.release.version_info,
+            'odoo_serie': odoo.release.serie,
+            'saas_client_version': module_version,
+            'saas_client_serie': module_version_serie,
+            'saas_client_api_version': SAAS_CLIENT_API_VERSION,
+            'features_enabled': {
+                'admin_access_url': admin_access_url,
+                'admin_access_credentials': admin_access_credentials,
+            },
+        }
+        return http.Response(json.dumps(data), status=200)
 
     @http.route(
         ['/odoo/infrastructure/auth', '/saas/client/auth'],
