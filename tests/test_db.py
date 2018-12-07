@@ -47,7 +47,7 @@ class TestClientDBStatistic(TestOdooInfrastructureClient):
         data = dict(self._db_statistic_data, db='abracadabra')
 
         response = requests.post(self._db_statistic_url, data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
 
 class TestDBModuleInfo(TestOdooInfrastructureClient):
@@ -85,7 +85,7 @@ class TestDBModuleInfo(TestOdooInfrastructureClient):
         data = dict(self._db_info_data, db='abracadabra')
 
         response = requests.post(self._db_info_url, data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
 
 class TestDBUsersInfo(TestOdooInfrastructureClient):
@@ -120,7 +120,7 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         data = dict(self._user_info_data, db='abracadabra')
 
         response = requests.post(self._user_info_url, data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
     def test_04_db_configure_base_url_ok(self):
         response = requests.post(
@@ -167,11 +167,21 @@ class TestCreateDB(TestOdooInfrastructureClient):
             'token_hash': self._hash_token,
             'db': 'test_db',
         }
+        self._list_db_url = self.create_url(
+            '/saas/client/db/list')
+        self._list_db_data = {
+            'token_hash': self._hash_token,
+        }
 
     def test_01_controller_create_db_no_demo(self):
         response = requests.post(
-            self._exists_db_url, self._exists_db_url)
+            self._exists_db_url, self._exists_db_data)
         self.assertEqual(response.status_code, 440)
+
+        response = requests.post(
+            self._list_db_url, self._list_db_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('test_db', response.json())
 
         response = requests.post(
             self._create_db_url, self._create_db_data)
@@ -179,8 +189,13 @@ class TestCreateDB(TestOdooInfrastructureClient):
         self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
 
         response = requests.post(
-            self._exists_db_url, self._exists_db_url)
+            self._exists_db_url, self._exists_db_data)
         self.assertEqual(response.status_code, 200)
+
+        response = requests.post(
+            self._list_db_url, self._list_db_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('test_db', response.json())
 
         # Ensure created database is without demo data
         self.assertFalse(
@@ -230,3 +245,24 @@ class TestCreateDB(TestOdooInfrastructureClient):
 
         response = requests.post(self._create_db_url, data)
         self.assertEqual(response.status_code, 400)
+
+    def test_03_controller_db_exists_bad_token(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._exists_db_data, token_hash='abracadabra')
+
+        response = requests.post(self._exists_db_url, data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_04_controller_db_exists_no_dbname(self):
+        # test request without dbname
+        data = dict(self._exists_db_data, db=None)
+
+        response = requests.post(self._exists_db_url, data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_03_controller_db_list_bad_token(self):
+        # test incorrect request with bad token_hash
+        data = dict(self._list_db_data, token_hash='abracadabra')
+
+        response = requests.post(self._list_db_url, data)
+        self.assertEqual(response.status_code, 403)

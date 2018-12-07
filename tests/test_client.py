@@ -42,7 +42,7 @@ class TestClientAuth(TestOdooInfrastructureClient):
         data = dict(self._data, db='abracadabra')
 
         response = requests.post(self._url, data=data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
     def test_04_controller_odoo_infrastructure_auth(self):
         # test scheduler remove row after expire

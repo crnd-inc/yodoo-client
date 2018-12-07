@@ -247,6 +247,8 @@ def require_db_param(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         db = kwargs.get('db', None)
+        if not db:
+            raise werkzeug.exceptions.BadRequest("Database not specified")
         if not exp_db_exist(db):
             _logger.info(
                 'Database %s is not found.', db)
