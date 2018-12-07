@@ -13,7 +13,7 @@ from random import shuffle
 from functools import wraps
 from contextlib import closing
 
-from odoo import http, fields, sql_db
+from odoo import fields, sql_db
 from odoo.tools import config
 from odoo.modules import module
 from odoo.service.db import exp_db_exist
