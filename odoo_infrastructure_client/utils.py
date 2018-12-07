@@ -13,7 +13,7 @@ from random import shuffle
 from functools import wraps
 from contextlib import closing
 
-from odoo import http, fields, release, modules, sql_db
+from odoo import http, fields, sql_db
 from odoo.tools import config
 from odoo.modules import module
 from odoo.service.db import exp_db_exist
@@ -79,6 +79,7 @@ def prepare_temporary_auth_data(ttl, db_name, token):
             datetime.now() + timedelta(seconds=int(ttl))),
         'token_temp': random_token,
     }
+
 
 def check_saas_client_token(token_hash):
     """
