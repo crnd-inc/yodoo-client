@@ -4,18 +4,19 @@ import json
 import base64
 import logging
 
+import werkzeug.exceptions
+
+import odoo
 from odoo import http, registry
 from odoo.http import request, Response
 from ..utils import (
     DEFAULT_TIME_TO_LOGIN,
+    SAAS_CLIENT_API_VERSION,
     require_saas_token,
     require_db_param,
     check_saas_client_token,
     get_admin_access_options,
-    forbidden,
-    bad_request,
     prepare_temporary_auth_data,
-    prepare_saas_client_version_data,
 )
 
 _logger = logging.getLogger(__name__)
@@ -32,9 +33,28 @@ class SAASClient(http.Controller):
     )
     @require_saas_token
     def get_saas_client_version_info(self, **params):
-        return http.Response(
-            json.dumps(prepare_saas_client_version_data()),
-            status=200)
+        admin_access_url, admin_access_credentials = (
+            get_admin_access_options())
+        module_version_info = (
+            odoo.modules.load_information_from_description_file(
+                'odoo_infrastructure_client')['version'].split('.')
+        )
+        module_version_serie = '.'.join(module_version_info[0:2])
+        module_version = '.'.join(module_version_info[-3:])
+
+        data = {
+            'odoo_version': odoo.release.version,
+            'odoo_version_info': odoo.release.version_info,
+            'odoo_serie': odoo.release.serie,
+            'saas_client_version': module_version,
+            'saas_client_serie': module_version_serie,
+            'saas_client_api_version': SAAS_CLIENT_API_VERSION,
+            'features_enabled': {
+                'admin_access_url': admin_access_url,
+                'admin_access_credentials': admin_access_credentials,
+            },
+        }
+        return http.Response(json.dumps(data), status=200)
 
     @http.route(
         ['/odoo/infrastructure/auth', '/saas/client/auth'],
@@ -50,10 +70,10 @@ class SAASClient(http.Controller):
             token_hash=None, **params):
         admin_access_credentials = get_admin_access_options()[1]
         if not admin_access_credentials:
-            desc = '''Attempt to get temporary login/password,
-            but this operation is disabled in Odoo config'''
-            _logger.warning(desc)
-            return forbidden(desc)
+            _logger.warning(
+                "Attempt to get temporary login/password, "
+                "but this operation is disabled in Odoo config")
+            raise werkzeug.exceptions.Forbidden(description='Feature disabled')
         data = prepare_temporary_auth_data(ttl, db, token_hash)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -81,17 +101,17 @@ class SAASClient(http.Controller):
         except (base64.binascii.Error, TypeError):
             _logger.warning(
                 'Bad Data: url: %s not in BASE64', token)
-            return bad_request()
-        result = check_saas_client_token(token_hash)
-        # result is True or response (not_found, forbidden)
-        if result is not True:
-            return result
+            raise werkzeug.exceptions.BadRequest()
+
+        check_saas_client_token(token_hash)
         admin_access_url = get_admin_access_options()[0]
         if not admin_access_url:
-            desc = '''Attempt to login as admin via token-url,
-            but this operation is disabled in Odoo config.'''
-            _logger.warning(desc)
-            return forbidden(desc)
+            _logger.warning(
+                "Attempt to login as admin via token-url, "
+                "but this operation is disabled in Odoo config.")
+            raise werkzeug.exceptions.Forbidden(
+                description='Feature disabled')
+
         with registry(db).cursor() as cr:
             cr.execute("""
                 SELECT id, token_user, token_password FROM

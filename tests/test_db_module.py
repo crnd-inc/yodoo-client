@@ -143,37 +143,37 @@ class TestDBModuleInstallUpgradeUninstall(TestOdooInfrastructureClient):
         response = requests.post(
             self._db_module_install_url,
             dict(self._db_module_data_single, db='abracadabra'))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
         # upgrade-single
         response = requests.post(
             self._db_module_upgrade_url,
             dict(self._db_module_data_single, db='abracadabra'))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
         # uninstall-single
         response = requests.post(
             self._db_module_uninstall_url,
             dict(self._db_module_data_single, db='abracadabra'))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
         # install-multi
         response = requests.post(
             self._db_module_install_url,
             dict(self._db_module_data_multi, db='abracadabra'))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
         # upgrade-multi
         response = requests.post(
             self._db_module_upgrade_url,
             dict(self._db_module_data_multi, db='abracadabra'))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
         # uninstall-multi
         response = requests.post(
             self._db_module_uninstall_url,
             dict(self._db_module_data_multi, db='abracadabra'))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
     def test_04_controller_db_module_no_module_name(self):
         self._db_module_data_single.pop('module_name')

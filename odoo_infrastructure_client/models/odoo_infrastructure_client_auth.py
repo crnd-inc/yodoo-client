@@ -15,8 +15,8 @@ class OdooInfrasstructureClientAuth(models.Model):
 
     _log_access = False
 
-    token_user = fields.Char(readonly=True)
-    token_password = fields.Char(readonly=True)
+    token_user = fields.Char(index=True, readonly=True)
+    token_password = fields.Char(index=True, readonly=True)
     expire = fields.Datetime(
         readonly=True,
         index=True,

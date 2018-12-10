@@ -10,7 +10,7 @@ from .common import (
 )
 
 
-class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
+class TestClientAuth(TestOdooInfrastructureClient):
 
     def setUp(self):
         self._url = self.create_url('/saas/client/auth/')
@@ -43,7 +43,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
         data = dict(self._data, db='abracadabra')
 
         response = requests.post(self._url, data=data)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 440)
 
     def test_04_controller_odoo_infrastructure_auth(self):
         # test scheduler remove row after expire
@@ -61,7 +61,7 @@ class TestOdooInfrastructureAuthAuth(TestOdooInfrastructureClient):
         OdooInfrastructureClientAuth.scheduler_cleanup_expired_entries()
 
 
-class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
+class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
 
     def setUp(self):
         self._data = {
@@ -182,8 +182,7 @@ class TestOdooInfrastructureAuthSaasAuth(TestOdooInfrastructureClient):
         self.assertIsInstance(le.exception, LoginException)
 
 
-class TestOdooInfrastructureSaasClientVersionInfo(
-        TestOdooInfrastructureClient):
+class TestClientVersionInfo(TestOdooInfrastructureClient):
 
     def setUp(self):
         self.incorrect_response_keys = {'error'}
