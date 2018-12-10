@@ -63,7 +63,7 @@ tests:
     <<: *pip_cache_definition
     before_script:
         - odoo-helper link .
-        - odoo-helper pip install odoo-rpc-client
+        - odoo-helper pip install odoo-rpc-client requests-toolbelt
     script:
         - odoo-helper server start --coverage
         - sleep 5
