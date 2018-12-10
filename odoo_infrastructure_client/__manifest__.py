@@ -11,7 +11,7 @@
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '12.0.0.6.3',
+    'version': '12.0.0.7.0',
 
     # any module necessary for this one to work correctly
     'depends': [
