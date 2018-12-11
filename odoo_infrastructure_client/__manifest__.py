@@ -1,5 +1,5 @@
 {
-    'name': "Odoo Infrastructure Client",
+    'name': "Yodoo-Client",
 
     'summary': """
         It is the client addon for the yodoo.systems. Connect your Odoo
@@ -11,7 +11,7 @@
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '11.0.0.7.0',
+    'version': '11.0.0.7.1',
 
     # any module necessary for this one to work correctly
     'depends': [
