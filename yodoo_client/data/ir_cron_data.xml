@@ -10,7 +10,7 @@
         <field name="interval_type">hours</field>
         <field name="numbercall">-1</field>
         <field name="doall" eval="False"/>
-        <field name="model_id" ref="odoo_infrastructure_client.model_odoo_infrastructure_client_auth"/>
+        <field name="model_id" ref="yodoo_client.model_odoo_infrastructure_client_auth"/>
         <field name="code">model.scheduler_cleanup_expired_entries()</field>
     </record>
 </odoo>
