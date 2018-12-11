@@ -3,8 +3,8 @@ image: registry.crnd.pro/crnd/docker/odoo-ci-x:12.0-simple
 variables:
     SERIES_BRANCH: '12.0'
     ODOO_MAX_CRON_THREADS: 0
-    ODOO_SERVER_WIDE_MODULES: "base,web,odoo_infrastructure_client"
-    ODOO_EXTRA_CONFIG: "odoo_infrastructure_token = qwerty"
+    ODOO_SERVER_WIDE_MODULES: "base,web,yodoo_client"
+    ODOO_EXTRA_CONFIG: "yodoo_token = qwerty"
 
 .pip_cache: &pip_cache_definition
     cache:
@@ -100,3 +100,5 @@ build-docker:
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
+    only:
+        - "12.0"

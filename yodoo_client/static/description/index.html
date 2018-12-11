@@ -1,17 +1,17 @@
 
 <section style="max-width: 896px; margin: 0 auto;">
 <div align="center">
-<h1 style="color:#875A7B;">Odoo Infrastructure Client</h1>
+<h1 style="color:#875A7B;">Yodoo-Client</h1>
 </div>
 <div align="center">
-<p><a href="http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/"><img alt="docs" src="https://img.shields.io/badge/docs-Odoo_Infrastructure_Client-yellowgreen.png" /></a> <a href="https://crnd.pro/"><img alt="CR&amp;D" src="https://img.shields.io/badge/maintainer-CR&amp;D-purple.png" /></a></p>
+<p><a href="http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/"><img alt="docs" src="https://img.shields.io/badge/docs-Odoo_Infrastructure-yellowgreen.png" /></a> <a href="https://crnd.pro/"><img alt="CR&amp;D" src="https://img.shields.io/badge/maintainer-CR&amp;D-purple.png" /></a></p>
 <p><br></p>
 </div>
 </section>
 
 <section style="margin: 0 auto; max-width: 896px;">
 <div>
-<p>Odoo Infrastructure Client is an application developed by the <a href="https://crnd.pro/">Center of Research &amp; Development</a> company. It is the client addon for the <a href="https://yodoo.systems/">yodoo.systems</a>.
+<p>Yodoo-Client is an application developed by the <a href="https://crnd.pro/">Center of Research &amp; Development</a> company. It is the client addon for the <a href="https://yodoo.systems/">yodoo.systems</a>.
 </p>
 <p>Connect your Odoo instance to <a href="https://yodoo.systems/">yodoo.systems</a> and get the SaaS portal for your clients.
 </p>
@@ -31,8 +31,8 @@
 <p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Configuration</b></i></p>
 <p>The configuration has several steps.</p>
 <ol>
-<li><p>Set <code>odoo_infrastructure_token</code> to the <code>odoo.conf</code> file. This is a series of random ascii characters. This is the same as the <code>odoo_instance_token</code> field on the remote server.</p>
-<pre><code>odoo_infrastructure_token = Your_random_token</code></pre>
+<li><p>Set <code>yodoo_token</code> to the <code>odoo.conf</code> file. This is a series of random ascii characters. This is the same as the <code>odoo_instance_token</code> field on the remote server.</p>
+<pre><code>yodoo_token = Your_random_token</code></pre>
 </li>
 <li><p>Set <code>admin_access_url</code> and <code>admin_access_credentials</code> to the <code>odoo.conf</code> file.</p>
 <p>Enables full administrator access from the remote server via the button.</p>
@@ -46,7 +46,7 @@ admin_access_credentials = True</code></pre>
 admin_access_credentials = False</code></pre>
 </li>
 <li><p>Set <code>server_wide_modules</code> to <code>odoo.conf</code> file.</p>
-<pre><code>server_wide_modules = base,web,odoo_infrastructure_client</code></pre>
+<pre><code>server_wide_modules = base,web,yodoo_client</code></pre>
 </li>
 </ol>
 </div>
@@ -181,7 +181,7 @@ admin_access_credentials = False</code></pre>
 </section>
 
 <section style="max-width: 896px; margin: 0 auto;">
-<p>Read the <a href="http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/">Odoo Infrastructure Client</a> module guide for more information.</p>
+<p>Read the <a href="http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/">Odoo Infrastructure</a> guide for more information.</p>
 
 </section>
 

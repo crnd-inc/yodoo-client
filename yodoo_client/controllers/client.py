@@ -35,7 +35,7 @@ class SAASClient(http.Controller):
             get_admin_access_options())
         module_version_info = (
             odoo.modules.load_information_from_description_file(
-                'odoo_infrastructure_client')['version'].split('.')
+                'yodoo_client')['version'].split('.')
         )
         module_version_serie = '.'.join(module_version_info[0:2])
         module_version = '.'.join(module_version_info[-3:])
