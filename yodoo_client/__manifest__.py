@@ -8,7 +8,7 @@
     """,
 
     'author': "Center of Research & Development",
-    'website': "https://yodoo.systems/",
+    'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
     'version': '11.0.1.0.1',
