@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': "Odoo Infrastructure Client",
+    'name': "Yodoo Client",
 
     'summary': """
         It is the client addon for the yodoo.systems. Connect your Odoo
@@ -10,10 +10,11 @@
     """,
 
     'author': "Center of Research & Development",
+    # TODO: may be it would be better to point to yodoo.systems instead?
     'website': "https://crnd.pro",
     'license': 'Other proprietary',
 
-    'version': '10.0.0.7.0',
+    'version': '10.0.1.0.0',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -33,7 +34,7 @@
     'qweb': [
         'static/src/xml/saas_dashboard.xml',
     ],
-    'category': 'Odoo Infrastructure',
+    'category': 'Administration',
     'installable': True,
     'auto_install': True,
     'images': ['static/description/banner.png'],
