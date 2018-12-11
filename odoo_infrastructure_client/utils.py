@@ -11,8 +11,9 @@ from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
 from functools import wraps
+from contextlib import closing
 
-from odoo import http, fields, registry, release, modules
+from odoo import fields, sql_db
 from odoo.tools import config
 from odoo.modules import module
 from odoo.service.db import exp_db_exist
@@ -25,36 +26,11 @@ SAAS_TOKEN_FIELD = 'odoo_infrastructure_token'
 _logger = logging.getLogger(__name__)
 
 
-def forbidden(description=None):
-    """ Shortcut for a `HTTP 403
-    <https://tools.ietf.org/html/rfc7231#section-6.5.3>`_ (Forbidden)
-    response
-    """
-    return werkzeug.exceptions.Forbidden(description)
-
-
-def bad_request(description=None):
-    """ Shortcut for a `HTTP 400
-    <https://tools.ietf.org/html/rfc7231#section-6.5.1>`_ (BadRequest)
-    response
-    """
-    return werkzeug.exceptions.BadRequest(description)
-
-
-def server_error(description=None):
-    """ Shortcut for a `HTTP 500
-    <https://tools.ietf.org/html/rfc7231#section-6.6.1>`_
-     (Internal Server Error) response
-    """
-    return werkzeug.exceptions.InternalServerError(description)
-
-
-def conflict(description=None):
-    """ Shortcut for a `HTTP 409
-        <https://tools.ietf.org/html/rfc7231#section-6.5.8>`_ (Conflict)
-        response
-        """
-    return werkzeug.exceptions.Conflict(description)
+class DatabaseNotExists(werkzeug.exceptions.HTTPException):
+    code = 440
+    description = (
+        "Database not found"
+    )
 
 
 def generate_random_password(length):
@@ -80,56 +56,23 @@ def prepare_temporary_auth_data(ttl, db_name, token):
     }
 
 
-def prepare_saas_client_version_data():
-    admin_access_url, admin_access_credentials = (
-        get_admin_access_options())
-    module_version = modules.load_information_from_description_file(
-        'odoo_infrastructure_client')['version'].split('.')
-    # module_version is a list from the version string
-    module_version_tail = '.'.join(
-        module_version[-3:len(module_version)])
-    # module_version_tail is a string from the last 3 version numbers
-    module_version_head = '.'.join(
-        module_version[0:2])
-    # module_version_head is a string from the first 2 version numbers
-
-    return {
-        'odoo_version': release.version,
-        'odoo_version_info': release.version_info,
-        'odoo_serie': release.serie,
-        # receives only the last 3 version numbers
-        'saas_client_version': module_version_tail,
-        # receives only the first 2 version numbers
-        'saas_client_serie': module_version_head,
-        'saas_client_api_version': SAAS_CLIENT_API_VERSION,
-        'features_enabled': {
-            'admin_access_url': admin_access_url,
-            'admin_access_credentials': admin_access_credentials,
-        },
-    }
-
-
 def check_saas_client_token(token_hash):
     """
     Returns True or correct response. Makes logging before returning a response
 
     :param token_hash: hash of SaaS token from server
     :return: response or True
-    :rtype: werkzeug.exceptions response instance or boolean
+    :raises werkzeug.exceptions.*: raised in case when no/wrong token
     """
-
-    desc_no_token = 'Instance token does not exist, please configure it.'
-    desc_token_not_match = 'The hashes of the tokens do not match.'
-
     token = config.get(SAAS_TOKEN_FIELD, False)
     if not token:
-        _logger.info(desc_no_token)
-        return http.request.not_found(desc_no_token)
+        _logger.info('Instance token does not exist, please configure it.')
+        raise werkzeug.exceptions.NotFound(description='Token not configured')
+
     token_instance_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
     if not token_instance_hash == token_hash:
-        _logger.info(desc_token_not_match)
-        return forbidden(desc_token_not_match)
-    return True
+        _logger.info('The hashes of the tokens do not match.')
+        raise werkzeug.exceptions.Forbidden(description='Token not match')
 
 
 def get_admin_access_options():
@@ -157,119 +100,66 @@ def get_size_storage(start_path):
 
 
 def get_count_db(user):
-    with registry('postgres').cursor() as cr:
+    db = sql_db.db_connect('postgres')
+    with closing(db.cursor()) as cr:
         cr.execute("""
             SELECT count(datname)
             FROM pg_database d
-            LEFT JOIN pg_user u
-            ON d.datdba = usesysid
+            LEFT JOIN pg_user u ON d.datdba = usesysid
             WHERE u.usename = %s;
         """, (user,))
         res = cr.fetchone()[0]
     return res
 
 
-def get_size_db(db):
-    with registry(db).cursor() as cr:
-        cr.execute(
-            "SELECT pg_database_size(%s)", (db,))
-        res = cr.fetchone()[0]
-    return res
-
-
-def get_active_users_count(db):
-    """
-        Returns dict {
-            'external: count_external_users(int),
-            'internal: count_internal_users(int),
-            'total: sum_of_internal_and_external_users(int)}.
-        Makes calculation of internal, external and all active users
-        for the database.
-        :param db: str name of database
-        :return: dict
-        """
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT share, count(*)
-            FROM res_users
-            WHERE active
-            GROUP BY share;
-        """)
-        res = cr.fetchall()  # res: tuple of tuples
-    # res_dict: {True: external_users(int), False: internal_users(int)}
-    res_dict = dict(res)
-    return {
-        'internal': res_dict.get(False, 0),
-        'external': res_dict.get(True, 0),
-        'total': sum([res_dict[i] for i in res_dict])
-    }
-
-
-def get_last_login_date(db):
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT max(create_date)
-            FROM res_users_log;
-        """)
-        res = cr.fetchone()[0]
-    return res
-
-
-def get_last_internal_login_date(db):
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT max(create_date)
-            FROM res_users_log
-            WHERE create_uid IN (
-                SELECT id
-                FROM res_users
-                WHERE active = TRUE
-                AND share = FALSE);
-        """)
-        res = cr.fetchone()[0]
-    return res
-
-
-def get_installed_module_count(db):
-    """
-    Returns dict {'apps': count_apps(int), 'total': sum_of_installed_modules}.
-    Makes calculation of application modules, and all installed modules
-    for the database.
-
-    :param db: str name of database
-    :return: dict
-    """
-    with registry(db).cursor() as cr:
-        cr.execute("""
-            SELECT application, count(*)
-            FROM ir_module_module
-            WHERE state = 'installed'
-            GROUP BY application;
-        """)
-        res = cr.fetchall()  # res: tuple of tuples
-    # res_dict: {True: apps(int), False: not_apps(int)}
-    res_dict = dict(res)
-    return {
-        'apps': res_dict.get(True, 0),
-        'total': sum([res_dict[i] for i in res_dict])
-    }
-
-
 def prepare_db_statistic_data(db):
     data_dir = config['data_dir']
     file_storage_size = get_size_storage(
         os.path.join(data_dir, 'filestore', db))
-    db_storage_size = get_size_db(db)
-    active_users = get_active_users_count(db)
-    installed_modules = get_installed_module_count(db)
+
+    with closing(sql_db.db_connect(db).cursor()) as cr:
+        cr.execute(
+            "SELECT pg_database_size(%s)", (db,))
+        db_storage_size = cr.fetchone()[0]
+
+        cr.execute("""
+            SELECT
+                max(rul.create_date) AS last_login,
+                max(rul.create_date) FILTER (
+                   WHERE ru.share = False) AS last_internal_login
+            FROM res_users_log AS rul
+            LEFT JOIN res_users AS ru ON ru.id = rul.create_uid
+            WHERE ru.active = True
+        """)
+        last_login_date, last_internal_login_date = cr.fetchone()
+
+        cr.execute("""
+            SELECT
+                count(*) AS total,
+                count(*) FILTER (WHERE share = True) AS external,
+                count(*) FILTER (WHERE share = False) AS internal
+            FROM res_users
+            WHERE active = True
+        """)
+        active_users = cr.dictfetchone()
+
+        cr.execute("""
+            SELECT
+                count(*) AS total,
+                count(*) FILTER (WHERE application = True) AS apps
+            FROM ir_module_module
+            WHERE state = 'installed'
+        """)
+        installed_modules = cr.dictfetchone()
+
     return {
         'db_storage': db_storage_size,
         'file_storage': file_storage_size,
         'users_total_count': active_users['total'],
         'users_internal_count': active_users['internal'],
         'users_external_count': active_users['external'],
-        'login_date': get_last_login_date(db),
-        'login_internal_date': get_last_internal_login_date(db),
+        'login_date': last_login_date,
+        'login_internal_date': last_internal_login_date,
         'installed_apps_db_count': installed_modules['apps'],
         'installed_modules_db_count': installed_modules['total'],
     }
@@ -329,9 +219,10 @@ def prepare_saas_module_info_data():
                                 etc...},
                     etc...}
     """
-    return {mod:
-            module.load_information_from_description_file(mod)
-            for mod in module.get_modules()}
+    return {
+        mod: module.load_information_from_description_file(mod)
+        for mod in module.get_modules()
+    }
 
 
 def require_saas_token(func):
@@ -342,9 +233,7 @@ def require_saas_token(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         token_hash = kwargs.get('token_hash', None)
-        result = check_saas_client_token(token_hash)
-        if result is not True:
-            return result
+        check_saas_client_token(token_hash)
         return func(*args, **kwargs)
 
     return wrapper
@@ -358,10 +247,12 @@ def require_db_param(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         db = kwargs.get('db', None)
+        if not db:
+            raise werkzeug.exceptions.BadRequest("Database not specified")
         if not exp_db_exist(db):
             _logger.info(
                 'Database %s is not found.', db)
-            return http.request.not_found()
+            raise DatabaseNotExists()
         return func(*args, **kwargs)
 
     return wrapper

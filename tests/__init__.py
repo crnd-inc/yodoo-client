@@ -3,6 +3,7 @@ import unittest
 from .test_client import *
 from .test_db import *
 from .test_db_module import *
+from .test_db_management import *
 from .test_server import *
 
 
