@@ -1,5 +1,5 @@
-Odoo Infrastructure Client
-==========================
+Yodoo-Client
+============
 
 
 .. |badge3| image:: https://img.shields.io/badge/powered%20by-yodoo.systems-00a09d.png
@@ -14,7 +14,7 @@ Odoo Infrastructure Client
 
 |badge4| |badge5|
 
-The Odoo Infrastructure Client application is the client addon for the yodoo.systems. Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
+The Yodoo-Client application is the client addon for the yodoo.systems. Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
 
 Requirements
 ''''''''''''
@@ -26,13 +26,13 @@ Configuration
 '''''''''''''
 The configuration has several steps.
 
-1. Set `odoo_infrastructure_token` to the `odoo.conf` file.
+1. Set `yodoo_token` to the `odoo.conf` file.
     This is a series of random ascii characters.
     This is the same as the `odoo_instance_token` field on the remote server.
-
+    
     .. code:: 
     
-        odoo_infrastructure_token = Your_random_token
+        yodoo_token = Your_random_token
 
 2. Set `admin_access_url` and `admin_access_credentials` to the `odoo.conf` file.
     Enables full administrator access from the remote server via the button.
@@ -60,7 +60,7 @@ The configuration has several steps.
 
     .. code::
 
-        server_wide_modules = base,web,odoo_infrastructure_client
+        server_wide_modules = base,web,yodoo_client
 
 
 Installation
@@ -68,7 +68,7 @@ Installation
 This module is automatically installed with the base module.
 
 
-Read the `Odoo Infrastructure Client <http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/>`__ Module Guide for more information.
+Read the `Odoo-Infrastructure <http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/>`__ Guide for more information.
 
 
 Launching SaaS is fast and easy:

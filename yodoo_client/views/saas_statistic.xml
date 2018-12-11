@@ -4,7 +4,7 @@
               inherit_id="web.assets_backend">
         <xpath expr="." position="inside">
             <script type="text/javascript"
-                    src="/odoo_infrastructure_client/static/src/js/saas_dashboard.js"/>
+                    src="/yodoo_client/static/src/js/saas_dashboard.js"/>
         </xpath>
     </template>
 </odoo>
