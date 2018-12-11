@@ -16,6 +16,12 @@ Odoo Infrastructure Client
 
 The Odoo Infrastructure Client application is the client addon for the yodoo.systems. Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
 
+Requirements
+''''''''''''
+
+Minimal postgres version required: 9.5
+
+
 Configuration
 '''''''''''''
 The configuration has several steps.
