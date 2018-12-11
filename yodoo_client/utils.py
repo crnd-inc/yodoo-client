@@ -21,7 +21,7 @@ from odoo.service.db import exp_db_exist
 SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
 DEFAULT_LEN_TOKEN = 128
-SAAS_TOKEN_FIELD = 'odoo_infrastructure_token'
+SAAS_TOKEN_FIELD = 'yodoo_token'
 
 _logger = logging.getLogger(__name__)
 

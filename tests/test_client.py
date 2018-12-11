@@ -1,4 +1,5 @@
 import requests
+import six
 
 from odoo_rpc_client import Client
 from odoo_rpc_client.exceptions import LoginException
@@ -24,11 +25,11 @@ class TestClientAuth(TestOdooInfrastructureClient):
         response = requests.post(self._url, data=self._data)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIsInstance(data['token_password'], str)
-        self.assertIsInstance(data['token_user'], str)
-        self.assertIsInstance(data['expire'], str)
-        self.assertIsInstance(data['temp_url'], str)
-        self.assertIsInstance(data['token_temp'], str)
+        self.assertIsInstance(data['token_password'], six.string_types)
+        self.assertIsInstance(data['token_user'], six.string_types)
+        self.assertIsInstance(data['expire'], six.string_types)
+        self.assertIsInstance(data['temp_url'], six.string_types)
+        self.assertIsInstance(data['token_temp'], six.string_types)
 
     def test_02_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad token_hash
@@ -195,11 +196,11 @@ class TestClientVersionInfo(TestOdooInfrastructureClient):
         response = requests.post(self._version_url, self._version_data)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIsInstance(data['odoo_version'], str)
+        self.assertIsInstance(data['odoo_version'], six.string_types)
         self.assertIsInstance(data['odoo_version_info'], list)
-        self.assertIsInstance(data['odoo_serie'], str)
-        self.assertIsInstance(data['saas_client_version'], str)
-        self.assertIsInstance(data['saas_client_serie'], str)
+        self.assertIsInstance(data['odoo_serie'], six.string_types)
+        self.assertIsInstance(data['saas_client_version'], six.string_types)
+        self.assertIsInstance(data['saas_client_serie'], six.string_types)
         self.assertIsInstance(data['saas_client_api_version'], int)
         self.assertIsInstance(data['features_enabled'], dict)
         features_enabled = data['features_enabled']
