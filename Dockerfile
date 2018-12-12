@@ -8,5 +8,5 @@ COPY ./yodoo_client /opt/odoo/repositories/yodoo_client
 RUN odoo-helper link /opt/odoo/repositories && \
     odoo-helper exec python -m compileall -q /opt/odoo/repositories
 
-ENV ODOO_SERVER_WIDE_MODULES='base,web,odoo_yodoo_client' \
+ENV ODOO_SERVER_WIDE_MODULES='base,web,yodoo_client' \
     ODOO_EXTRA_CONFIG='yodoo_token = tokenZ'
