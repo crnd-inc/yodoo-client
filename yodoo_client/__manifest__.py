@@ -10,11 +10,10 @@
     """,
 
     'author': "Center of Research & Development",
-    # TODO: may be it would be better to point to yodoo.systems instead?
-    'website': "https://crnd.pro",
+    'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '10.0.1.0.0',
+    'version': '10.0.1.0.1',
 
     # any module necessary for this one to work correctly
     'depends': [
