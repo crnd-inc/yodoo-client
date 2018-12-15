@@ -7,7 +7,7 @@ from contextlib import closing
 
 import werkzeug
 
-from odoo import http, api, registry, exceptions, SUPERUSER_ID
+from odoo import http, api, registry, exceptions, SUPERUSER_ID, sql_db
 from odoo.sql_db import db_connect
 from odoo.http import Response
 from odoo.service import db as service_db
@@ -265,7 +265,7 @@ class SAASClientDb(http.Controller):
                 'write_uid': user_write_uid
             }]
         """
-        with registry(db).cursor() as cr:
+        with closing(sql_db.db_connect(db).cursor()) as cr:
             cr.execute("""
                 SELECT id, login, partner_id, share, write_uid
                 FROM res_users
