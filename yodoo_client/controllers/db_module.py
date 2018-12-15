@@ -1,7 +1,8 @@
 import json
 import logging
+from contextlib import closing
 
-from odoo import http, registry, SUPERUSER_ID
+from odoo import http, registry, SUPERUSER_ID, sql_db
 from odoo.http import Response
 from odoo.api import Environment
 
@@ -45,7 +46,7 @@ class SAASClientDbModule(http.Controller):
                 'published_version': date_of_last_manipulations
             }]
         """
-        with registry(db).cursor() as cr:
+        with closing(sql_db.db_connect(db).cursor()) as cr:
             cr.execute("""
                 SELECT name, summary, state, latest_version,
                         application, published_version
