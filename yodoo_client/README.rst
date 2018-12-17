@@ -1,4 +1,4 @@
-Yodoo-Client
+Yodoo Client
 ============
 
 
@@ -14,7 +14,7 @@ Yodoo-Client
 
 |badge4| |badge5|
 
-The Yodoo-Client application is the client addon for the yodoo.systems. Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
+The Yodoo Client application is the client addon for the yodoo.systems. Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
 
 Requirements
 ''''''''''''
