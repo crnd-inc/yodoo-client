@@ -76,7 +76,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
 
         # Create database without demo data
         response = requests.post(
-            self._create_db_url, self._create_db_data)
+            self._create_db_url, dict(self._create_db_data, demo=False))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
 

@@ -61,10 +61,11 @@ class SAASClientDb(http.Controller):
     def client_db_create(self, dbname=None, demo=False, lang='en_US',
                          user_password='admin', user_login='admin',
                          country_code=None, template_dbname=None, **params):
+        demo = str2bool(demo, False)
         if not dbname:
             raise werkzeug.exceptions.BadRequest(
                 description='Missing parameter: dbname')
-        _logger.info("Create database: %s (demo=%s)", dbname, demo)
+        _logger.info("Create database: %s (demo=%r)", dbname, demo)
         try:
             service_db._create_empty_database(dbname)
         except service_db.DatabaseExists as bd_ex:
