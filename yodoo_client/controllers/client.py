@@ -64,15 +64,14 @@ class SAASClient(http.Controller):
     @require_saas_token
     @require_db_param
     def create_temporary_login_data(
-            self, db=None, ttl=DEFAULT_TIME_TO_LOGIN,
-            token_hash=None, **params):
+            self, db=None, ttl=DEFAULT_TIME_TO_LOGIN, **params):
         admin_access_credentials = get_admin_access_options()[1]
         if not admin_access_credentials:
             _logger.warning(
                 "Attempt to get temporary login/password, "
                 "but this operation is disabled in Odoo config")
             raise werkzeug.exceptions.Forbidden(description='Feature disabled')
-        data = prepare_temporary_auth_data(ttl, db, token_hash)
+        data = prepare_temporary_auth_data(db, ttl)
         with registry(db).cursor() as cr:
             cr.execute("""
                 INSERT INTO odoo_infrastructure_client_auth
