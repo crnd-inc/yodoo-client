@@ -25,8 +25,10 @@ class TestClientDBStatistic(TestOdooInfrastructureClient):
         self.assertEqual(data['users_total_count'], 1)
         self.assertIsInstance(data['db_storage'], int)
         self.assertIsInstance(data['file_storage'], int)
-        self.assertIsInstance(data['login_date'], (str, NoneType))
-        self.assertIsInstance(data['login_internal_date'], (str, NoneType))
+        self.assertIsInstance(
+            data['login_date'], (str, NoneType, bool))
+        self.assertIsInstance(
+            data['login_internal_date'], (str, NoneType, bool))
         self.assertIsInstance(data['installed_apps_db_count'], int)
         self.assertIsInstance(data['installed_modules_db_count'], int)
 
