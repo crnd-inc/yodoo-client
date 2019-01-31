@@ -158,8 +158,10 @@ def prepare_db_statistic_data(db):
         'users_total_count': active_users['total'],
         'users_internal_count': active_users['internal'],
         'users_external_count': active_users['external'],
-        'login_date': last_login_date,
-        'login_internal_date': last_internal_login_date,
+        'login_date': fields.Datetime.to_string(
+            last_login_date),
+        'login_internal_date': fields.Datetime.to_string(
+            last_internal_login_date),
         'installed_apps_db_count': installed_modules['apps'],
         'installed_modules_db_count': installed_modules['total'],
     }
