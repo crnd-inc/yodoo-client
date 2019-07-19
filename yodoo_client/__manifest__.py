@@ -11,7 +11,7 @@
     'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '11.0.1.2.0',
+    'version': '11.0.1.3.0',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -35,4 +35,5 @@
     'installable': True,
     'auto_install': True,
     'images': ['static/description/banner.png'],
+    "post_load": "_post_load_hook",
 }
