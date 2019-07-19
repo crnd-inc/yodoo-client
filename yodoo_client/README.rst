@@ -59,7 +59,7 @@ The configuration has several steps.
 3. (Optional) set `yodoo_db_filter` to `True` if you want to use header-based database selection.
    In this case `HTTP_X_ODOO_DBFILTER` header will be used to filter databases
 
-3. Set `server_wide_modules` to `odoo.conf` file.
+4. Set `server_wide_modules` to `odoo.conf` file.
 
     .. code::
 
