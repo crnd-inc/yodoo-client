@@ -4,8 +4,7 @@ import requests
 from .common import TestOdooInfrastructureClient
 
 
-class TestOdooInfrastructureSaasClientServerSlowStatistic(
-        TestOdooInfrastructureClient):
+class TestServerSlowStatistic(TestOdooInfrastructureClient):
 
     def setUp(self):
         self._server_slow_statistic_url = self.create_url(
@@ -37,8 +36,7 @@ class TestOdooInfrastructureSaasClientServerSlowStatistic(
         self.assertEqual(response.status_code, 403)
 
 
-class TestOdooInfrastructureSaasClientServerFastStatistic(
-        TestOdooInfrastructureClient):
+class TestServerFastStatistic(TestOdooInfrastructureClient):
 
     def setUp(self):
         self._server_fast_statistic_url = self.create_url(
@@ -82,7 +80,7 @@ class TestOdooInfrastructureSaasClientServerFastStatistic(
         self.assertEqual(response.status_code, 403)
 
 
-class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
+class TestServerModuleInfo(TestOdooInfrastructureClient):
     def setUp(self):
         self._module_info_url = self.create_url('/saas/client/module/info')
         self._module_info_data = {
@@ -116,3 +114,19 @@ class TestOdooInfrastructureInstanceModuleInfo(TestOdooInfrastructureClient):
 
         response = requests.post(self._module_info_url, data)
         self.assertEqual(response.status_code, 403)
+
+
+class TestModuleInfoTokenInHeader(TestOdooInfrastructureClient):
+    def setUp(self):
+        self._module_info_url = self.create_url('/saas/client/module/info')
+        self._module_info_data = {}
+
+    def test_01_controller_odoo_infrastructure_instance_module_info(self):
+        response = requests.post(
+            self._module_info_url, self._module_info_data,
+            headers={'X-YODOO-TOKEN': self._hash_token})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(len(data) != 0)
+        base_info = data.get('base', None)
+        self.assertIsNotNone(base_info)
