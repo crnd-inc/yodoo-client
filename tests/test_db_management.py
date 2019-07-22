@@ -211,6 +211,60 @@ class TestDBManagement(TestOdooInfrastructureClient):
             self._odoo_admin_pass, 'test_db')
         self.assertFalse(self._odoo_instance.services.db.db_exist('test_db'))
 
+    def test_01_controller_create_db_demo_contry_code_none(self):
+        response = requests.post(
+            self._create_db_url,
+            dict(self._create_db_data, demo=True, contry_code=None))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
+
+        # Ensure created database is with demo data
+        self.assertTrue(
+            self._client.login(
+                'test_db', 'test_user', 'test_password'
+            )['ir.model.data'].xmlid_to_res_id('base.user_demo'))
+
+        # Drop database
+        self._odoo_instance.services.db.drop_db(
+            self._odoo_admin_pass, 'test_db')
+        self.assertFalse(self._odoo_instance.services.db.db_exist('test_db'))
+
+    def test_01_controller_create_db_demo_contry_code_none_str(self):
+        response = requests.post(
+            self._create_db_url,
+            dict(self._create_db_data, demo=True, contry_code='None'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
+
+        # Ensure created database is with demo data
+        self.assertTrue(
+            self._client.login(
+                'test_db', 'test_user', 'test_password'
+            )['ir.model.data'].xmlid_to_res_id('base.user_demo'))
+
+        # Drop database
+        self._odoo_instance.services.db.drop_db(
+            self._odoo_admin_pass, 'test_db')
+        self.assertFalse(self._odoo_instance.services.db.db_exist('test_db'))
+
+    def test_01_controller_create_db_demo_contry_code_ua(self):
+        response = requests.post(
+            self._create_db_url,
+            dict(self._create_db_data, demo=True, contry_code='UA'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self._odoo_instance.services.db.db_exist('test_db'))
+
+        # Ensure created database is with demo data
+        self.assertTrue(
+            self._client.login(
+                'test_db', 'test_user', 'test_password'
+            )['ir.model.data'].xmlid_to_res_id('base.user_demo'))
+
+        # Drop database
+        self._odoo_instance.services.db.drop_db(
+            self._odoo_admin_pass, 'test_db')
+        self.assertFalse(self._odoo_instance.services.db.db_exist('test_db'))
+
     def test_02_controller_create_db_bad_token(self):
         # test incorrect request with bad token_hash
         data = dict(self._create_db_data, token_hash='abracadabra')

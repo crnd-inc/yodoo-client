@@ -33,6 +33,22 @@ class DatabaseNotExists(werkzeug.exceptions.HTTPException):
     )
 
 
+def str_filter_falsy(s):
+    """ Check if str 's' is None, or falsy.
+
+        if s is 'none' - return None,
+        if s is 'false' or '0' - return False,
+        otherwise return s unchanged
+
+    """
+    if s:
+        if s.lower() == 'none':
+            return None
+        if s.lower() in ('false', '0'):
+            return False
+    return s
+
+
 def generate_random_password(length):
     letters = list(string.ascii_uppercase +
                    string.ascii_lowercase +
