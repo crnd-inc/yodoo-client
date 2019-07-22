@@ -18,6 +18,7 @@ from ..utils import (
     require_saas_token,
     require_db_param,
     prepare_db_statistic_data,
+    str_filter_falsy,
 )
 
 _logger = logging.getLogger(__name__)
@@ -60,7 +61,8 @@ class SAASClientDb(http.Controller):
     @require_saas_token
     def client_db_create(self, dbname=None, demo=False, lang='en_US',
                          user_password='admin', user_login='admin',
-                         country_code=None, template_dbname=None, **params):
+                         country_code=None, phone=None,
+                         template_dbname=None, **params):
         demo = str2bool(demo, False)
         if not dbname:
             raise werkzeug.exceptions.BadRequest(
@@ -71,8 +73,12 @@ class SAASClientDb(http.Controller):
         except service_db.DatabaseExists as bd_ex:
             raise werkzeug.exceptions.Conflict(
                 description=str(bd_ex))
+
         service_db._initialize_db(
-            id, dbname, demo, lang, user_password, user_login, country_code)
+            id, dbname, demo, lang, user_password, user_login,
+            country_code=str_filter_falsy(country_code),
+            # phone=str_filter_falsy(phone),
+        )
         db = db_connect(dbname)
         with closing(db.cursor()) as cr:
             db_init = modules_db.is_initialized(cr)
