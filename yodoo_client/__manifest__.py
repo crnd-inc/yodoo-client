@@ -25,6 +25,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/saas_statistic.xml',
+        'views/dbmanager.xml',
     ],
     # only loaded in demonstration mode
     'demo': [],
