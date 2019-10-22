@@ -1,7 +1,7 @@
-image: registry.crnd.pro/crnd/docker/odoo-ci-x:12.0-simple
+image: registry.crnd.pro/crnd/docker/odoo-ci-x:13.0-simple
 
 variables:
-    SERIES_BRANCH: '12.0'
+    SERIES_BRANCH: '13.0'
     ODOO_MAX_CRON_THREADS: 0
     ODOO_SERVER_WIDE_MODULES: "base,web,yodoo_client"
     ODOO_EXTRA_CONFIG: "yodoo_token = qwerty"
@@ -55,10 +55,10 @@ check-versions:
     script:
         - odoo-helper ci check-versions-git . origin/$SERIES_BRANCH $CI_COMMIT_SHA
     only:
-        - /^12.0-.*$/   # only branches that started with '12.0-'
+        - /^13.0-.*$/   # only branches that started with '13.0-'
 
 tests:
-    image: registry.crnd.pro/crnd/docker/odoo-ci-x:12.0-ci
+    image: registry.crnd.pro/crnd/docker/odoo-ci-x:13.0-ci
     stage: test
     <<: *pip_cache_definition
     before_script:
@@ -83,7 +83,7 @@ build-docker:
             - "1356"
     variables:
         ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
-        ODOO_BASE_TAG: "12.0"
+        ODOO_BASE_TAG: "13.0"
         RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
     tags:
         - docker
@@ -93,12 +93,12 @@ build-docker:
     script:
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-simple" --build-arg ODOO_BASE_TAG=12.0 .
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-simple" --build-arg ODOO_BASE_TAG=13.0 .
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-ci" --build-arg ODOO_BASE_TAG=12.0 .
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-ci" --build-arg ODOO_BASE_TAG=13.0 .
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
     only:
-        - "12.0"
+        - "13.0"

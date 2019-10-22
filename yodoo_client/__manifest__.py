@@ -11,13 +11,13 @@
     'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '12.0.1.3.3',
+    'version': '13.0.1.3.3',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'web',
-        'web_settings_dashboard',
+        'base_setup',
     ],
 
     # always loaded
@@ -29,9 +29,6 @@
     ],
     # only loaded in demonstration mode
     'demo': [],
-    'qweb': [
-        'static/src/xml/saas_dashboard.xml',
-    ],
     'category': 'Administration',
     'installable': True,
     'auto_install': True,

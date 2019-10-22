@@ -2,16 +2,17 @@ import os
 import string
 import base64
 import hashlib
-import werkzeug
 import logging
 import platform
-import psutil
 
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
 from functools import wraps
 from contextlib import closing
+
+import psutil
+import werkzeug
 
 from odoo import fields, sql_db, http
 from odoo.tools import config
