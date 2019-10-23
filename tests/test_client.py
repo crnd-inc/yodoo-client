@@ -77,10 +77,9 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
     def test_01_controller_odoo_infrastructure_saas_auth(self):
         # test correct request
         response = requests.get(self.url)
-        response_data = response.text.split('\'')
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn('/web', response_data)
+        self.assertIn('"uid": 1,', response.text)
 
     def test_02_controller_odoo_infrastructure_saas_auth(self):
         # test incorrect request (url no base64)
