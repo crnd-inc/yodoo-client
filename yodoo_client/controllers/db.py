@@ -228,9 +228,8 @@ class SAASClientDb(http.Controller):
         if not m:
             raise werkzeug.exceptions.BadRequest(
                 description='Wrong base URL')
-        else:
-            hostname = m.groupdict()['host']
 
+        hostname = m.groupdict()['host']
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
             env['ir.config_parameter'].set_param(
