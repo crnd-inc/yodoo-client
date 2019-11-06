@@ -65,6 +65,9 @@ The configuration has several steps.
 
         server_wide_modules = base,web,yodoo_client
 
+5. (Optional) Set `yodoo_auto_install_addons` to coma-separated list of addons,
+   that have to be installed on database creation.
+
 
 Installation
 ''''''''''''
