@@ -4,7 +4,6 @@ import base64
 import hashlib
 import logging
 import platform
-
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
