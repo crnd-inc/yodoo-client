@@ -18,6 +18,7 @@
         'base',
         'web',
         'web_settings_dashboard',
+        'fetchmail',
     ],
 
     # always loaded
