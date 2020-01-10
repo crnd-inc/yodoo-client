@@ -239,6 +239,113 @@ class SAASClientDb(http.Controller):
         return http.Response('OK', status=200)
 
     @http.route(
+        '/saas/client/db/configure/mail',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_mail(self, incoming, outgoing, db=None,
+                                 test_and_confirm=False, **params):
+        """ Configure mail servers for database
+
+            :param dict incoming: dict with config of incoming mail server
+            :param dict outgoing: dict with config of outgoing mail server
+            :param bool test_and_confirm: if set to True, test if odoo can
+                                          use specified mail servers
+
+            :return: 200 OK if everythning is ok.
+                     in case of errors, 500 code will be returned
+
+            Required params for incoming mail server:
+                - host
+                - user
+                - password
+
+            Required params for outgoing mail server:
+                - host
+                - user
+                - password
+        """
+        incoming_data = {
+            'name': 'Yodoo Incoming Mail',
+            'type': 'imap',
+            'is_ssl': True,
+            'port': 993,
+            'server': incoming['host'],
+            'user': incoming['user'],
+            'password': incoming['password'],
+            'active': incoming.get('active', True),
+            'state': 'draft',
+        }
+
+        outgoing_data = {
+            'name': 'Yodoo Outgoing Mail',
+            'smtp_encryption': 'starttls',
+            'smtp_port': 587,
+            'smtp_host': outgoing['host'],
+            'smtp_user': outgoing['user'],
+            'smtp_pass': outgoing['password'],
+            'active': outgoing.get('active', True),
+        }
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            incoming_srv = env.ref(
+                'yodoo_client.yodoo_incoming_mail',
+                raise_if_not_found=False)
+            if incoming_srv:
+                incoming_srv.write(incoming_data)
+            else:
+                incoming_srv = env['fetchmail.server'].create(incoming_data)
+                env['ir.model.data'].create({
+                    'name': 'yodoo_incoming_mail',
+                    'module': 'yodoo_client',
+                    'model': incoming_srv._name,
+                    'res_id': incoming_srv.id,
+                    'noupdate': True,
+                })
+
+            if test_and_confirm:
+                incoming_srv.button_confirm_login()
+                if incoming_srv.state != 'done':
+                    raise werkzeug.exceptions.InternalServerError(
+                        "Cannot configure incoming mail server")
+
+            outgoing_srv = env.ref(
+                'yodoo_client.yodoo_outgoing_mail',
+                raise_if_not_found=False)
+            if outgoing_srv:
+                outgoing_srv.write(outgoing_data)
+            else:
+                outgoing_srv = env['ir.mail_server'].create(outgoing_data)
+                env['ir.model.data'].create({
+                    'name': 'yodoo_outgoing_mail',
+                    'module': 'yodoo_client',
+                    'model': outgoing_srv._name,
+                    'res_id': outgoing_srv.id,
+                    'noupdate': True,
+                })
+
+            if test_and_confirm:
+                try:
+                    smtp = outgoing_srv.connect(mail_server_id=outgoing_srv.id)
+                except Exception:
+                    _logger.error(
+                        "Cannot configure outgoing mail server", exc_info=True)
+                    raise werkzeug.exceptions.InternalServerError(
+                        "Cannot configure outgoing mail server")
+                finally:
+                    try:
+                        if smtp:
+                            smtp.quit()
+                    except Exception:  # pylint: disable=except-pass
+                        # ignored, just a consequence of the previous exception
+                        pass
+        return http.Response('OK', status=200)
+
+    @http.route(
         '/saas/client/db/stat',
         type='http',
         auth='none',

@@ -144,3 +144,62 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
                 'base_url': "",
             })
         self.assertEqual(response.status_code, 400)
+
+    def test_10_db_configure_mail(self):
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/mail'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'incoming': {
+                    'host': 'in.test.com',
+                    'user': 'in-test-user',
+                    'password': 'in-test-password',
+                },
+                'outgoing': {
+                    'host': 'out.test.com',
+                    'user': 'out-test-user',
+                    'password': 'out-test-password',
+                },
+            })
+        self.assertEqual(response.status_code, 200)
+
+        incoming_srv = self._client.ref('yodoo_client.yodoo_incoming_mail')
+        self.assertEqual(incoming_srv.name, 'Yodoo Incoming Mail')
+        self.assertEqual(incoming_srv.type, 'imap')
+        self.assertEqual(incoming_srv.is_ssl, 'True')
+        self.assertEqual(incoming_srv.port, 993)
+        self.assertEqual(incoming_srv.server, 'in.test.com')
+        self.assertEqual(incoming_srv.user, 'in-test-user')
+        self.assertEqual(incoming_srv.password, 'in-test-password')
+        self.assertEqual(incoming_srv.active, True)
+        self.assertEqual(incoming_srv.state, 'draft')
+
+        outgoing_srv = self._client.ref('yodoo_client.yodoo_outgoing_mail')
+        self.assertEqual(outgoing_srv.name, 'Yodoo Outgoing Mail')
+        self.assertEqual(outgoing_srv.smtp_encryption, 'starttls')
+        self.assertEqual(outgoing_srv.smtp_port, 587)
+        self.assertEqual(outgoing_srv.smtp_host, 'out.test.com')
+        self.assertEqual(outgoing_srv.smtp_user, 'out-test-user')
+        self.assertEqual(outgoing_srv.smtp_pass, 'out-test-password')
+        self.assertEqual(outgoing_srv.active, True)
+
+    def test_10_db_configure_mail_fail_test_connection(self):
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/mail'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'incoming': {
+                    'host': 'in.test.com',
+                    'user': 'in-test-user',
+                    'password': 'in-test-password',
+                },
+                'outgoing': {
+                    'host': 'out.test.com',
+                    'user': 'out-test-user',
+                    'password': 'out-test-password',
+                },
+                'test_and_confirm': True,
+            })
+        self.assertEqual(response.status_code, 500)
