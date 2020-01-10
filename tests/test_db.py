@@ -1,4 +1,5 @@
 import six
+import json
 import requests
 
 from .common import TestOdooInfrastructureClient
@@ -151,16 +152,16 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
             data={
                 'token_hash': self._hash_token,
                 'db': self._client.dbname,
-                'incoming': {
+                'incoming': json.dumps({
                     'host': 'in.test.com',
                     'user': 'in-test-user',
                     'password': 'in-test-password',
-                },
-                'outgoing': {
+                }),
+                'outgoing': json.dumps({
                     'host': 'out.test.com',
                     'user': 'out-test-user',
                     'password': 'out-test-password',
-                },
+                }),
             })
         self.assertEqual(response.status_code, 200)
 
@@ -190,16 +191,16 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
             data={
                 'token_hash': self._hash_token,
                 'db': self._client.dbname,
-                'incoming': {
+                'incoming': json.dumps({
                     'host': 'in.test.com',
                     'user': 'in-test-user',
                     'password': 'in-test-password',
-                },
-                'outgoing': {
+                }),
+                'outgoing': json.dumps({
                     'host': 'out.test.com',
                     'user': 'out-test-user',
                     'password': 'out-test-password',
-                },
+                }),
                 'test_and_confirm': True,
             })
         self.assertEqual(response.status_code, 500)

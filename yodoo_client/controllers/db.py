@@ -269,6 +269,9 @@ class SAASClientDb(http.Controller):
                 - user
                 - password
         """
+        test_and_confirm = str2bool(test_and_confirm)
+        incoming = json.loads(incoming)
+        outgoing = json.loads(outgoing)
         incoming_data = {
             'name': 'Yodoo Incoming Mail',
             'type': 'imap',
