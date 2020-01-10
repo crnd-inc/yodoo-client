@@ -11,13 +11,14 @@
     'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '11.0.1.4.0',
+    'version': '11.0.1.5.0',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'web',
         'web_settings_dashboard',
+        'fetchmail',
     ],
 
     # always loaded
