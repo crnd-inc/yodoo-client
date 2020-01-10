@@ -168,7 +168,7 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         incoming_srv = self._client.ref('yodoo_client.yodoo_incoming_mail')
         self.assertEqual(incoming_srv.name, 'Yodoo Incoming Mail')
         self.assertEqual(incoming_srv.type, 'imap')
-        self.assertEqual(incoming_srv.is_ssl, 'True')
+        self.assertEqual(incoming_srv.is_ssl, True)
         self.assertEqual(incoming_srv.port, 993)
         self.assertEqual(incoming_srv.server, 'in.test.com')
         self.assertEqual(incoming_srv.user, 'in-test-user')
