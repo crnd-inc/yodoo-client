@@ -349,6 +349,31 @@ class SAASClientDb(http.Controller):
         return http.Response('OK', status=200)
 
     @http.route(
+        '/saas/client/db/configure/mail/delete',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False,
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_mail_delete(self, db=None, **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            incoming_srv = env.ref(
+                'yodoo_client.yodoo_incoming_mail',
+                raise_if_not_found=False)
+            if incoming_srv:
+                incoming_srv.unlink()
+
+            outgoing_srv = env.ref(
+                'yodoo_client.yodoo_outgoing_mail',
+                raise_if_not_found=False)
+            if outgoing_srv:
+                outgoing_srv.unlink()
+        return http.Response('OK', status=200)
+
+    @http.route(
         '/saas/client/db/stat',
         type='http',
         auth='none',

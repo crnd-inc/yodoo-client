@@ -185,6 +185,16 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         self.assertEqual(outgoing_srv.smtp_pass, 'out-test-password')
         self.assertEqual(outgoing_srv.active, True)
 
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/mail/delete'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self._client.ref('yodoo_client.yodoo_incoming_mail'))
+        self.assertFalse(self._client.ref('yodoo_client.yodoo_outgoing_mail'))
+
     def test_10_db_configure_mail_fail_test_connection(self):
         response = requests.post(
             self.create_url('/saas/client/db/configure/mail'),
@@ -204,3 +214,14 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
                 'test_and_confirm': True,
             })
         self.assertEqual(response.status_code, 500)
+
+    def test_10_db_configure_mail_delete_unexisting(self):
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/mail/delete'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self._client.ref('yodoo_client.yodoo_incoming_mail'))
+        self.assertFalse(self._client.ref('yodoo_client.yodoo_outgoing_mail'))
