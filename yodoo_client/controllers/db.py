@@ -349,10 +349,10 @@ class SAASClientDb(http.Controller):
         return http.Response('OK', status=200)
 
     @http.route(
-        '/saas/client/db/configure/mail',
+        '/saas/client/db/configure/mail/delete',
         type='http',
         auth='none',
-        metods=['DELETE'],
+        metods=['POST'],
         csrf=False,
     )
     @require_saas_token

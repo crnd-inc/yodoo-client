@@ -185,8 +185,8 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         self.assertEqual(outgoing_srv.smtp_pass, 'out-test-password')
         self.assertEqual(outgoing_srv.active, True)
 
-        response = requests.delete(
-            self.create_url('/saas/client/db/configure/mail'),
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/mail/delete'),
             data={
                 'token_hash': self._hash_token,
                 'db': self._client.dbname,
@@ -216,8 +216,8 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 500)
 
     def test_10_db_configure_mail_delete_unexisting(self):
-        response = requests.delete(
-            self.create_url('/saas/client/db/configure/mail'),
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/mail/delete'),
             data={
                 'token_hash': self._hash_token,
                 'db': self._client.dbname,
