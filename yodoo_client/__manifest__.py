@@ -18,7 +18,6 @@
         'base',
         'web',
         'base_setup',
-        'web_settings_dashboard',
         'fetchmail',
     ],
 
