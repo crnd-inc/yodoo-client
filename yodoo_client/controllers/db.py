@@ -274,7 +274,7 @@ class SAASClientDb(http.Controller):
         outgoing = json.loads(outgoing)
         incoming_data = {
             'name': 'Yodoo Incoming Mail',
-            'type': 'imap',
+            'server_type': 'imap',
             'is_ssl': True,
             'port': 993,
             'server': incoming['host'],
