@@ -20,6 +20,7 @@ from ..utils import (
     require_saas_token,
     require_db_param,
     prepare_db_statistic_data,
+    str_filter_falsy,
 )
 
 _logger = logging.getLogger(__name__)
@@ -62,7 +63,8 @@ class SAASClientDb(http.Controller):
     @require_saas_token
     def client_db_create(self, dbname=None, demo=False, lang='en_US',
                          user_password='admin', user_login='admin',
-                         country_code=None, template_dbname=None, **params):
+                         country_code=None, phone=None,
+                         template_dbname=None, **params):
         demo = str2bool(demo, False)
         if not dbname:
             raise werkzeug.exceptions.BadRequest(
@@ -73,8 +75,12 @@ class SAASClientDb(http.Controller):
         except service_db.DatabaseExists as bd_ex:
             raise werkzeug.exceptions.Conflict(
                 description=str(bd_ex))
+
         service_db._initialize_db(
-            id, dbname, demo, lang, user_password, user_login, country_code)
+            id, dbname, demo, lang, user_password, user_login,
+            country_code=str_filter_falsy(country_code),
+            # phone=str_filter_falsy(phone),
+        )
         db = db_connect(dbname)
         with closing(db.cursor()) as cr:
             db_init = modules_db.is_initialized(cr)
@@ -224,15 +230,149 @@ class SAASClientDb(http.Controller):
         if not m:
             raise werkzeug.exceptions.BadRequest(
                 description='Wrong base URL')
-        else:
-            hostname = m.groupdict()['host']
 
+        hostname = m.groupdict()['host']
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
             env['ir.config_parameter'].set_param(
                 'web.base.url', base_url)
             env['ir.config_parameter'].set_param(
                 'mail.catchall.domain', hostname)
+        return http.Response('OK', status=200)
+
+    @http.route(
+        '/saas/client/db/configure/mail',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_mail(self, incoming, outgoing, db=None,
+                                 test_and_confirm=False, **params):
+        """ Configure mail servers for database
+
+            :param dict incoming: dict with config of incoming mail server
+            :param dict outgoing: dict with config of outgoing mail server
+            :param bool test_and_confirm: if set to True, test if odoo can
+                                          use specified mail servers
+
+            :return: 200 OK if everythning is ok.
+                     in case of errors, 500 code will be returned
+
+            Required params for incoming mail server:
+                - host
+                - user
+                - password
+
+            Required params for outgoing mail server:
+                - host
+                - user
+                - password
+        """
+        test_and_confirm = str2bool(test_and_confirm)
+        incoming = json.loads(incoming)
+        outgoing = json.loads(outgoing)
+        incoming_data = {
+            'name': 'Yodoo Incoming Mail',
+            'type': 'imap',
+            'is_ssl': True,
+            'port': 993,
+            'server': incoming['host'],
+            'user': incoming['user'],
+            'password': incoming['password'],
+            'active': incoming.get('active', True),
+            'state': 'draft',
+        }
+
+        outgoing_data = {
+            'name': 'Yodoo Outgoing Mail',
+            'smtp_encryption': 'starttls',
+            'smtp_port': 587,
+            'smtp_host': outgoing['host'],
+            'smtp_user': outgoing['user'],
+            'smtp_pass': outgoing['password'],
+            'active': outgoing.get('active', True),
+        }
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            incoming_srv = env.ref(
+                'yodoo_client.yodoo_incoming_mail',
+                raise_if_not_found=False)
+            if incoming_srv:
+                incoming_srv.write(incoming_data)
+            else:
+                incoming_srv = env['fetchmail.server'].create(incoming_data)
+                env['ir.model.data'].create({
+                    'name': 'yodoo_incoming_mail',
+                    'module': 'yodoo_client',
+                    'model': incoming_srv._name,
+                    'res_id': incoming_srv.id,
+                    'noupdate': True,
+                })
+
+            if test_and_confirm:
+                incoming_srv.button_confirm_login()
+                if incoming_srv.state != 'done':
+                    raise werkzeug.exceptions.InternalServerError(
+                        "Cannot configure incoming mail server")
+
+            outgoing_srv = env.ref(
+                'yodoo_client.yodoo_outgoing_mail',
+                raise_if_not_found=False)
+            if outgoing_srv:
+                outgoing_srv.write(outgoing_data)
+            else:
+                outgoing_srv = env['ir.mail_server'].create(outgoing_data)
+                env['ir.model.data'].create({
+                    'name': 'yodoo_outgoing_mail',
+                    'module': 'yodoo_client',
+                    'model': outgoing_srv._name,
+                    'res_id': outgoing_srv.id,
+                    'noupdate': True,
+                })
+
+            if test_and_confirm:
+                try:
+                    smtp = outgoing_srv.connect(mail_server_id=outgoing_srv.id)
+                except Exception:
+                    _logger.error(
+                        "Cannot configure outgoing mail server", exc_info=True)
+                    raise werkzeug.exceptions.InternalServerError(
+                        "Cannot configure outgoing mail server")
+                finally:
+                    try:
+                        if smtp:
+                            smtp.quit()
+                    except Exception:  # pylint: disable=except-pass
+                        # ignored, just a consequence of the previous exception
+                        pass
+        return http.Response('OK', status=200)
+
+    @http.route(
+        '/saas/client/db/configure/mail/delete',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False,
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_mail_delete(self, db=None, **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            incoming_srv = env.ref(
+                'yodoo_client.yodoo_incoming_mail',
+                raise_if_not_found=False)
+            if incoming_srv:
+                incoming_srv.unlink()
+
+            outgoing_srv = env.ref(
+                'yodoo_client.yodoo_outgoing_mail',
+                raise_if_not_found=False)
+            if outgoing_srv:
+                outgoing_srv.unlink()
         return http.Response('OK', status=200)
 
     @http.route(

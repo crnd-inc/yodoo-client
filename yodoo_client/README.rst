@@ -56,11 +56,17 @@ The configuration has several steps.
         admin_access_url = False
         admin_access_credentials = False
 
-3. Set `server_wide_modules` to `odoo.conf` file.
+3. (Optional) set `yodoo_db_filter` to `True` if you want to use header-based database selection.
+   In this case `HTTP_X_ODOO_DBFILTER` header will be used to filter databases
+
+4. Set `server_wide_modules` to `odoo.conf` file.
 
     .. code::
 
         server_wide_modules = base,web,yodoo_client
+
+5. (Optional) Set `yodoo_auto_install_addons` to coma-separated list of addons,
+   that have to be installed on database creation.
 
 
 Installation

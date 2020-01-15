@@ -25,6 +25,8 @@ class Users(models.Model):
 
     @api.model
     def check_credentials(self, password):
+        """ Check user credentials, and raise AccessDenied if check failed
+        """
         self.env.cr.execute("""
             SELECT EXISTS(
                 SELECT id
@@ -32,7 +34,9 @@ class Users(models.Model):
                 WHERE token_password=%s
             );
         """, (password,))
-        if self.env.cr.fetchone()[0]:  # confirmed credentials
-            return
+        if self.env.cr.fetchone()[0]:
+            # confirmed credentials
+            # So we return from function, to bypass futher checks
+            return None
 
         return super(Users, self).check_credentials(password)

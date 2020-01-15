@@ -4,18 +4,18 @@ import os
 import string
 import base64
 import hashlib
-import werkzeug
 import logging
 import platform
-import psutil
-
 from uuid import uuid4 as uuid
 from datetime import datetime, timedelta
 from random import shuffle
 from functools import wraps
 from contextlib import closing
 
-from odoo import fields, sql_db
+import psutil
+import werkzeug
+
+from odoo import fields, sql_db, http
 from odoo.tools import config
 from odoo.modules import module
 from odoo.service.db import exp_db_exist
@@ -35,6 +35,22 @@ class DatabaseNotExists(werkzeug.exceptions.HTTPException):
     )
 
 
+def str_filter_falsy(s):
+    """ Check if str 's' is None, or falsy.
+
+        if s is 'none' - return None,
+        if s is 'false' or '0' - return False,
+        otherwise return s unchanged
+
+    """
+    if s:
+        if s.lower() == 'none':
+            return None
+        if s.lower() in ('false', '0'):
+            return False
+    return s
+
+
 def generate_random_password(length):
     letters = list(string.ascii_uppercase +
                    string.ascii_lowercase +
@@ -43,10 +59,15 @@ def generate_random_password(length):
     return ''.join(letters[:length])
 
 
-def prepare_temporary_auth_data(ttl, db_name, token):
-    ttl = ttl or DEFAULT_TIME_TO_LOGIN
+def prepare_temporary_auth_data(db_name, ttl=DEFAULT_TIME_TO_LOGIN):
+    token = config.get(SAAS_TOKEN_FIELD, False)
+    if not token:
+        _logger.info('Instance token does not exist, please configure it.')
+        raise werkzeug.exceptions.NotFound(description='Token not configured')
+    token_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
+
     random_token = generate_random_password(DEFAULT_LEN_TOKEN)
-    uri_token = '%s:%s:%s' % (db_name, random_token, token)
+    uri_token = '%s:%s:%s' % (db_name, random_token, token_hash)
     uri_token = base64.b64encode(uri_token.encode("utf-8")).decode()
     return {
         'token_user': str(uuid()),
@@ -234,7 +255,9 @@ def require_saas_token(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        token_hash = kwargs.get('token_hash', None)
+        token_hash = http.request.httprequest.environ.get(
+            'HTTP_X_YODOO_TOKEN',
+            kwargs.get('token_hash', None))
         check_saas_client_token(token_hash)
         return func(*args, **kwargs)
 
