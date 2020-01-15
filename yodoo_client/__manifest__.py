@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 {
     'name': "Yodoo Client",
 
@@ -9,17 +8,18 @@
         your clients.
     """,
 
-    'author': "Center of Research & Development",
+    'author': "Center of Research and Development",
     'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '10.0.1.0.4',
+    'version': '10.0.1.6.0',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'web',
         'web_settings_dashboard',
+        'fetchmail',
     ],
 
     # always loaded
@@ -37,4 +37,5 @@
     'installable': True,
     'auto_install': True,
     'images': ['static/description/banner.png'],
+    "post_load": "_post_load_hook",
 }

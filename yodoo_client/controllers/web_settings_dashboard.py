@@ -2,13 +2,13 @@
 
 import logging
 
-from ..utils import prepare_db_statistic_data
-
 from odoo import http
 from odoo.tools import human_size
 from odoo.http import request
 from odoo.addons.web_settings_dashboard.controllers.main import (
     WebSettingsDashboard)
+
+from ..utils import prepare_db_statistic_data
 
 _logger = logging.getLogger(__name__)
 
