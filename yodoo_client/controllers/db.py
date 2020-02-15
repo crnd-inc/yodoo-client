@@ -7,7 +7,8 @@ from contextlib import closing
 
 import werkzeug
 
-from odoo import http, api, registry, exceptions, SUPERUSER_ID, sql_db
+import odoo
+from odoo import http, api, registry, exceptions, SUPERUSER_ID
 from odoo.sql_db import db_connect
 from odoo.http import Response
 from odoo.service import db as service_db
@@ -19,6 +20,10 @@ from ..utils import (
     require_db_param,
     prepare_db_statistic_data,
     str_filter_falsy,
+    get_yodoo_client_version,
+    make_addons_to_be_installed,
+    make_addons_to_be_upgraded,
+    ensure_installing_addons_dependencies,
 )
 
 _logger = logging.getLogger(__name__)
@@ -176,6 +181,77 @@ class SAASClientDb(http.Controller):
                 direct_passthrough=True)
             return response
 
+    def _postprocess_restored_db(self, dbname):
+        """ Do some postprocessing after DB restored from backup
+
+            The reason for this method, is to ensure that yodoo_client
+            is installed on database and if needed updated.
+            Also, we check installed addons and compare them with
+            thats are available on disk, and if needed run update for them.
+        """
+        to_update_modules = set()
+        to_install_modules = set()
+        modules_in_db = {}
+        modules_on_disk = {
+            mod: odoo.modules.module.load_information_from_description_file(
+                mod)
+            for mod in odoo.modules.module.get_modules()
+        }
+        auto_install_addons = odoo.tools.config.get(
+            'yodoo_auto_install_addons', '')
+        auto_install_addons = [
+            a.strip() for a in auto_install_addons.split(',') if a.strip()]
+
+        with closing(db_connect(dbname).cursor()) as cr:
+            cr.execute("""
+                SELECT name, latest_version
+                FROM ir_module_module
+                WHERE state = 'installed';
+            """)
+            modules_in_db = dict(cr.fetchall())
+
+            if 'yodoo_client' not in modules_in_db:
+                _logger.info(
+                    "yodoo_client not installed, adding to install list")
+                to_install_modules.add('yodoo_client')
+            elif modules_in_db['yodoo_client'] != get_yodoo_client_version():
+                _logger.info(
+                    "yodoo_client not up to date (%s != %s), "
+                    "adding to update list",
+                    modules_in_db['yodoo_client'], get_yodoo_client_version())
+                to_update_modules.add('yodoo_client')
+
+            for module_name in auto_install_addons:
+                if module_name not in modules_in_db:
+                    _logger.info(
+                        "Module %s is mentioned in auto_install_addons list, "
+                        "but is not installed in database. Installing.",
+                        module_name
+                    )
+                    to_install_modules.add(module_name)
+
+            for module_name, db_version in modules_in_db.items():
+                if db_version != modules_on_disk[module_name]['version']:
+                    _logger.info(
+                        "Module %s is not up to data, adding to update list.",
+                        module_name)
+                    to_update_modules.add(module_name)
+
+            if to_install_modules:
+                make_addons_to_be_installed(cr, to_install_modules)
+
+            if to_update_modules:
+                make_addons_to_be_upgraded(cr, to_update_modules)
+            ensure_installing_addons_dependencies(cr)
+            cr.commit()  # pylint: disable=invalid-commit
+
+        if to_install_modules or to_update_modules:
+            _logger.info(
+                "There are addons to install %s and to update %s found.",
+                tuple(to_install_modules), tuple(to_update_modules))
+            api.Environment.reset()
+            odoo.modules.registry.Registry.new(dbname, update_module=True)
+
     @http.route(
         '/saas/client/db/restore',
         type='http',
@@ -202,6 +278,7 @@ class SAASClientDb(http.Controller):
             raise werkzeug.exceptions.InternalServerError(
                 "Cannot restore db (%s): %s" % (db, str(e)))
         else:
+            self._postprocess_restored_db(db)
             return http.Response('OK', status=200)
         finally:
             os.unlink(data_file.name)
@@ -384,33 +461,4 @@ class SAASClientDb(http.Controller):
     @require_db_param
     def client_db_statistic(self, db=None, **params):
         data = prepare_db_statistic_data(db)
-        return Response(json.dumps(data), status=200)
-
-    @http.route(
-        '/saas/client/db/users/info',
-        type='http',
-        auth='none',
-        metods=['POST'],
-        csrf=False
-    )
-    @require_saas_token
-    @require_db_param
-    def client_db_users_info(self, db=None, **params):
-        """ Return list of database users
-            :param db: str name of database
-            :return: list of dicts [{
-                'id': user_id,
-                'login': user_login,
-                'partner_id': user_partner_id,
-                'share': True or False user_share,
-                'write_uid': user_write_uid
-            }]
-        """
-        with closing(sql_db.db_connect(db).cursor()) as cr:
-            cr.execute("""
-                SELECT id, login, partner_id, share, write_uid
-                FROM res_users
-                WHERE active = true;
-            """)
-            data = cr.dictfetchall()
         return Response(json.dumps(data), status=200)

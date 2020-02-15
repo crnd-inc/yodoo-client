@@ -1,0 +1,3 @@
+- Ensure yodoo client is installed after database restored.
+- Update modules if necesary after database restored.
+- Remove old unused API endpoint `/saas/client/db/users/info`

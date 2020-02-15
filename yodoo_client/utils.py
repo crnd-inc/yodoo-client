@@ -13,6 +13,7 @@ from contextlib import closing
 import psutil
 import werkzeug
 
+import odoo
 from odoo import fields, sql_db, http
 from odoo.tools import config
 from odoo.modules import module
@@ -55,6 +56,14 @@ def generate_random_password(length):
                    string.digits) * 3
     shuffle(letters)
     return ''.join(letters[:length])
+
+
+def get_yodoo_client_version():
+    """ Return version of yodoo_client available on disk
+    """
+    return odoo.modules.load_information_from_description_file(
+        'yodoo_client'
+    )['version']
 
 
 def prepare_temporary_auth_data(db_name, ttl=DEFAULT_TIME_TO_LOGIN):
@@ -244,6 +253,77 @@ def prepare_saas_module_info_data():
         mod: module.load_information_from_description_file(mod)
         for mod in module.get_modules()
     }
+
+
+def make_addons_to_be_installed(cr, addons):
+    """ update addons state to 'to install'
+
+        :param list addons: List of addons to install
+    """
+    cr.execute("""
+        UPDATE ir_module_module
+        SET state='to install'
+        WHERE name in %(to_install)s;
+    """, {
+        'to_install': tuple(addons),
+    })
+
+
+def make_addons_to_be_upgraded(cr, addons):
+    """ update addons state to 'to upgrade'
+
+        :param list addons: List of addons to upgrade
+    """
+    cr.execute("""
+        UPDATE ir_module_module
+        SET state='to upgrade'
+        WHERE name in %(to_upgrade)s;
+    """, {
+        'to_upgrade': tuple(addons),
+    })
+
+
+def ensure_installing_addons_dependencies(cr):
+    # Ensure dependencies of auto-installed addons will be installed on
+    # database creation
+    while True:
+        cr.execute("""
+            SELECT array_agg(m.name)
+            FROM ir_module_module AS m
+            WHERE m.state NOT IN ('to install', 'installed')
+                AND EXISTS (
+                SELECT 1
+                FROM ir_module_module_dependency AS d
+                JOIN ir_module_module msuper ON (d.module_id = msuper.id)
+                WHERE d.name = m.name
+                    AND msuper.state = 'to install'
+                );
+        """)
+        to_install = cr.fetchone()[0]
+        if not to_install:
+            break
+        make_addons_to_be_installed(cr, to_install)
+
+    # Install recursively all auto-installing modules
+    # (one more time, after yodoo_auto_installed addons installed)
+    while True:
+        cr.execute("""
+            SELECT array_agg(m.name)
+            FROM ir_module_module AS m
+            WHERE m.auto_install
+              AND state NOT IN ('to install', 'installed')
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM ir_module_module_dependency AS d
+                  JOIN ir_module_module AS mdep ON (d.name = mdep.name)
+                  WHERE d.module_id = m.id
+                  AND mdep.state NOT IN ('to install', 'installed')
+              );
+        """)
+        to_auto_install = cr.fetchone()[0]
+        if not to_auto_install:
+            break
+        make_addons_to_be_installed(cr, to_auto_install)
 
 
 def require_saas_token(func):
