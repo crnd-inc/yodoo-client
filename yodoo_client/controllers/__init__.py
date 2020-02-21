@@ -3,5 +3,4 @@ from . import (
     db,
     db_module,
     server,
-    web_settings_dashboard,
 )

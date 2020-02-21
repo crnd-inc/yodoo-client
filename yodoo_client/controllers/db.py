@@ -16,8 +16,6 @@ from odoo.modules import db as modules_db
 from odoo.tools.misc import str2bool
 
 from ..utils import (
-    require_saas_token,
-    require_db_param,
     prepare_db_statistic_data,
     str_filter_falsy,
     get_yodoo_client_version,
@@ -25,6 +23,11 @@ from ..utils import (
     make_addons_to_be_upgraded,
     ensure_installing_addons_dependencies,
 )
+from ..http_decorators import (
+    require_saas_token,
+    require_db_param,
+)
+
 
 _logger = logging.getLogger(__name__)
 
@@ -158,12 +161,12 @@ class SAASClientDb(http.Controller):
     @require_saas_token
     @require_db_param
     def client_db_backup(self, db=None, backup_format='zip', **params):
+        filename = "%s.%s" % (db, backup_format)
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=binary'),
+            ('Content-Disposition', http.content_disposition(filename)),
+        ]
         try:
-            filename = "%s.%s" % (db, backup_format)
-            headers = [
-                ('Content-Type', 'application/octet-stream; charset=binary'),
-                ('Content-Disposition', http.content_disposition(filename)),
-            ]
             stream = tempfile.TemporaryFile()
             service_db.dump_db(db, stream, backup_format)
         except exceptions.AccessDenied as e:

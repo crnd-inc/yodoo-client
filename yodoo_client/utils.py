@@ -1,37 +1,26 @@
 import os
 import string
-import base64
 import hashlib
 import logging
 import platform
-from uuid import uuid4 as uuid
-from datetime import datetime, timedelta
 from random import shuffle
-from functools import wraps
 from contextlib import closing
 
 import psutil
 import werkzeug
 
 import odoo
-from odoo import fields, sql_db, http
+from odoo import sql_db
 from odoo.tools import config
 from odoo.modules import module
-from odoo.service.db import exp_db_exist
 
 SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
+DEFAULT_ADMIN_SESSION_TTL = 2 * 60 * 60  # seconds
 DEFAULT_LEN_TOKEN = 128
 SAAS_TOKEN_FIELD = 'yodoo_token'
 
 _logger = logging.getLogger(__name__)
-
-
-class DatabaseNotExists(werkzeug.exceptions.HTTPException):
-    code = 440
-    description = (
-        "Database not found"
-    )
 
 
 def str_filter_falsy(s):
@@ -62,28 +51,7 @@ def get_yodoo_client_version():
     """ Return version of yodoo_client available on disk
     """
     return odoo.modules.load_information_from_description_file(
-        'yodoo_client'
-    )['version']
-
-
-def prepare_temporary_auth_data(db_name, ttl=DEFAULT_TIME_TO_LOGIN):
-    token = config.get(SAAS_TOKEN_FIELD, False)
-    if not token:
-        _logger.info('Instance token does not exist, please configure it.')
-        raise werkzeug.exceptions.NotFound(description='Token not configured')
-    token_hash = hashlib.sha256(token.encode('utf8')).hexdigest()
-
-    random_token = generate_random_password(DEFAULT_LEN_TOKEN)
-    uri_token = '%s:%s:%s' % (db_name, random_token, token_hash)
-    uri_token = base64.b64encode(uri_token.encode("utf-8")).decode()
-    return {
-        'token_user': str(uuid()),
-        'token_password': str(uuid()),
-        'temp_url': '/saas/client/auth/%s' % uri_token,
-        'expire': fields.Datetime.to_string(
-            datetime.now() + timedelta(seconds=int(ttl))),
-        'token_temp': random_token,
-    }
+        'yodoo_client')['version']
 
 
 def check_saas_client_token(token_hash):
@@ -103,19 +71,6 @@ def check_saas_client_token(token_hash):
     if not token_instance_hash == token_hash:
         _logger.info('The hashes of the tokens do not match.')
         raise werkzeug.exceptions.Forbidden(description='Token not match')
-
-
-def get_admin_access_options():
-    """
-        Returns the admin_access options from config.
-        By default this is True.
-    :return: tuple of booleans
-            first element: admin_access_url from config or default
-            second element: admin_access_credentials from config or default
-    :rtype: tuple(boolean, boolean)
-    """
-    return (config.get('admin_access_url', True),
-            config.get('admin_access_credentials', True))
 
 
 def get_size_storage(start_path):
@@ -324,38 +279,3 @@ def ensure_installing_addons_dependencies(cr):
         if not to_auto_install:
             break
         make_addons_to_be_installed(cr, to_auto_install)
-
-
-def require_saas_token(func):
-    """
-    Decorate the controller method that requires check_saas_client_token.
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        token_hash = http.request.httprequest.environ.get(
-            'HTTP_X_YODOO_TOKEN',
-            kwargs.get('token_hash', None))
-        check_saas_client_token(token_hash)
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def require_db_param(func):
-    """
-    Decorate the controller method that requires exp_db_exist.
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        db = kwargs.get('db', None)
-        if not db:
-            raise werkzeug.exceptions.BadRequest("Database not specified")
-        if not exp_db_exist(db):
-            _logger.info(
-                'Database %s is not found.', db)
-            raise DatabaseNotExists()
-        return func(*args, **kwargs)
-
-    return wrapper

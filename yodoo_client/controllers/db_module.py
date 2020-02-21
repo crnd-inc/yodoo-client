@@ -6,10 +6,11 @@ from odoo import http, registry, SUPERUSER_ID, sql_db
 from odoo.http import Response
 from odoo.api import Environment
 
-from ..utils import (
+from ..http_decorators import (
     require_saas_token,
     require_db_param,
 )
+
 
 _logger = logging.getLogger(__name__)
 
