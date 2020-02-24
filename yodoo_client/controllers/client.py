@@ -119,6 +119,27 @@ class SAASClient(http.Controller):
 
         check_saas_client_token(token_hash)
 
+        # Check if user allows to logins
+        with registry(db).cursor() as cr:
+            cr.execute("""
+                SELECT value
+                FROM ir_config_parameter
+                WHERE key = %(key)s
+                LIMIT 1;
+            """, {
+                'key': 'yodoo_client.yodoo_allow_admin_logins',
+            })
+            data = cr.fetchall()
+            # Note, if we try to set falsy value as param, then record will be
+            # removed. Instead, if we try to set non-falsy value, then odoo
+            # will save it as row in table ir_config_parameter
+            # For detais see ir_config_parameter.set_param
+            yodoo_allow_admin_logins = bool(data)
+
+        if not yodoo_allow_admin_logins:
+            raise werkzeug.exceptions.Forbidden(
+                description='Client denies admin logins to this DB.')
+
         with registry(db).cursor() as cr:
             cr.execute("""
                 SELECT id, token_user, token_password, user_uuid
@@ -132,12 +153,18 @@ class SAASClient(http.Controller):
         if not res:
             _logger.warning(
                 'Temp url %s does not exist', token)
-            return http.request.not_found()
+            raise werkzeug.exceptions.Forbidden()
 
         auth_id, user, password, user_uuid = res
         request.session.authenticate(db, user, password)
         with registry(db).cursor() as cr:
             cr.execute("""
+                UPDATE yodoo_client_auth_log
+                SET login_state = 'expired',
+                    logout_date = now()
+                WHERE login_session = %(login_session)s
+                  AND login_state = 'active';
+
                 INSERT INTO yodoo_client_auth_log
                        (login_date, login_expire,
                         login_state, login_session, login_remote_uuid)

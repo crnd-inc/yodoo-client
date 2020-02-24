@@ -43,11 +43,18 @@
                     <h2>Yodoo Statistics</h2>
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box mb0">
+                            <div class="o_setting_left_pane">
+                                <field name="yodoo_allow_admin_logins"/>
+                            </div>
                             <div class="o_setting_right_pane">
-                                <button name="%(action_show_active_auth_sessions)d"
-                                        type="action"
-                                        string="Show admin auth sessions"
-                                        class="oe_link"/>
+                                <label for="yodoo_allow_admin_logins"/>
+                                <div class="text-muted">
+                                    <button name="%(action_show_active_auth_sessions)d"
+                                            type="action"
+                                            string="Show admin auth sessions"
+                                            class="oe_link"
+                                            attrs="{'invisible': [('yodoo_allow_admin_logins', '=', False)]}"/>
+                                </div>
                             </div>
                         </div>
                     </div>

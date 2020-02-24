@@ -25,8 +25,9 @@
     'data': [
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
-        'views/saas_statistic.xml',
+        'data/ir_config_parameter.xml',
         'views/yodoo_client_auth_log.xml',
+        'views/saas_statistic.xml',
     ],
     # only loaded in demonstration mode
     'demo': [],

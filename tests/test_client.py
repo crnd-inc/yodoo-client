@@ -123,7 +123,7 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         # correct request
         response = requests.get(self.url)
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_06_controller_odoo_infrastructure_saas_auth(self):
         # check request if expire
@@ -140,7 +140,7 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
 
         response = requests.get(self.url)
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_07_controller_odoo_infrastructure_saas_auth(self):
         # check auth true login true password
@@ -202,11 +202,6 @@ class TestClientVersionInfo(TestOdooInfrastructureClient):
         self.assertIsInstance(data['saas_client_version'], six.string_types)
         self.assertIsInstance(data['saas_client_serie'], six.string_types)
         self.assertIsInstance(data['saas_client_api_version'], int)
-        self.assertIsInstance(data['features_enabled'], dict)
-        features_enabled = data['features_enabled']
-        self.assertIsInstance(features_enabled['admin_access_url'], bool)
-        self.assertIsInstance(
-            features_enabled['admin_access_credentials'], bool)
 
     def test_02_controller_odoo_infrastructure_saas_client_version(self):
         # test incorrect request with bad token_hash
