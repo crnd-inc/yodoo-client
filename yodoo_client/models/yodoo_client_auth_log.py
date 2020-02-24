@@ -30,5 +30,5 @@ class YodooClientAuthLog(models.Model):
         ]).action_expire()
 
     def unlink(self):
-        self.action_exprire()
+        self.action_expire()
         return super(YodooClientAuthLog, self).unlink()

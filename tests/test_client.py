@@ -74,6 +74,9 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         self.data = self.response.json()
         self.url = self.create_url(self.data["temp_url"])
 
+    def tearDown(self):
+        self._client['yodoo.client.auth.log'].search_records([]).unlink()
+
     def test_01_controller_odoo_infrastructure_saas_auth(self):
         # test correct request
         response = requests.get(self.url)
@@ -81,6 +84,14 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('/web', response_data)
+
+    def test_011_controller_odoo_infrastructure_saas_auth(self):
+        # test when remote admin is disabled client db
+        self._client['ir.config_parameter'].set_param(
+            'yodoo_client.yodoo_allow_admin_logins', False)
+
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 403)
 
     def test_02_controller_odoo_infrastructure_saas_auth(self):
         # test incorrect request (url no base64)
@@ -103,7 +114,9 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         )
         self.assertEqual(len(temp_rows), 1)
         # correct request
-        requests.get(self.url)
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
         # check temp record removed
         temp_rows = OdooInfrastructureClientAuth.search_records(
             [('token_temp', '=', self.data['token_temp'])]
@@ -180,6 +193,58 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         with self.assertRaises(LoginException) as le:
             cl.uid
         self.assertIsInstance(le.exception, LoginException)
+
+    def test_08_controller_odoo_infrastructure_saas_auth(self):
+        # check request if temp record does not exist
+        AuthLog = self._client['yodoo.client.auth.log']
+
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+        response = requests.get(
+            self.create_url('/mail/view?model=res.partner&res_id=1'))
+        self.assertFalse(
+            response.url.startswith(self.create_url('/web/login')))
+        self.assertTrue(response.url.startswith(self.create_url('/web#')))
+
+        log_entry = AuthLog.search_records([])
+        self.assertEqual(len(log_entry), 1)
+        log_entry.action_expire()
+
+        response = requests.get(
+            self.create_url('/mail/view?model=res.partner&res_id=1'))
+        self.assertTrue(response.url.startswith(self.create_url('/web/login')))
+
+    def test_09_controller_odoo_infrastructure_saas_auth(self):
+        AuthLog = self._client['yodoo.client.auth.log']
+
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+        log_entry = AuthLog.search_records([])
+        self.assertEqual(len(log_entry), 1)
+
+        response = requests.get(
+            self.create_url('/mail/view?model=res.partner&res_id=1'))
+        self.assertFalse(
+            response.url.startswith(self.create_url('/web/login')))
+        self.assertTrue(response.url.startswith(self.create_url('/web#')))
+
+        # Deny access for remote admins
+        self._client['ir.config_parameter'].set_param(
+            'yodoo_client.yodoo_allow_admin_logins', False)
+
+        log_entry = AuthLog.search_records([])
+        self.assertEqual(len(log_entry), 1)
+        self.assertEqual(log_entry[0].login_state, 'expired')
+
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+        response = requests.get(
+            self.create_url('/mail/view?model=res.partner&res_id=1'))
+        self.assertTrue(
+            response.url.startswith(self.create_url('/web/login')))
 
 
 class TestClientVersionInfo(TestOdooInfrastructureClient):
