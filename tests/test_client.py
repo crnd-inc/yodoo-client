@@ -76,6 +76,8 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
 
     def tearDown(self):
         self._client['yodoo.client.auth.log'].search_records([]).unlink()
+        self._client['ir.config_parameter'].set_param(
+            'yodoo_client.yodoo_allow_admin_logins', True)
 
     def test_01_controller_odoo_infrastructure_saas_auth(self):
         # test correct request

@@ -137,6 +137,8 @@ class SAASClient(http.Controller):
             yodoo_allow_admin_logins = bool(data)
 
         if not yodoo_allow_admin_logins:
+            _logger.warning(
+                'Attempt to login as admin. Feature disabled on db level')
             raise werkzeug.exceptions.Forbidden(
                 description='Client denies admin logins to this DB.')
 
