@@ -217,7 +217,10 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
 
         response = session.get(
             self.create_url('/mail/view?model=res.partner&res_id=1'))
-        self.assertTrue(response.url.startswith(self.create_url('/web/login')))
+        self.assertTrue(
+            response.url.startswith(self.create_url('/web/login')),
+            "Expected response url starts with '/web/login', got %s" % (
+                response.url))
 
     def test_09_controller_odoo_infrastructure_saas_auth(self):
         AuthLog = self._client['yodoo.client.auth.log']
@@ -261,7 +264,9 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         response = session.get(
             self.create_url('/mail/view?model=res.partner&res_id=1'))
         self.assertTrue(
-            response.url.startswith(self.create_url('/web/login')))
+            response.url.startswith(self.create_url('/web/login')),
+            "Expected response url starts with '/web/login', got %s" % (
+                response.url))
 
 
 class TestClientVersionInfo(TestOdooInfrastructureClient):
