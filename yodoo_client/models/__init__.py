@@ -1,3 +1,6 @@
-from . import odoo_infrastructure_client_auth
-from . import res_users
-from . import res_config_settings
+from . import (
+    res_config_settings,
+    odoo_infrastructure_client_auth,
+    res_users,
+    yodoo_client_auth_log,
+)
