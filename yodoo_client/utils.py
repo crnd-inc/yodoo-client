@@ -10,7 +10,7 @@ import psutil
 import werkzeug
 
 import odoo
-from odoo import sql_db
+from odoo import fields, sql_db
 from odoo.tools import config
 from odoo.modules import module
 
