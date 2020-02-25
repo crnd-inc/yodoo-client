@@ -11,13 +11,13 @@
     'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '11.0.1.6.0',
+    'version': '11.0.1.7.0',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'web',
-        'web_settings_dashboard',
+        'base_setup',
         'fetchmail',
     ],
 
@@ -25,13 +25,13 @@
     'data': [
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
+        'data/ir_config_parameter.xml',
+        'views/yodoo_client_auth_log.xml',
         'views/saas_statistic.xml',
     ],
     # only loaded in demonstration mode
     'demo': [],
-    'qweb': [
-        'static/src/xml/saas_dashboard.xml',
-    ],
+    'qweb': [],
     'category': 'Administration',
     'installable': True,
     'auto_install': True,

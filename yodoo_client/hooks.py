@@ -3,6 +3,11 @@ import odoo
 from odoo import http
 from odoo.tools import config
 
+from .utils import (
+    make_addons_to_be_installed,
+    ensure_installing_addons_dependencies,
+)
+
 original_db_filter = http.db_filter
 original_module_db_initialize = odoo.modules.db.initialize
 
@@ -14,63 +19,6 @@ def db_filter(dbs, httprequest=None):
     if not db_header:
         return dbs
     return [db for db in dbs if re.match(db_header, db)]
-
-
-def make_addons_to_be_installed(cr, addons):
-    """ update addons state to 'to install'
-
-        :param list addons: List of addons to install
-    """
-    cr.execute("""
-        UPDATE ir_module_module
-        SET state='to install'
-        WHERE name in %(to_install)s;
-    """, {
-        'to_install': tuple(addons),
-    })
-
-
-def ensure_installing_addons_dependencies(cr):
-    # Ensure dependencies of auto-installed addons will be installed on
-    # database creation
-    while True:
-        cr.execute("""
-            SELECT array_agg(m.name)
-            FROM ir_module_module AS m
-            WHERE m.state != 'to install'
-                AND EXISTS (
-                SELECT 1
-                FROM ir_module_module_dependency AS d
-                JOIN ir_module_module msuper ON (d.module_id = msuper.id)
-                WHERE d.name = m.name
-                    AND msuper.state = 'to install'
-                );
-        """)
-        to_install = cr.fetchone()[0]
-        if not to_install:
-            break
-        make_addons_to_be_installed(cr, to_install)
-
-    # Install recursively all auto-installing modules
-    # (one more time, after yodoo_auto_installed addons installed)
-    while True:
-        cr.execute("""
-            SELECT array_agg(m.name)
-            FROM ir_module_module AS m
-            WHERE m.auto_install
-              AND state != 'to install'
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM ir_module_module_dependency AS d
-                  JOIN ir_module_module AS mdep ON (d.name = mdep.name)
-                  WHERE d.module_id = m.id
-                  AND mdep.state != 'to install'
-              );
-        """)
-        to_auto_install = cr.fetchone()[0]
-        if not to_auto_install:
-            break
-        make_addons_to_be_installed(cr, to_auto_install)
 
 
 def module_db_initialize(cr):

@@ -85,38 +85,6 @@ class TestDBModuleInfo(TestOdooInfrastructureClient):
 
 
 class TestDBUsersInfo(TestOdooInfrastructureClient):
-    def setUp(self):
-        self._user_info_url = self.create_url('/saas/client/db/users/info')
-        self._user_info_data = {
-            'token_hash': self._hash_token,
-            'db': self._client.dbname
-        }
-
-    def test_01_controller_db_users_info(self):
-        response = requests.post(
-            self._user_info_url, self._user_info_data)
-        self.assertEqual(response.status_code, 200)
-        users = response.json()
-        for user in users:
-            self.assertIsInstance(user['id'], int)
-            self.assertIsInstance(user['login'], six.string_types)
-            self.assertIsInstance(user['partner_id'], int)
-            self.assertIsInstance(user['share'], bool)
-            self.assertIsInstance(user['write_uid'], int)
-
-    def test_02_controller_db_users_info(self):
-        # test incorrect request with bad token_hash
-        data = dict(self._user_info_data, token_hash='abracadabra')
-
-        response = requests.post(self._user_info_url, data)
-        self.assertEqual(response.status_code, 403)
-
-    def test_03_controller_db_users_info(self):
-        # test incorrect request with bad db_name
-        data = dict(self._user_info_data, db='abracadabra')
-
-        response = requests.post(self._user_info_url, data)
-        self.assertEqual(response.status_code, 440)
 
     def test_04_db_configure_base_url_ok(self):
         response = requests.post(
