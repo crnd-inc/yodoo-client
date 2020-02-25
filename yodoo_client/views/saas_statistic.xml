@@ -12,31 +12,31 @@
                         <div class="col-12 col-lg-6 o_setting_box mb0">
                             <div class="o_setting_right_pane">
                                 <label for="users_total_count" string="Users Total"/>
-                                <field name="users_total_count" class="label label-primary mr4" style="font-size: 100%; width: auto;"/>
+                                <field name="users_total_count" class="badge badge-primary mr4" style="font-size: 100%; width: auto;"/>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box mb0">
                             <div class="o_setting_right_pane">
                                 <label for="db_storage"/>
-                                <field name="db_storage" class="label label-primary mr4" style="font-size: 100%; width: auto;"/>
+                                <field name="db_storage" class="badge badge-primary mr4" style="font-size: 100%; width: auto;"/>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box mt0 mb0">
                             <div class="o_setting_right_pane">
                                 <label for="users_internal_count" string="Users Internal"/>
-                                <field name="users_internal_count" class="label label-primary mr4" style="font-size: 100%; width: auto;"/>
+                                <field name="users_internal_count" class="badge badge-primary mr4" style="font-size: 100%; width: auto;"/>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box mt0 mb0">
                             <div class="o_setting_right_pane">
                                 <label for="file_storage"/>
-                                <field name="file_storage" class="label label-primary mr4" style="font-size: 100%; width: auto;"/>
+                                <field name="file_storage" class="badge badge-primary mr4" style="font-size: 100%; width: auto;"/>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box mt0">
                             <div class="o_setting_right_pane">
                                 <label for="users_external_count" string="Users External"/>
-                                <field name="users_external_count" class="label label-primary mr4" style="font-size: 100%; width: auto;"/>
+                                <field name="users_external_count" class="badge badge-primary mr4" style="font-size: 100%; width: auto;"/>
                             </div>
                         </div>
                     </div>

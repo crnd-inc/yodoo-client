@@ -159,6 +159,11 @@ class SAASClient(http.Controller):
 
         auth_id, user, password, user_uuid = res
         request.session.authenticate(db, user, password)
+
+        # Do not rotate session. So user will keep same session as before.
+        # TODO: handle admin sessions in better way
+        request.session.rotate = False
+
         with registry(db).cursor() as cr:
             cr.execute("""
                 UPDATE yodoo_client_auth_log
