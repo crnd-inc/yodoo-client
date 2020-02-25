@@ -4,11 +4,14 @@ import logging
 from odoo import http
 from odoo.http import Response
 from ..utils import (
-    require_saas_token,
     prepare_saas_module_info_data,
     prepare_server_fast_statistic_data,
     prepare_server_slow_statistic_data,
 )
+from ..http_decorators import (
+    require_saas_token,
+)
+
 
 _logger = logging.getLogger(__name__)
 
