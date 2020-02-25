@@ -200,10 +200,12 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         # check request if temp record does not exist
         AuthLog = self._client['yodoo.client.auth.log']
 
-        response = requests.get(self.url)
+        session = requests.Session()
+
+        response = session.get(self.url)
         self.assertEqual(response.status_code, 200)
 
-        response = requests.get(
+        response = session.get(
             self.create_url('/mail/view?model=res.partner&res_id=1'))
         self.assertFalse(
             response.url.startswith(self.create_url('/web/login')))
@@ -213,37 +215,50 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         self.assertEqual(len(log_entry), 1)
         log_entry.action_expire()
 
-        response = requests.get(
+        response = session.get(
             self.create_url('/mail/view?model=res.partner&res_id=1'))
         self.assertTrue(response.url.startswith(self.create_url('/web/login')))
 
     def test_09_controller_odoo_infrastructure_saas_auth(self):
         AuthLog = self._client['yodoo.client.auth.log']
+        ResConfigSettings = self._client['res.config.settings']
 
-        response = requests.get(self.url)
+        session = requests.Session()
+
+        response = session.get(self.url)
         self.assertEqual(response.status_code, 200)
 
         log_entry = AuthLog.search_records([])
         self.assertEqual(len(log_entry), 1)
 
-        response = requests.get(
+        response = session.get(
             self.create_url('/mail/view?model=res.partner&res_id=1'))
         self.assertFalse(
             response.url.startswith(self.create_url('/web/login')))
         self.assertTrue(response.url.startswith(self.create_url('/web#')))
 
         # Deny access for remote admins
-        self._client['ir.config_parameter'].set_param(
-            'yodoo_client.yodoo_allow_admin_logins', False)
+        self.assertTrue(
+            self._client['ir.config_parameter'].get_param(
+                'yodoo_client.yodoo_allow_admin_logins'))
+        ResConfigSettings.create_record(
+            dict(
+                ResConfigSettings.default_get(
+                    list(ResConfigSettings.columns_info.keys())),
+                yodoo_allow_admin_logins=False)
+        ).execute()
+        self.assertFalse(
+            self._client['ir.config_parameter'].get_param(
+                'yodoo_client.yodoo_allow_admin_logins'))
 
         log_entry = AuthLog.search_records([])
         self.assertEqual(len(log_entry), 1)
         self.assertEqual(log_entry[0].login_state, 'expired')
 
-        response = requests.get(self.url)
+        response = session.get(self.url)
         self.assertEqual(response.status_code, 403)
 
-        response = requests.get(
+        response = session.get(
             self.create_url('/mail/view?model=res.partner&res_id=1'))
         self.assertTrue(
             response.url.startswith(self.create_url('/web/login')))
