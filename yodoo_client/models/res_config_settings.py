@@ -48,7 +48,6 @@ class ResConfigSettings(models.TransientModel):
             'yodoo_client.yodoo_allow_admin_logins', default=False)
         return res
 
-    @api.multi
     def set_values(self):
         res = super(ResConfigSettings, self).set_values()
         params = self.env['ir.config_parameter'].sudo()
