@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="20"/>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='integration']" position="after">
+                <div id="yodoo_easy_backup" groups="base.group_system">
+                    <h2>Yodoo Easy Backup</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box mb0">
+                            <div class="o_setting_left_pane">
+                                <field name="yodoo_easy_backup_allow"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="yodoo_easy_backup_allow"/>
+                                <div class="text-muted">
+                                    Allows to do backup of this database by provided link.
+                                    <field name="yodoo_easy_backup_url"
+                                           widget="url"
+                                           attrs="{'invisible': [('yodoo_easy_backup_allow', '=', False)]}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box mb0">
+                            <div class="o_setting_left_pane">
+                                <field name="yodoo_easy_backup_allow_public"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="yodoo_easy_backup_allow_public"/>
+                                <div class="text-muted">
+                                    Allows to do backup of this database for public users.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
