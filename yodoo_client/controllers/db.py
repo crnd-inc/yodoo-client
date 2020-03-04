@@ -225,6 +225,8 @@ class SAASClientDb(http.Controller):
                 to_update_modules.add('yodoo_client')
 
             for module_name in auto_install_addons:
+                if module_name not in modules_on_disk:
+                    continue
                 if module_name not in modules_in_db:
                     _logger.info(
                         "Module %s is mentioned in auto_install_addons list, "
