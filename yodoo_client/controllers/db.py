@@ -19,9 +19,6 @@ from ..utils import (
     prepare_db_statistic_data,
     str_filter_falsy,
     get_yodoo_client_version,
-    make_addons_to_be_installed,
-    make_addons_to_be_upgraded,
-    ensure_installing_addons_dependencies,
 )
 from ..http_decorators import (
     require_saas_token,
@@ -213,49 +210,54 @@ class SAASClientDb(http.Controller):
             """)
             modules_in_db = dict(cr.fetchall())
 
-            if 'yodoo_client' not in modules_in_db:
+        if 'yodoo_client' not in modules_in_db:
+            _logger.info(
+                "yodoo_client not installed, adding to install list")
+            to_install_modules.add('yodoo_client')
+        elif modules_in_db['yodoo_client'] != get_yodoo_client_version():
+            _logger.info(
+                "yodoo_client not up to date (%s != %s), "
+                "adding to update list",
+                modules_in_db['yodoo_client'], get_yodoo_client_version())
+            to_update_modules.add('yodoo_client')
+
+        for module_name in auto_install_addons:
+            if module_name not in modules_on_disk:
+                continue
+            if module_name not in modules_in_db:
                 _logger.info(
-                    "yodoo_client not installed, adding to install list")
-                to_install_modules.add('yodoo_client')
-            elif modules_in_db['yodoo_client'] != get_yodoo_client_version():
+                    "Module %s is mentioned in auto_install_addons list, "
+                    "but is not installed in database. Installing.",
+                    module_name
+                )
+                to_install_modules.add(module_name)
+
+        for module_name, db_version in modules_in_db.items():
+            if module_name not in modules_on_disk:
+                continue
+            if db_version != modules_on_disk[module_name]['version']:
                 _logger.info(
-                    "yodoo_client not up to date (%s != %s), "
-                    "adding to update list",
-                    modules_in_db['yodoo_client'], get_yodoo_client_version())
-                to_update_modules.add('yodoo_client')
-
-            for module_name in auto_install_addons:
-                if module_name not in modules_on_disk:
-                    continue
-                if module_name not in modules_in_db:
-                    _logger.info(
-                        "Module %s is mentioned in auto_install_addons list, "
-                        "but is not installed in database. Installing.",
-                        module_name
-                    )
-                    to_install_modules.add(module_name)
-
-            for module_name, db_version in modules_in_db.items():
-                if db_version != modules_on_disk[module_name]['version']:
-                    _logger.info(
-                        "Module %s is not up to data, adding to update list.",
-                        module_name)
-                    to_update_modules.add(module_name)
-
-            if to_install_modules:
-                make_addons_to_be_installed(cr, to_install_modules)
-
-            if to_update_modules:
-                make_addons_to_be_upgraded(cr, to_update_modules)
-            ensure_installing_addons_dependencies(cr)
-            cr.commit()  # pylint: disable=invalid-commit
+                    "Module %s is not up to data, adding to update list.",
+                    module_name)
+                to_update_modules.add(module_name)
 
         if to_install_modules or to_update_modules:
             _logger.info(
                 "There are addons to install %s and to update %s found.",
                 tuple(to_install_modules), tuple(to_update_modules))
-            api.Environment.reset()
-            odoo.modules.registry.Registry.new(dbname, update_module=True)
+            with registry(dbname).cursor() as cr:
+                env = api.Environment(cr, SUPERUSER_ID, context={})
+                env['ir.module.module'].update_list()
+                if to_install_modules:
+                    env['ir.module.module'].search(
+                        [('name', 'in', list(to_install_modules)),
+                         ('state', 'in', ('uninstalled', 'to_install'))]
+                    ).button_immediate_install()
+                if to_update_modules:
+                    env['ir.module.module'].search(
+                        [('name', 'in', list(to_update_modules)),
+                         ('state', 'in', ('uninstalled', 'to_install'))]
+                    ).button_immediate_upgrade()
 
     @http.route(
         '/saas/client/db/restore',
