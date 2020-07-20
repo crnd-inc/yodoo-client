@@ -406,6 +406,10 @@ class SAASClientDb(http.Controller):
             if outgoing_srv:
                 outgoing_srv.write(outgoing_data)
             else:
+                param = env['ir.config_parameter'].sudo()
+                catchall_domain = outgoing['user'].split('@')[1]
+                param.set_param('mail.catchall.domain',
+                        catchall_domain)
                 outgoing_list = env['ir.mail_server'].search([('active', '=', True)])
                 for i in outgoing_list:
                     i.write({'active': False})
