@@ -406,8 +406,11 @@ class SAASClientDb(http.Controller):
             if outgoing_srv:
                 outgoing_srv.write(outgoing_data)
             else:
-                param = env['ir.config_parameter'].sudo()
                 catchall_domain = outgoing['user'].split('@')[1]
+                res_users = env['res.users'].sudo().with_context(active_test=False)
+                odoobot = res_users.search([('id', '=', 1)])
+                odoobot.partner_id.write({'email': 'odoobot@%s' % catchall_domain})
+                param = env['ir.config_parameter'].sudo()
                 param.set_param('mail.catchall.domain',
                         catchall_domain)
                 outgoing_list = env['ir.mail_server'].search([('active', '=', True)])
