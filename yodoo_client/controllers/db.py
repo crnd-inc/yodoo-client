@@ -25,7 +25,6 @@ from ..http_decorators import (
     require_db_param,
 )
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -407,14 +406,13 @@ class SAASClientDb(http.Controller):
                 outgoing_srv.write(outgoing_data)
             else:
                 catchall_domain = outgoing['user'].split('@')[1]
-                res_users = env['res.users'].sudo().with_context(active_test=False)
-                odoobot = res_users.search([('id', '=', 1)])
-                odoobot.partner_id.write({'email': 'odoobot@%s' % catchall_domain})
-                param = env['ir.config_parameter'].sudo()
-                param.set_param('mail.catchall.domain',
-                        catchall_domain)
-                outgoing_list = env['ir.mail_server'].search([('active', '=', True)])
-                for i in outgoing_list:
+                res_users = env[
+                    'res.users'].sudo().with_context(active_test=False)
+                res_users.search([('id', '=', 1)]).partner_id.write(
+                    {'email': 'odoobot@%s' % catchall_domain})
+                env['ir.config_parameter'].sudo().set_param(
+                    'mail.catchall.domain', catchall_domain)
+                for i in env['ir.mail_server'].search([('active', '=', True)]):
                     i.write({'active': False})
                 outgoing_srv = env['ir.mail_server'].create(outgoing_data)
                 env['ir.model.data'].create({
@@ -464,7 +462,8 @@ class SAASClientDb(http.Controller):
                 'yodoo_client.yodoo_outgoing_mail',
                 raise_if_not_found=False)
             if outgoing_srv:
-                outgoing_list = env['ir.mail_server'].search([('active', '=', False)])
+                outgoing_list = env['ir.mail_server'].search(
+                    [('active', '=', False)])
                 for i in outgoing_list:
                     i.write({'active': True})
                 outgoing_srv.unlink()
