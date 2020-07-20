@@ -332,6 +332,7 @@ class SAASClientDb(http.Controller):
     @require_db_param
     def client_db_configure_mail(self, incoming, outgoing, db=None,
                                  test_and_confirm=False, **params):
+        # pylint: disable=too-many-locals, too-many-branches
         """ Configure mail servers for database
 
             :param dict incoming: dict with config of incoming mail server
