@@ -406,13 +406,15 @@ class SAASClientDb(http.Controller):
             if outgoing_srv:
                 outgoing_srv.write(outgoing_data)
             else:
-                catchall_domain = outgoing['user'].split('@')[1]
-                res_users = env[
-                    'res.users'].sudo().with_context(active_test=False)
-                res_users.search([('id', '=', 1)]).partner_id.write(
-                    {'email': 'odoobot@%s' % catchall_domain})
-                env['ir.config_parameter'].sudo().set_param(
-                    'mail.catchall.domain', catchall_domain)
+                catchall_domain = outgoing['user'].split('@')
+                if len(catchall_domain) > 1:
+                    catchall_domain = catchall_domain[1]
+                    res_users = env[
+                        'res.users'].sudo().with_context(active_test=False)
+                    res_users.search([('id', '=', 1)]).partner_id.write(
+                        {'email': 'odoobot@%s' % catchall_domain})
+                    env['ir.config_parameter'].sudo().set_param(
+                        'mail.catchall.domain', catchall_domain)
                 for i in env['ir.mail_server'].search([('active', '=', True)]):
                     i.write({'active': False})
                 outgoing_srv = env['ir.mail_server'].create(outgoing_data)
