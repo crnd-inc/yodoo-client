@@ -466,9 +466,8 @@ class SAASClientDb(http.Controller):
                 'yodoo_client.yodoo_outgoing_mail',
                 raise_if_not_found=False)
             if outgoing_srv:
-                outgoing_list = env['ir.mail_server'].search(
-                    [('active', '=', False)]
-                ).write({'active': True})
+                env['ir.mail_server'].search(
+                    [('active', '=', False)]).write({'active': True})
                 outgoing_srv.unlink()
         return http.Response('OK', status=200)
 
