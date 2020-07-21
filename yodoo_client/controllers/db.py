@@ -411,12 +411,13 @@ class SAASClientDb(http.Controller):
                     catchall_domain = catchall_domain[1]
                     res_users = env[
                         'res.users'].sudo().with_context(active_test=False)
-                    res_users.search([('id', '=', 1)]).partner_id.write(
+                    res_users.browse(SUPERUSER_ID).partner_id.write(
                         {'email': 'odoobot@%s' % catchall_domain})
                     env['ir.config_parameter'].sudo().set_param(
                         'mail.catchall.domain', catchall_domain)
-                for i in env['ir.mail_server'].search([('active', '=', True)]):
-                    i.write({'active': False})
+                env['ir.mail_server'].search(
+                    [('active', '=', True)]
+                ).write({'active': False})
                 outgoing_srv = env['ir.mail_server'].create(outgoing_data)
                 env['ir.model.data'].create({
                     'name': 'yodoo_outgoing_mail',
@@ -466,9 +467,8 @@ class SAASClientDb(http.Controller):
                 raise_if_not_found=False)
             if outgoing_srv:
                 outgoing_list = env['ir.mail_server'].search(
-                    [('active', '=', False)])
-                for i in outgoing_list:
-                    i.write({'active': True})
+                    [('active', '=', False)]
+                ).write({'active': True})
                 outgoing_srv.unlink()
         return http.Response('OK', status=200)
 
