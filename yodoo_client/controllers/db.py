@@ -25,7 +25,6 @@ from ..http_decorators import (
     require_db_param,
 )
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -333,6 +332,7 @@ class SAASClientDb(http.Controller):
     @require_db_param
     def client_db_configure_mail(self, incoming, outgoing, db=None,
                                  test_and_confirm=False, **params):
+        # pylint: disable=too-many-locals, too-many-branches
         """ Configure mail servers for database
 
             :param dict incoming: dict with config of incoming mail server
@@ -406,6 +406,18 @@ class SAASClientDb(http.Controller):
             if outgoing_srv:
                 outgoing_srv.write(outgoing_data)
             else:
+                catchall_domain = outgoing['user'].split('@')
+                if len(catchall_domain) > 1:
+                    catchall_domain = catchall_domain[1]
+                    res_users = env[
+                        'res.users'].sudo().with_context(active_test=False)
+                    res_users.browse(SUPERUSER_ID).partner_id.write(
+                        {'email': 'odoobot@%s' % catchall_domain})
+                    env['ir.config_parameter'].sudo().set_param(
+                        'mail.catchall.domain', catchall_domain)
+                env['ir.mail_server'].search(
+                    [('active', '=', True)]
+                ).write({'active': False})
                 outgoing_srv = env['ir.mail_server'].create(outgoing_data)
                 env['ir.model.data'].create({
                     'name': 'yodoo_outgoing_mail',
@@ -454,6 +466,8 @@ class SAASClientDb(http.Controller):
                 'yodoo_client.yodoo_outgoing_mail',
                 raise_if_not_found=False)
             if outgoing_srv:
+                env['ir.mail_server'].search(
+                    [('active', '=', False)]).write({'active': True})
                 outgoing_srv.unlink()
         return http.Response('OK', status=200)
 
