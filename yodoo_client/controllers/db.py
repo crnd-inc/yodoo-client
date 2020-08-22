@@ -542,8 +542,6 @@ class SAASClientDb(http.Controller):
             'db.expiry_type')
         if not db_expiry_type:
             return {}
-        if not user.has_group('base.group_system'):
-            return {}
         db_date_expiry = param_obj.get_param('db.date_expiry') or False
         vals = {
             'date_expiry': db_date_expiry,
@@ -551,15 +549,24 @@ class SAASClientDb(http.Controller):
             'expiry_text': param_obj.get_param('db.expiry_text') or False,
             'expiry_title': param_obj.get_param('db.expiry_title') or False,
             'redirect_url': param_obj.get_param('db.redirect_url') or False,
+            'invoice_url': param_obj.get_param('db.invoice_url') or False,
+            'invoice_support_url':
+                param_obj.get_param('db.invoice_support_url') or False,
             'accepted_message_expiry': False,
         }
         if db_date_expiry:
             now = int(datetime.datetime.utcnow().timestamp())
             days2expiry = int((int(db_date_expiry) - now) / (60 * 60 * 24))
+            if days2expiry < 0:
+                days2expiry = 0
             vals.update({
                 'days2expiry': days2expiry,
             })
-
+            if not user.has_group('base.group_system') or days2expiry != 0:
+                return {}
+        else:
+            if not user.has_group('base.group_system'):
+                return {}
         cookie = http.request.session.get('accepted_message_expiry')
         if cookie:
             now = int(datetime.datetime.utcnow().timestamp())
@@ -571,9 +578,16 @@ class SAASClientDb(http.Controller):
                 http.request.session.pop('accepted_message_expiry')
                 http.request.session.pop('accepted_message_expiry_ttl')
                 http.request.session.pop('accepted_message_expiry_start')
+                vals.update({
+                    'accepted_message_expiry': cookie,
+                    'accepted_message_expiry_ttl': ttl,
+                    'accepted_message_expiry_start': start,
+                })
             else:
                 vals.update({
                     'accepted_message_expiry': cookie,
+                    'accepted_message_expiry_ttl': ttl,
+                    'accepted_message_expiry_start': start,
                 })
         return vals
 
@@ -586,7 +600,7 @@ class SAASClientDb(http.Controller):
     def accept_message_expiry(self):
         cookie = 'accepted_message_expiry'
         http.request.session[cookie] = True
-        http.request.session['%s_ttl' % cookie] = 10
+        http.request.session['%s_ttl' % cookie] = 30
             # 60 * 60 * 12
         http.request.session['%s_start' % cookie] = \
             int(datetime.datetime.now().timestamp())
