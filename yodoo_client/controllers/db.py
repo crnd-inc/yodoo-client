@@ -543,6 +543,10 @@ class SAASClientDb(http.Controller):
             to_remove = env['ir.config_parameter'].search([
                 ('key', 'in', ['db.date_expiry',
                                'db.expiry_type',
+                               'db.expiry_title',
+                               'db.expiry_text',
+                               'db.invoice_url',
+                               'db.invoice_support_url',
                                'db.redirect_url'])])
             to_remove.unlink()
         return http.Response('OK', status=200)
