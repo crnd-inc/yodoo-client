@@ -19,7 +19,7 @@ odoo.define('yodoo_client.db_expiry', function (require) {
         },
 
         yodoo_show_db_expiry: function (data) {
-            var serie = session.server_version_info[0]
+            var serie = session.server_version_info[0];
             var t = $(qweb.render('yodoo_client.db.expiry', data));
             $('.o_web_client').prepend(t);
             if (data.days2expiry < 1) {
@@ -49,12 +49,14 @@ odoo.define('yodoo_client.db_expiry', function (require) {
                         var ame = result.accepted_message_expiry;
                         if (ame) {
                             setTimeout(
-                                self.yodoo_check_db_expiry.bind(self), 60 * 1000);
+                                self.yodoo_check_db_expiry.bind(self),
+                                60 * 1000);
                         } else if (result.expiry_type) {
                             self.yodoo_show_db_expiry(result);
                         } else {
                             setTimeout(
-                                self.yodoo_check_db_expiry.bind(self), 60 * 1000);
+                                self.yodoo_check_db_expiry.bind(self),
+                                60 * 1000);
                         }
                     }
                 });
