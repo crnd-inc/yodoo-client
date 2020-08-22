@@ -18,12 +18,6 @@ odoo.define('yodoo_client.db_expiry', function (require) {
             this._super.apply(this, arguments);
         },
 
-        // show_application: function () {
-        //     var res = this._super.apply(this, arguments);
-        //     // this.yodoo_click_db_expiry_ok();
-        //     return res;
-        // },
-
         yodoo_show_db_expiry: function (data) {
             var serie = session.server_version_info[0]
             var t = $(qweb.render('yodoo_client.db.expiry', data));
@@ -55,12 +49,12 @@ odoo.define('yodoo_client.db_expiry', function (require) {
                         var ame = result.accepted_message_expiry;
                         if (ame) {
                             setTimeout(
-                                self.yodoo_check_db_expiry.bind(self), 10 * 1000);
+                                self.yodoo_check_db_expiry.bind(self), 60 * 1000);
                         } else if (result.expiry_type) {
                             self.yodoo_show_db_expiry(result);
                         } else {
                             setTimeout(
-                                self.yodoo_check_db_expiry.bind(self), 10 * 1000);
+                                self.yodoo_check_db_expiry.bind(self), 60 * 1000);
                         }
                     }
                 });
@@ -82,25 +76,5 @@ odoo.define('yodoo_client.db_expiry', function (require) {
                 }
             });
         },
-
-        // yodoo_click_db_expiry_ok: function (message) {
-        //     var self = this;
-        //     var accept_message_expiry = $("#accept_message_expiry");
-        //
-        //     accept_message_expiry.click(function (e) {
-        //         e.preventDefault();
-        //         ajax.jsonRpc(
-        //             "/saas/client/db/expiry/accept",
-        //             "call").then(function (data) {
-        //             if (data.result === "ok") {
-        //                 $(e.target)
-        //                     .closest("#yodoo-client-db-expiry")
-        //                     .hide("fast");
-        //                 setTimeout(
-        //                     self.yodoo_check_db_expiry.bind(self), 10000);
-        //             }
-        //         });
-        //     });
-        // },
     });
 });

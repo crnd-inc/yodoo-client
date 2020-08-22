@@ -502,12 +502,28 @@ class SAASClientDb(http.Controller):
 
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
-            env['ir.config_parameter'].set_param(
-                'db.date_expiry', expiry.get('date_expiry') or False)
-            env['ir.config_parameter'].set_param(
-                'db.expiry_type', expiry.get('expiry_type') or False)
-            env['ir.config_parameter'].set_param(
-                'db.redirect_url', expiry.get('redirect_url') or False)
+            if expiry.get('date_expiry'):
+                env['ir.config_parameter'].set_param(
+                    'db.date_expiry', expiry.get('date_expiry') or False)
+            if expiry.get('expiry_type'):
+                env['ir.config_parameter'].set_param(
+                    'db.expiry_type', expiry.get('expiry_type') or False)
+            if expiry.get('expiry_title'):
+                env['ir.config_parameter'].set_param(
+                    'db.expiry_title', expiry.get('expiry_title') or False)
+            if expiry.get('expiry_text'):
+                env['ir.config_parameter'].set_param(
+                    'db.expiry_text', expiry.get('expiry_text') or False)
+            if expiry.get('redirect_url'):
+                env['ir.config_parameter'].set_param(
+                    'db.redirect_url', expiry.get('redirect_url') or False)
+            if expiry.get('invoice_url'):
+                env['ir.config_parameter'].set_param(
+                    'db.invoice_url', expiry.get('invoice_url'))
+            if expiry.get('invoice_support_url'):
+                env['ir.config_parameter'].set_param(
+                    'db.invoice_support_url',
+                    expiry.get('invoice_support_url'))
 
         return http.Response('OK', status=200)
 
@@ -600,11 +616,9 @@ class SAASClientDb(http.Controller):
     def accept_message_expiry(self):
         cookie = 'accepted_message_expiry'
         http.request.session[cookie] = True
-        http.request.session['%s_ttl' % cookie] = 30
-            # 60 * 60 * 12
+        http.request.session['%s_ttl' % cookie] = 60 * 60 * 12
         http.request.session['%s_start' % cookie] = \
             int(datetime.datetime.now().timestamp())
-
         http.request.env["ir.ui.view"].search(
             [("type", "=", "qweb")]).clear_caches()
         return {"result": "ok"}
