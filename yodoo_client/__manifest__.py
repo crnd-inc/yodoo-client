@@ -11,7 +11,7 @@
     'website': "https://yodoo.systems",
     'license': 'Other proprietary',
 
-    'version': '11.0.1.11.0',
+    'version': '11.0.1.12.0',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -29,6 +29,7 @@
         'data/ir_actions_server.xml',
         'views/yodoo_client_auth_log.xml',
         'views/saas_statistic.xml',
+        'views/assets.xml',
         'views/ir_module_module.xml',
     ],
     # only loaded in demonstration mode
