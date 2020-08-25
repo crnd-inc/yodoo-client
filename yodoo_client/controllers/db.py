@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import json
@@ -483,3 +484,145 @@ class SAASClientDb(http.Controller):
     def client_db_statistic(self, db=None, **params):
         data = prepare_db_statistic_data(db)
         return Response(json.dumps(data), status=200)
+
+    @http.route(
+        '/saas/client/db/expiry',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_expiry(self, db=None, expiry=None,
+                         test_and_confirm=False, **params):
+        if not expiry:
+            raise werkzeug.exceptions.BadRequest(
+                description='Expire data is not provided!')
+
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            if expiry.get('date_expiry'):
+                env['ir.config_parameter'].set_param(
+                    'db.date_expiry', expiry.get('date_expiry') or False)
+            if expiry.get('expiry_type'):
+                env['ir.config_parameter'].set_param(
+                    'db.expiry_type', expiry.get('expiry_type') or False)
+            if expiry.get('expiry_title'):
+                env['ir.config_parameter'].set_param(
+                    'db.expiry_title', expiry.get('expiry_title') or False)
+            if expiry.get('expiry_text'):
+                env['ir.config_parameter'].set_param(
+                    'db.expiry_text', expiry.get('expiry_text') or False)
+            if expiry.get('redirect_url'):
+                env['ir.config_parameter'].set_param(
+                    'db.redirect_url', expiry.get('redirect_url') or False)
+            if expiry.get('invoice_url'):
+                env['ir.config_parameter'].set_param(
+                    'db.invoice_url', expiry.get('invoice_url'))
+            if expiry.get('invoice_support_url'):
+                env['ir.config_parameter'].set_param(
+                    'db.invoice_support_url',
+                    expiry.get('invoice_support_url'))
+
+        return http.Response('OK', status=200)
+
+    @http.route(
+        '/saas/client/db/expiry/delete',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_expiry_delete(self, db=None,
+                                test_and_confirm=False, **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            to_remove = env['ir.config_parameter'].search([
+                ('key', 'in', ['db.date_expiry',
+                               'db.expiry_type',
+                               'db.expiry_title',
+                               'db.expiry_text',
+                               'db.invoice_url',
+                               'db.invoice_support_url',
+                               'db.redirect_url'])])
+            to_remove.unlink()
+        return http.Response('OK', status=200)
+
+    @http.route('/saas/client/db/state/get',
+                type='json',
+                auth='user')
+    def get_db_state(self):
+        env = http.request.env
+        param_obj = env['ir.config_parameter']
+        user = env.user
+        db_expiry_type = env['ir.config_parameter'].get_param(
+            'db.expiry_type')
+        if not db_expiry_type:
+            return {}
+        db_date_expiry = param_obj.get_param('db.date_expiry') or False
+        vals = {
+            'date_expiry': db_date_expiry,
+            'expiry_type': param_obj.get_param('db.expiry_type') or False,
+            'expiry_text': param_obj.get_param('db.expiry_text') or False,
+            'expiry_title': param_obj.get_param('db.expiry_title') or False,
+            'redirect_url': param_obj.get_param('db.redirect_url') or False,
+            'invoice_url': param_obj.get_param('db.invoice_url') or False,
+            'invoice_support_url':
+                param_obj.get_param('db.invoice_support_url') or False,
+            'accepted_message_expiry': False,
+        }
+        if db_date_expiry:
+            now = int(datetime.datetime.utcnow().timestamp())
+            days2expiry = int((int(db_date_expiry) - now) / (60 * 60 * 24))
+            if days2expiry < 0:
+                days2expiry = 0
+            vals.update({
+                'days2expiry': days2expiry,
+            })
+            if not user.has_group('base.group_system') or days2expiry != 0:
+                return {}
+        else:
+            if not user.has_group('base.group_system'):
+                return {}
+        cookie = http.request.session.get('accepted_message_expiry')
+        if cookie:
+            now = int(datetime.datetime.utcnow().timestamp())
+            ttl = http.request.session.get('accepted_message_expiry_ttl')
+            start = http.request.session.get('accepted_message_expiry_start')
+            if not (ttl and start):
+                return vals
+            if now > int(start) + int(ttl):
+                http.request.session.pop('accepted_message_expiry')
+                http.request.session.pop('accepted_message_expiry_ttl')
+                http.request.session.pop('accepted_message_expiry_start')
+                vals.update({
+                    'accepted_message_expiry': cookie,
+                    'accepted_message_expiry_ttl': ttl,
+                    'accepted_message_expiry_start': start,
+                })
+            else:
+                vals.update({
+                    'accepted_message_expiry': cookie,
+                    'accepted_message_expiry_ttl': ttl,
+                    'accepted_message_expiry_start': start,
+                })
+        return vals
+
+    @http.route(
+        "/saas/client/db/expiry/accept",
+        auth="user",
+        type="json",
+        methods=["POST"],
+    )
+    def accept_message_expiry(self):
+        cookie = 'accepted_message_expiry'
+        http.request.session[cookie] = True
+        http.request.session['%s_ttl' % cookie] = 60 * 60 * 12
+        http.request.session['%s_start' % cookie] = \
+            int(datetime.datetime.now().timestamp())
+        http.request.env["ir.ui.view"].search(
+            [("type", "=", "qweb")]).clear_caches()
+        return {"result": "ok"}
