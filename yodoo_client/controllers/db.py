@@ -528,7 +528,7 @@ class SAASClientDb(http.Controller):
         return http.Response('OK', status=200)
 
     @http.route(
-        '/saas/client/db/expiry/remove',
+        '/saas/client/db/expiry/delete',
         type='http',
         auth='none',
         metods=['POST'],
@@ -536,8 +536,8 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
-    def client_db_expiry(self, db=None,
-                         test_and_confirm=False, **params):
+    def client_db_expiry_delete(self, db=None,
+                                test_and_confirm=False, **params):
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
             to_remove = env['ir.config_parameter'].search([
