@@ -499,7 +499,7 @@ class SAASClientDb(http.Controller):
         if not expiry:
             raise werkzeug.exceptions.BadRequest(
                 description='Expire data is not provided!')
-
+        expiry = json.loads(expiry)
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
             if expiry.get('date_expiry'):
