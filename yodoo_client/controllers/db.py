@@ -582,7 +582,7 @@ class SAASClientDb(http.Controller):
             vals.update({
                 'days2expiry': days2expiry,
             })
-            if not user.has_group('base.group_system') or days2expiry != 0:
+            if not user.has_group('base.group_system') and days2expiry != 0:
                 return {}
         else:
             if not user.has_group('base.group_system'):
