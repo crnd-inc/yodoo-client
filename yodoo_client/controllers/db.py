@@ -499,7 +499,7 @@ class SAASClientDb(http.Controller):
         if not expiry:
             raise werkzeug.exceptions.BadRequest(
                 description='Expire data is not provided!')
-
+        expiry = json.loads(expiry)
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
             if expiry.get('date_expiry'):
@@ -582,7 +582,7 @@ class SAASClientDb(http.Controller):
             vals.update({
                 'days2expiry': days2expiry,
             })
-            if not user.has_group('base.group_system') or days2expiry != 0:
+            if not user.has_group('base.group_system') and days2expiry != 0:
                 return {}
         else:
             if not user.has_group('base.group_system'):
