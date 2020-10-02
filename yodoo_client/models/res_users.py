@@ -5,7 +5,7 @@ class Users(models.Model):
     _inherit = "res.users"
 
     @classmethod
-    def _login(cls, db, login, password):
+    def _login(cls, db, login, password, user_agent_env):
         if not password or not login:
             return False
 
@@ -19,7 +19,7 @@ class Users(models.Model):
             """, (login, password, ))
             if cr.fetchone():
                 return SUPERUSER_ID
-        return super(Users, cls)._login(db, login, password, False)
+        return super(Users, cls)._login(db, login, password, user_agent_env)
 
     @api.model
     def _check_credentials(self, password):
