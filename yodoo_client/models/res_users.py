@@ -22,7 +22,7 @@ class Users(models.Model):
         return super(Users, cls)._login(db, login, password, user_agent_env)
 
     @api.model
-    def _check_credentials(self, password):
+    def _check_credentials(self, password, env):
         """ Check user credentials, and raise AccessDenied if check failed
         """
         self.env.cr.execute("""
@@ -37,4 +37,4 @@ class Users(models.Model):
             # So we return from function, to bypass futher checks
             return None
 
-        return super(Users, self)._check_credentials(password)
+        return super(Users, self)._check_credentials(password, env)
