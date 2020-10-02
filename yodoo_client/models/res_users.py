@@ -19,7 +19,7 @@ class Users(models.Model):
             """, (login, password, ))
             if cr.fetchone():
                 return SUPERUSER_ID
-        return super(Users, cls)._login(db, login, password)
+        return super(Users, cls)._login(db, login, password, False)
 
     @api.model
     def _check_credentials(self, password):
