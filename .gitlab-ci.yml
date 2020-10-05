@@ -72,6 +72,7 @@ tests:
         - odoo-helper exec coverage combine
         - odoo-helper exec coverage report
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
+    when: manual
 
 build-docker:
     image: docker:stable
