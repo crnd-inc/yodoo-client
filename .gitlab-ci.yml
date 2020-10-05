@@ -75,7 +75,7 @@ tests:
 
 build-docker:
     image: docker:stable
-    stage: test
+    stage: build
     services:
         - name: docker:dind
           command:
@@ -102,6 +102,7 @@ build-docker:
         - docker logout $CI_REGISTRY
     only:
         - "14.0"
+    when: manual
 
 update-client:
     stage: build
