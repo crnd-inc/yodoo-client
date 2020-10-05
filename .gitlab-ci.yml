@@ -71,7 +71,6 @@ tests:
         - odoo-helper stop
         - odoo-helper exec coverage combine
         - odoo-helper exec coverage report
-    when: manual
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
 
 build-docker:
@@ -103,7 +102,6 @@ build-docker:
         - docker logout $CI_REGISTRY
     only:
         - "14.0"
-    when: manual
 
 update-client:
     stage: build
@@ -114,7 +112,7 @@ update-client:
     script:
         - sudo -H odoo-helper link -f .
         - sudo -H odoo-helper addons update-list || true
-        - sudo -H odoo-helper addons update --dir-r . --skip-errors --no-restart
+        - sudo -H odoo-helper addons update --dir-r .
     only:
         - "14.0"
 #    when: manual
