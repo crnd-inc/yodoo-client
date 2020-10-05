@@ -15,7 +15,8 @@ variables:
 stages:
     - static-test
     - test
-    - translation
+#    - translation
+    - deploy
     - build
 
 build_env:
@@ -100,5 +101,18 @@ build-docker:
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
+    only:
+        - "14.0"
+
+update-addons:
+    stage: deploy
+    tags:
+        - odoo
+        - yodoo_client
+        - auto-update
+    script:
+        - sudo -H odoo-helper link -f .
+        - sudo -H odoo-helper addons update-list || true
+        - sudo -H odoo-helper addons update --dir-r .
     only:
         - "14.0"
