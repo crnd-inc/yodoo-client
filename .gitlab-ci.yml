@@ -14,7 +14,7 @@ variables:
 
 stages:
     - static-test
-    # - test
+    - test
 #    - translation
     - build
 
@@ -71,8 +71,8 @@ tests:
         - odoo-helper stop
         - odoo-helper exec coverage combine
         - odoo-helper exec coverage report
-    coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
     when: manual
+    coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
 
 build-docker:
     image: docker:stable
