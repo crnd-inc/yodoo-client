@@ -14,9 +14,8 @@ variables:
 
 stages:
     - static-test
-    - test
+    # - test
 #    - translation
-    - deploy
     - build
 
 build_env:
@@ -76,7 +75,7 @@ tests:
 
 build-docker:
     image: docker:stable
-    stage: build
+    stage: test
     services:
         - name: docker:dind
           command:
@@ -104,8 +103,8 @@ build-docker:
     only:
         - "14.0"
 
-update-addons:
-    stage: deploy
+update-client:
+    stage: build
     tags:
         - odoo
         - yodoo_client
@@ -113,6 +112,7 @@ update-addons:
     script:
         - sudo -H odoo-helper link -f .
         - sudo -H odoo-helper addons update-list || true
-        - sudo -H odoo-helper addons update --dir-r .
+        - sudo -H odoo-helper addons update --dir-r . --skip-errors --no-restart
     only:
         - "14.0"
+#    when: manual
