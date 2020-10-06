@@ -300,7 +300,7 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
-    def client_db_configure_db(self, company_name=None,
+    def client_db_configure_db(self, db=None, company_name=None,
                                company_website=None, **params):
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
