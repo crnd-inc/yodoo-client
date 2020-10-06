@@ -302,19 +302,20 @@ class SAASClientDb(http.Controller):
     @require_db_param
     def client_db_configure_db(self, company_name=None,
                                company_website=None, **params):
-        env = api.Environment(cr, SUPERUSER_ID, context={})
-        u = env['res.users'].browse(2)
-        u.write({
-            'login': 'odoo',
-            'password': generate_random_password(16)
-        })
-        env['res.users.log'].search_records([]).unlink()
-        company_data = {}
-        if company_name:
-            company_data['name'] = company_name
-        if company_website:
-            company_data['website'] = company_website
-        env['res.company'].browse(1).write(company_data)
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            u = env['res.users'].browse(2)
+            u.write({
+                'login': 'odoo',
+                'password': generate_random_password(16)
+            })
+            env['res.users.log'].search_records([]).unlink()
+            company_data = {}
+            if company_name:
+                company_data['name'] = company_name
+            if company_website:
+                company_data['website'] = company_website
+            env['res.company'].browse(1).write(company_data)
 
     @http.route(
         '/saas/client/db/configure/base_url',
