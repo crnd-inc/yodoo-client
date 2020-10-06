@@ -20,6 +20,7 @@ from ..utils import (
     prepare_db_statistic_data,
     str_filter_falsy,
     get_yodoo_client_version,
+    generate_random_password,
 )
 from ..http_decorators import (
     require_saas_token,
@@ -289,6 +290,32 @@ class SAASClientDb(http.Controller):
             return http.Response('OK', status=200)
         finally:
             os.unlink(data_file.name)
+
+    @http.route(
+        '/saas/client/db/configure/db',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_db(self, db=None, company_name=None,
+                               company_website=None, **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            u = env['res.users'].browse(2)
+            u.write({
+                'login': 'odoo',
+                'password': generate_random_password(16)
+            })
+            env['res.users.log'].search_records([]).unlink()
+            company_data = {}
+            if company_name:
+                company_data['name'] = company_name
+            if company_website:
+                company_data['website'] = company_website
+            env['res.company'].browse(1).write(company_data)
 
     @http.route(
         '/saas/client/db/configure/base_url',
