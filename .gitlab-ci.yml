@@ -112,7 +112,6 @@ update-client:
     script:
         - sudo -H odoo-helper link -f .
         - sudo -H odoo-helper addons update-list || true
-        - sudo -H odoo-helper addons update --dir-r .
+        - sudo -H odoo-helper addons update --dir-r . --skip-errors
     only:
         - "14.0"
-#    when: manual
