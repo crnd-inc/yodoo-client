@@ -309,13 +309,14 @@ class SAASClientDb(http.Controller):
                 'login': 'odoo',
                 'password': generate_random_password(16)
             })
-            env['res.users.log'].search_records([]).unlink()
+            env['res.users.log'].search([]).unlink()
             company_data = {}
             if company_name:
                 company_data['name'] = company_name
             if company_website:
                 company_data['website'] = company_website
             env['res.company'].browse(1).write(company_data)
+        return http.Response('OK', status=200)
 
     @http.route(
         '/saas/client/db/configure/base_url',
