@@ -584,9 +584,9 @@ class SAASClientDb(http.Controller):
                 auth='user')
     def get_db_state(self):
         env = http.request.env
-        param_obj = env['ir.config_parameter']
+        param_obj = env['ir.config_parameter'].sudo()
         user = env.user
-        db_expiry_type = env['ir.config_parameter'].get_param(
+        db_expiry_type = param_obj.get_param(
             'db.expiry_type')
         if not db_expiry_type:
             return {}
