@@ -103,16 +103,3 @@ build-docker:
     only:
         - "12.0"
 
-update-client:
-    stage: build
-    tags:
-        - odoo
-        - yodoo_client
-        - auto-update
-        - v12
-    script:
-        - sudo -H odoo-helper link -f .
-        - sudo -H odoo-helper addons update-list || true
-        - sudo -H odoo-helper addons update --dir-r . --skip-errors --no-restart
-    only:
-        - "12.0"
