@@ -109,6 +109,7 @@ update-client:
         - odoo
         - yodoo_client
         - auto-update
+        - v14
     script:
         - sudo -H odoo-helper link -f .
         - sudo -H odoo-helper addons update-list || true
