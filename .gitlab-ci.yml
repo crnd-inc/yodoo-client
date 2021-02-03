@@ -102,3 +102,17 @@ build-docker:
         - docker logout $CI_REGISTRY
     only:
         - "13.0"
+
+update-client:
+    stage: build
+    tags:
+        - odoo
+        - yodoo_client
+        - auto-update
+        - v13
+    script:
+        - sudo -H odoo-helper link -f .
+        - sudo -H odoo-helper addons update-list || true
+        - sudo -H odoo-helper addons update --dir-r . --skip-errors --no-restart
+    only:
+        - "13.0"
