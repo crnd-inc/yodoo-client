@@ -1,5 +1,6 @@
 import re
 import odoo
+from odoo.service import db
 from odoo import http
 from odoo.tools import config
 
@@ -8,9 +9,14 @@ from .utils import (
     ensure_installing_addons_dependencies,
 )
 
+original_list_dbs = db.list_dbs
 original_db_filter = http.db_filter
 original_module_db_initialize = odoo.modules.db.initialize
 
+def list_dbs(force=False):
+    res = original_list_dbs(force)
+    db_name_pattern = r"^tmp-.*-tmp$"
+    return list(filter(lambda i: not(re.match(db_name_pattern, i)), res))
 
 def db_filter(dbs, httprequest=None):
     httprequest = httprequest or http.request.httprequest
@@ -40,3 +46,4 @@ def _post_load_hook():
 
     # Make autoinstall of yodoo_client
     odoo.modules.db.initialize = module_db_initialize
+    odoo.service.db.list_dbs = list_dbs
