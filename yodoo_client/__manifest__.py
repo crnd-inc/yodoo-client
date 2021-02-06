@@ -9,7 +9,7 @@
 
     'author': "Center of Research and Development",
     'website': "https://yodoo.systems",
-    'license': 'Other proprietary',
+    'license': 'LGPL-3',
 
     'version': '11.0.1.18.0',
 
