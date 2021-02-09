@@ -195,6 +195,42 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
             cl.uid
         self.assertIsInstance(le.exception, LoginException)
 
+    def test_07_controller_odoo_infrastructure_saas_auth_specific_user(self):
+        cl_admin = Client(host=self._odoo_host,
+                          dbname=self._db_name,
+                          port=self._odoo_port,
+                          user='admin',
+                          pwd='admin')
+        test_r_user = cl_admin['res.users'].create_record({
+            'name': 'My test user',
+            'login': 'my-test-user',
+        })
+        response = requests.post(
+            self._url,
+            data=dict(
+                self._data,
+                user_uuid='my-user-id',
+                user_id=test_r_user.id))
+        data = response.json()
+
+        # Check that correct row created in client auth table
+        OdooInfrastructureClientAuth = self._client[
+            'odoo.infrastructure.client.auth']
+        temp_rows = OdooInfrastructureClientAuth.search_records(
+            [('token_temp', '=', data['token_temp'])]
+        )
+        self.assertEqual(len(temp_rows), 1)
+        self.assertEqual(temp_rows[0].user_uuid, 'my-user-id')
+        self.assertEqual(temp_rows[0].user_id, test_r_user.id)
+
+        # check auth true login true password
+        cl = Client(host=self._odoo_host,
+                    dbname=self._db_name,
+                    port=self._odoo_port,
+                    user=data['token_user'],
+                    pwd=data['token_password'])
+        self.assertEqual(cl.uid, test_r_user.id)
+
     def test_08_controller_odoo_infrastructure_saas_auth(self):
         # check request if temp record does not exist
         AuthLog = self._client['yodoo.client.auth.log']
