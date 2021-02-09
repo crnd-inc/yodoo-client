@@ -209,6 +209,7 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
             'password': 'test-admin',
             'groups_id': [
                 (4, cls._client.ref('base.group_system').id),
+                (4, cls._client.ref('base.group_user').id),
             ],
         })
         cls._new_admin_cl = cls._client.login(
