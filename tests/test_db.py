@@ -193,3 +193,37 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(self._client.ref('yodoo_client.yodoo_incoming_mail'))
         self.assertFalse(self._client.ref('yodoo_client.yodoo_outgoing_mail'))
+
+    def test_15_db_configure_db_ok(self):
+        self.assertEqual(self._client['res.users'].browse(1)[0].login, 'admin')
+
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/db'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'company_website': "http://test.test",
+                'company_name': "My Company 42",
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            self._client['res.company'].browse(1)[0].website,
+            'http://test.test')
+        self.assertEqual(
+            self._client['res.company'].browse(1)[0].name,
+            'My Company 42')
+
+        self.assertEqual(self._client['res.users'].browse(1)[0].login, 'odoo')
+
+    def test_15_db_configure_db_no_params(self):
+        self.assertEqual(self._client['res.users'].browse(1)[0].login, 'admin')
+
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/db'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+            })
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(self._client['res.users'].browse(1)[0].login, 'odoo')

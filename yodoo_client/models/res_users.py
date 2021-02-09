@@ -1,4 +1,4 @@
-from odoo import models, SUPERUSER_ID, api
+from odoo import models, api
 
 
 class Users(models.Model):
@@ -11,14 +11,15 @@ class Users(models.Model):
 
         with cls.pool.cursor() as cr:
             cr.execute("""
-                SELECT id
+                SELECT id, user_id
                 FROM odoo_infrastructure_client_auth
                 WHERE token_user=%s
                     AND token_password=%s
                     AND expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';
             """, (login, password, ))
-            if cr.fetchone():
-                return SUPERUSER_ID
+            res = cr.fetchone()
+            if res and res[1]:
+                return res[1]
         return super(Users, cls)._login(db, login, password)
 
     @api.model

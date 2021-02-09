@@ -64,7 +64,7 @@ class SAASClient(http.Controller):
     @require_saas_token
     @require_db_param
     def create_temporary_login_data(self, db=None, ttl=DEFAULT_TIME_TO_LOGIN,
-                                    user_uuid=None, **params):
+                                    user_uuid=None, user_id=None, **params):
         admin_access_credentials = config.get('admin_access_credentials', True)
         if not admin_access_credentials:
             _logger.warning(
@@ -86,17 +86,20 @@ class SAASClient(http.Controller):
                 datetime.now() + timedelta(seconds=int(ttl))),
             'token_temp': random_token,
             'user_uuid': user_uuid,
+            'user_id': user_id if user_id else SUPERUSER_ID,
         }
         with registry(db).cursor() as cr:
             cr.execute("""
                 INSERT INTO odoo_infrastructure_client_auth
-                    (token_user, token_password, expire, token_temp, user_uuid)
+                    (token_user, token_password, expire, token_temp,
+                     user_uuid, user_id)
                 VALUES (
                     %(token_user)s,
                     %(token_password)s,
                     %(expire)s,
                     %(token_temp)s,
-                    %(user_uuid)s
+                    %(user_uuid)s,
+                    %(user_id)s,
                 );
             """, data)
         return Response(json.dumps(data), status=200)
@@ -144,7 +147,7 @@ class SAASClient(http.Controller):
 
         with registry(db).cursor() as cr:
             cr.execute("""
-                SELECT id, token_user, token_password, user_uuid
+                SELECT id, token_user, token_password, user_uuid, user_id
                 FROM odoo_infrastructure_client_auth
                 WHERE token_temp=%(toke_temp)s AND
                 expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC';
@@ -157,7 +160,7 @@ class SAASClient(http.Controller):
                 'Temp url %s does not exist', token)
             raise werkzeug.exceptions.Forbidden()
 
-        auth_id, user, password, user_uuid = res
+        auth_id, user, password, user_uuid, user_id = res
         request.session.authenticate(db, user, password)
         with registry(db).cursor() as cr:
             cr.execute("""
@@ -169,9 +172,11 @@ class SAASClient(http.Controller):
 
                 INSERT INTO yodoo_client_auth_log
                        (login_date, login_expire,
-                        login_state, login_session, login_remote_uuid)
+                        login_state, login_session,
+                        login_remote_uuid, login_user_id)
                 VALUES (%(login_date)s, %(login_expire)s,
-                        'active', %(login_session)s, %(user_uuid)s);
+                        'active', %(login_session)s,
+                        %(user_uuid)s, %(user_id)s);
 
                 DELETE FROM odoo_infrastructure_client_auth
                 WHERE id = %(auth_id)s;
@@ -182,6 +187,7 @@ class SAASClient(http.Controller):
                     datetime.now() + timedelta(
                         seconds=int(DEFAULT_ADMIN_SESSION_TTL))),
                 'user_uuid': user_uuid,
+                'user_id': user_id,
                 'auth_id': auth_id,
             })
         return http.redirect_with_hash('/web')
