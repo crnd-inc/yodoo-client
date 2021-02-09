@@ -22,6 +22,7 @@ class OdooInfrasstructureClientAuth(models.Model):
         default=get_default_expire)
     token_temp = fields.Char(readonly=True, index=True)
     user_uuid = fields.Char(readonly=True)
+    user_id = fields.Integer(readonly=True)
 
     @api.model
     def scheduler_cleanup_expired_entries(self):
