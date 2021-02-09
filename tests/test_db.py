@@ -86,7 +86,7 @@ class TestDBModuleInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 440)
 
 
-class TestDBUsersInfo(TestOdooInfrastructureClient):
+class TestDBUsersConfigureBasics(TestOdooInfrastructureClient):
 
     def test_04_db_configure_base_url_ok(self):
         response = requests.post(
@@ -195,3 +195,102 @@ class TestDBUsersInfo(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(self._client.ref('yodoo_client.yodoo_incoming_mail'))
         self.assertFalse(self._client.ref('yodoo_client.yodoo_outgoing_mail'))
+
+
+class TestDBConfigureDB(TestOdooInfrastructureClient):
+    @classmethod
+    def setUpClass(cls):
+        super(TestDBConfigureDB, cls).setUpClass()
+        cls._new_admin_rec = cls._client['res.users'].create({
+            'name': 'Test Admin',
+            'login': 'test-admin',
+            'password': 'test-admin',
+            'groups_id': [
+                (4, cls._client.ref('base.group_system').id),
+            ],
+        })
+        cls._new_admin_cl = cls._client.login(
+            cls._db_name, 'test-admin', 'test-admin')
+
+    def setUp(self):
+        super(TestDBConfigureDB, self).setUp()
+
+        self._new_admin_cl['res.users'].write([1], {
+            'login': 'admin',
+            'password': 'admin',
+        })
+
+    def test_15_db_configure_db_ok(self):
+        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/db'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'company_website': "http://test.test",
+                'company_name': "My Company 42",
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            self._new_admin_cl['res.company'].browse(1).website,
+            'http://test.test')
+        self.assertEqual(
+            self._new_admin_cl['res.company'].browse(1).name,
+            'My Company 42')
+
+        self.assertEqual(self._new_admin_cl['res.users'].browse(1).login, 'odoo')
+
+    def test_15_db_configure_db_no_params(self):
+        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/db'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+            })
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(self._new_admin_cl['res.users'].browse(1).login, 'odoo')
+
+    def test_20_db_configure_update_admin_ok(self):
+        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/update-admin-user'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+                'email': 'test@test.test',
+                'name': 'Test Admin',
+                'phone': '12345678',
+                'login': 'admin-s1',
+                'password': 'my-password',
+            })
+        self.assertEqual(response.status_code, 200)
+
+        admin_user = self._new_admin_cl['res.users'].browse(1)
+        self.assertEqual(admin_user.login, 'admin-s1')
+        self.assertEqual(admin_user.name, 'Test Admin')
+        self.assertEqual(admin_user.phone, '12345678')
+        self.assertEqual(admin_user.email, 'test@test.test')
+
+        self.assertEqual(
+            self._client.login(
+                self._client.dbname, 'admin-s1', 'my-password').uid,
+            1)
+
+    def test_20_db_configure_update_admin_no_params(self):
+        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+
+        response = requests.post(
+            self.create_url('/saas/client/db/configure/update-admin-user'),
+            data={
+                'token_hash': self._hash_token,
+                'db': self._client.dbname,
+            })
+        self.assertEqual(response.status_code, 200)
+
+        # nothing have to be changed
+        self.assertEqual(self._new_admin_cl['res.users'].browse(1).login, 'admin')

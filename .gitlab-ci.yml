@@ -73,7 +73,7 @@ tests:
         - odoo-helper exec coverage report
     coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)/'
 
-build-docker:
+.build-docker: &build-docker-definition
     image: docker:stable
     stage: build
     services:
@@ -100,6 +100,14 @@ build-docker:
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
+
+build-docker-stable:
+    <<: *build-docker-definition
     only:
         - "12.0"
 
+build-docker-dev:
+    <<: *build-docker-definition
+    only:
+        - /^12.0-.*$/
+    when: manual

@@ -20,6 +20,7 @@ from ..utils import (
     prepare_db_statistic_data,
     str_filter_falsy,
     get_yodoo_client_version,
+    generate_random_password,
 )
 from ..http_decorators import (
     require_saas_token,
@@ -27,6 +28,8 @@ from ..http_decorators import (
 )
 
 _logger = logging.getLogger(__name__)
+
+ADMIN_USER_ID = SUPERUSER_ID
 
 
 class SAASClientDb(http.Controller):
@@ -289,6 +292,75 @@ class SAASClientDb(http.Controller):
             return http.Response('OK', status=200)
         finally:
             os.unlink(data_file.name)
+
+    @http.route(
+        '/saas/client/db/configure/db',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_db(self, db=None, company_name=None,
+                               company_website=None, **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+
+            # Regenerate password for administrator user for security reason
+            u = env['res.users'].browse(ADMIN_USER_ID)
+            u.write({
+                'login': 'odoo',
+                'password': generate_random_password(),
+            })
+            # Cleanup login history (useful if database was created as
+            # duplicate
+            env['res.users.log'].search([]).unlink()
+
+            company_data = {}
+            if company_name:
+                company_data['name'] = company_name
+            if company_website:
+                company_data['website'] = company_website
+
+            # Update info about main company
+            if company_data:
+                env['res.company'].browse(ADMIN_USER_ID).write(company_data)
+        return http.Response('OK', status=200)
+
+    @http.route(
+        '/saas/client/db/configure/update-admin-user',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_update_admin_user(self, db=None, email=None,
+                                              name=None, phone=None,
+                                              login=None, password=None,
+                                              **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+
+            # Update info about administrator user
+            data = {}
+            if email:
+                data['email'] = email
+            if name:
+                data['name'] = name
+            if phone:
+                data['phone'] = phone
+            if login:
+                data['login'] = login
+            if password:
+                data['password'] = password
+
+            if data:
+                u = env['res.users'].browse(ADMIN_USER_ID)
+                u.write(data)
+        return http.Response('OK', status=200)
 
     @http.route(
         '/saas/client/db/configure/base_url',

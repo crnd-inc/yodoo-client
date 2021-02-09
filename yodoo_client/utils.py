@@ -2,8 +2,8 @@ import os
 import string
 import hashlib
 import logging
+import random
 import platform
-from random import shuffle
 from contextlib import closing
 
 import psutil
@@ -18,6 +18,7 @@ SAAS_CLIENT_API_VERSION = 1
 DEFAULT_TIME_TO_LOGIN = 3600
 DEFAULT_ADMIN_SESSION_TTL = 2 * 60 * 60  # seconds
 DEFAULT_LEN_TOKEN = 128
+DEFAULT_RANDOM_PASSWORD_LEN = 32
 SAAS_TOKEN_FIELD = 'yodoo_token'
 
 _logger = logging.getLogger(__name__)
@@ -39,12 +40,11 @@ def str_filter_falsy(s):
     return s
 
 
-def generate_random_password(length):
+def generate_random_password(length=DEFAULT_RANDOM_PASSWORD_LEN):
     letters = list(string.ascii_uppercase +
                    string.ascii_lowercase +
-                   string.digits) * 3
-    shuffle(letters)
-    return ''.join(letters[:length])
+                   string.digits)
+    return ''.join(random.choice(letters) for _ in range(length))
 
 
 def get_yodoo_client_version():
