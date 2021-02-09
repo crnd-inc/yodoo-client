@@ -221,7 +221,7 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
             [('token_temp', '=', data['token_temp'])]
         )
         self.assertEqual(len(temp_rows), 1)
-        self.assertEqual(temp_rows[0].user_uuid, 'mu-test-user')
+        self.assertEqual(temp_rows[0].user_uuid, 'my-user-id')
         self.assertEqual(temp_rows[0].user_id, test_r_user.id)
 
         # check auth true login true password

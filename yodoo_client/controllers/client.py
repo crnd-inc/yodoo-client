@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import werkzeug.exceptions
 
 import odoo
-from odoo import http, registry, fields
+from odoo import http, registry, fields, SUPERUSER_ID
 from odoo.tools import config
 from odoo.http import request, Response
 from ..utils import (
@@ -99,7 +99,7 @@ class SAASClient(http.Controller):
                     %(expire)s,
                     %(token_temp)s,
                     %(user_uuid)s,
-                    %(user_id)s,
+                    %(user_id)s
                 );
             """, data)
         return Response(json.dumps(data), status=200)

@@ -29,6 +29,8 @@ from ..http_decorators import (
 
 _logger = logging.getLogger(__name__)
 
+ADMIN_USER_ID = SUPERUSER_ID
+
 
 class SAASClientDb(http.Controller):
 
@@ -306,7 +308,7 @@ class SAASClientDb(http.Controller):
             env = api.Environment(cr, SUPERUSER_ID, context={})
 
             # Regenerate password for administrator user for security reason
-            u = env['res.users'].browse(1)
+            u = env['res.users'].browse(ADMIN_USER_ID)
             u.write({
                 'login': 'odoo',
                 'password': generate_random_password(),
@@ -323,9 +325,42 @@ class SAASClientDb(http.Controller):
 
             # Update info about main company
             if company_data:
-                env['res.company'].browse(1).write(company_data)
+                env['res.company'].browse(ADMIN_USER_ID).write(company_data)
         return http.Response('OK', status=200)
 
+    @http.route(
+        '/saas/client/db/configure/update-admin-user',
+        type='http',
+        auth='none',
+        metods=['POST'],
+        csrf=False
+    )
+    @require_saas_token
+    @require_db_param
+    def client_db_configure_update_admin_user(self, db=None, email=None,
+                                              name=None, phone=None,
+                                              login=None, password=None,
+                                              **params):
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+
+            # Update info about administrator user
+            data = {}
+            if email:
+                data['email'] = email
+            if name:
+                data['name'] = name
+            if phone:
+                data['phone'] = phone
+            if login:
+                data['login'] = login
+            if password:
+                data['password'] = password
+
+            if data:
+                u = env['res.users'].browse(ADMIN_USER_ID)
+                u.write(data)
+        return http.Response('OK', status=200)
 
     @http.route(
         '/saas/client/db/configure/base_url',
