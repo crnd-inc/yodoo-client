@@ -1,4 +1,4 @@
-from odoo import models, api
+from odoo import models, api, exceptions
 
 
 class Users(models.Model):
@@ -6,8 +6,8 @@ class Users(models.Model):
 
     @classmethod
     def _login(cls, db, login, password, user_agent_env):
-        if not password or not login:
-            return False
+        if not password:
+            raise exceptions.AccessDenied()
 
         with cls.pool.cursor() as cr:
             cr.execute("""
