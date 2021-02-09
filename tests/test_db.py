@@ -4,6 +4,8 @@ import requests
 
 from .common import TestOdooInfrastructureClient
 
+ADMIN_USER_ID = 2
+
 
 class TestClientDBStatistic(TestOdooInfrastructureClient):
 
@@ -215,13 +217,14 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
     def setUp(self):
         super(TestDBConfigureDB, self).setUp()
 
-        self._new_admin_cl['res.users'].write([1], {
+        self._new_admin_cl['res.users'].write([ADMIN_USER_ID], {
             'login': 'admin',
             'password': 'admin',
         })
 
     def test_15_db_configure_db_ok(self):
-        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+        self.assertEqual(
+            self._client['res.users'].browse(ADMIN_USER_ID).login, 'admin')
 
         response = requests.post(
             self.create_url('/saas/client/db/configure/db'),
@@ -239,10 +242,13 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
             self._new_admin_cl['res.company'].browse(1).name,
             'My Company 42')
 
-        self.assertEqual(self._new_admin_cl['res.users'].browse(1).login, 'odoo')
+        self.assertEqual(
+            self._new_admin_cl['res.users'].browse(ADMIN_USER_ID).login,
+            'odoo')
 
     def test_15_db_configure_db_no_params(self):
-        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+        self.assertEqual(
+            self._client['res.users'].browse(ADMIN_USER_ID).login, 'admin')
 
         response = requests.post(
             self.create_url('/saas/client/db/configure/db'),
@@ -252,10 +258,13 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
             })
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(self._new_admin_cl['res.users'].browse(1).login, 'odoo')
+        self.assertEqual(
+            self._new_admin_cl['res.users'].browse(ADMIN_USER_ID).login,
+            'odoo')
 
     def test_20_db_configure_update_admin_ok(self):
-        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+        self.assertEqual(
+            self._client['res.users'].browse(ADMIN_USER_ID).login, 'admin')
 
         response = requests.post(
             self.create_url('/saas/client/db/configure/update-admin-user'),
@@ -270,7 +279,7 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
             })
         self.assertEqual(response.status_code, 200)
 
-        admin_user = self._new_admin_cl['res.users'].browse(1)
+        admin_user = self._new_admin_cl['res.users'].browse(ADMIN_USER_ID)
         self.assertEqual(admin_user.login, 'admin-s1')
         self.assertEqual(admin_user.name, 'Test Admin')
         self.assertEqual(admin_user.phone, '12345678')
@@ -279,10 +288,11 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
         self.assertEqual(
             self._client.login(
                 self._client.dbname, 'admin-s1', 'my-password').uid,
-            1)
+            ADMIN_USER_ID)
 
     def test_20_db_configure_update_admin_no_params(self):
-        self.assertEqual(self._client['res.users'].browse(1).login, 'admin')
+        self.assertEqual(
+            self._client['res.users'].browse(ADMIN_USER_ID).login, 'admin')
 
         response = requests.post(
             self.create_url('/saas/client/db/configure/update-admin-user'),
@@ -293,4 +303,6 @@ class TestDBConfigureDB(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 200)
 
         # nothing have to be changed
-        self.assertEqual(self._new_admin_cl['res.users'].browse(1).login, 'admin')
+        self.assertEqual(
+            self._new_admin_cl['res.users'].browse(ADMIN_USER_ID).login,
+            'admin')

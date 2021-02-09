@@ -29,7 +29,7 @@ from ..http_decorators import (
 
 _logger = logging.getLogger(__name__)
 
-ADMIN_USER_ID = SUPERUSER_ID
+ADMIN_USER_ID = 2
 
 
 class SAASClientDb(http.Controller):
@@ -325,7 +325,7 @@ class SAASClientDb(http.Controller):
 
             # Update info about main company
             if company_data:
-                env['res.company'].browse(ADMIN_USER_ID).write(company_data)
+                env['res.company'].browse(1).write(company_data)
         return http.Response('OK', status=200)
 
     @http.route(
