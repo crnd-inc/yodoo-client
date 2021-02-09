@@ -9,9 +9,9 @@
 
     'author': "Center of Research and Development",
     'website': "https://yodoo.systems",
-    'license': 'Other proprietary',
+    'license': 'LGPL-3',
 
-    'version': '12.0.1.18.0',
+    'version': '12.0.1.19.0',
 
     # any module necessary for this one to work correctly
     'depends': [
