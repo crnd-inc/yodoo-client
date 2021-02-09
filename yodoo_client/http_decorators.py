@@ -8,6 +8,7 @@ from odoo.service.db import exp_db_exist
 
 from .utils import (
     check_saas_client_token,
+    str_filter_falsy,
 )
 from .exceptions import DatabaseNotExists
 
@@ -47,3 +48,21 @@ def require_db_param(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def wrap_str_falsy_values(*field_names):
+    """ check the data passed to method and converf string falsy values
+        to correct python valus:
+            'none' -> None
+            'false', '0' -> None
+
+    """
+    def decorator(func):
+        @wraps(func)
+        def decorated(*args, **kwargs):
+            for fname in field_names:
+                if fname in kwargs and isinstance(kwargs[fname], str):
+                    kwargs[fname] = str_filter_falsy(kwargs[fname])
+            return func(*args, **kwargs)
+        return decorated
+    return decorator
