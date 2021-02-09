@@ -15,6 +15,7 @@ class YodooClientAuthLog(models.Model):
         readonly=True)
     logout_date = fields.Datetime(readonly=True)
     login_remote_uuid = fields.Char(readonly=True)
+    login_user_id = fields.Integer(readonly=True)
 
     def action_expire(self):
         for record in self:
