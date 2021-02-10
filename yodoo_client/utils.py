@@ -7,6 +7,7 @@ import platform
 import datetime
 from contextlib import closing
 
+import dateutil
 import psutil
 import werkzeug
 
@@ -46,6 +47,14 @@ def dt2str(dt):
     """
     if not dt:
         return False
+
+    if isinstance(dt, str):
+        try:
+            dt = dateutil.parser.parse(dt)
+        except Exception:
+            _logger.error("Cannot parse data %s", dt, exc_info=True)
+            return False
+
     if isinstance(dt, datetime.datetime):
         return dt.strftime('%Y-%m-%d %H:%M:%S')
     return dt
