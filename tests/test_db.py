@@ -16,6 +16,7 @@ class TestClientDBStatistic(TestOdooInfrastructureClient):
 
     def test_01_controller_db_statistic(self):
         NoneType = type(None)
+        BoolType = type(True)
         # test correct request
         response = requests.post(
             self._db_statistic_url, self._db_statistic_data)
@@ -26,8 +27,10 @@ class TestClientDBStatistic(TestOdooInfrastructureClient):
         self.assertEqual(data['users_total_count'], 1)
         self.assertIsInstance(data['db_storage'], int)
         self.assertIsInstance(data['file_storage'], int)
-        self.assertIsInstance(data['login_date'], (str, NoneType))
-        self.assertIsInstance(data['login_internal_date'], (str, NoneType))
+        self.assertIsInstance(
+            data['login_date'], (str, NoneType, BoolType))
+        self.assertIsInstance(
+            data['login_internal_date'], (str, NoneType, BoolType))
         self.assertIsInstance(data['installed_apps_db_count'], int)
         self.assertIsInstance(data['installed_modules_db_count'], int)
 
