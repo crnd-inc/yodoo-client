@@ -46,6 +46,9 @@ class TestClientDBStatistic(TestOdooInfrastructureClient):
         })
         cl = self._client.login(self._db_name, 'test-user', 'test-user')
 
+        # do actual login
+        cl.uid
+
         # test correct request
         response = requests.post(
             self._db_statistic_url, self._db_statistic_data)
