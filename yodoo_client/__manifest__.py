@@ -11,7 +11,7 @@
     'website': "https://yodoo.systems",
     'license': 'LGPL-3',
 
-    'version': '13.0.1.19.0',
+    'version': '13.0.1.20.0',
 
     # any module necessary for this one to work correctly
     'depends': [

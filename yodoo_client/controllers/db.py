@@ -25,6 +25,7 @@ from ..utils import (
 from ..http_decorators import (
     require_saas_token,
     require_db_param,
+    wrap_str_falsy_values,
 )
 
 _logger = logging.getLogger(__name__)
@@ -302,6 +303,7 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
+    @wrap_str_falsy_values('company_name', 'company_webste')
     def client_db_configure_db(self, db=None, company_name=None,
                                company_website=None, **params):
         with registry(db).cursor() as cr:
@@ -337,6 +339,7 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
+    @wrap_str_falsy_values('email', 'name', 'phone', 'login', 'password')
     def client_db_configure_update_admin_user(self, db=None, email=None,
                                               name=None, phone=None,
                                               login=None, password=None,
