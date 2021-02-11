@@ -4,8 +4,10 @@ import hashlib
 import logging
 import random
 import platform
+import datetime
 from contextlib import closing
 
+import dateutil
 import psutil
 import werkzeug
 
@@ -38,6 +40,24 @@ def str_filter_falsy(s):
         if s.lower() in ('false', '0'):
             return False
     return s
+
+
+def dt2str(dt):
+    """ Convert datetime representation to str
+    """
+    if not dt:
+        return False
+
+    if isinstance(dt, str):
+        try:
+            dt = dateutil.parser.parse(dt)
+        except Exception:
+            _logger.error("Cannot parse data %s", dt, exc_info=True)
+            return False
+
+    if isinstance(dt, datetime.datetime):
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    return dt
 
 
 def generate_random_password(length=DEFAULT_RANDOM_PASSWORD_LEN):
@@ -143,10 +163,8 @@ def prepare_db_statistic_data(db):
         'users_total_count': active_users['total'],
         'users_internal_count': active_users['internal'],
         'users_external_count': active_users['external'],
-        'login_date': fields.Datetime.to_string(
-            last_login_date),
-        'login_internal_date': fields.Datetime.to_string(
-            last_internal_login_date),
+        'login_date': dt2str(last_login_date),
+        'login_internal_date': dt2str(last_internal_login_date),
         'installed_apps_db_count': installed_modules['apps'],
         'installed_modules_db_count': installed_modules['total'],
     }
