@@ -35,14 +35,47 @@ class TestClientDBStatistic(TestOdooInfrastructureClient):
         self.assertIsInstance(data['installed_apps_db_count'], int)
         self.assertIsInstance(data['installed_modules_db_count'], int)
 
-    def test_02_controller_db_statistic(self):
+    def test_02_controller_db_statistic_with_login_date(self):
+        NoneType = type(None)
+
+        # Login as demo user
+        # TODO: create user
+        self._client['res.users'].create({
+            'name': 'test-user',
+            'login': 'test-user',
+            'password': 'test-user',
+            'groups_id': [(4, self._client.ref('base.group_user').id)],
+        })
+        cl = self._client.login(self._db_name, 'test-user', 'test-user')
+
+        # do actual login
+        cl.uid
+
+        # test correct request
+        response = requests.post(
+            self._db_statistic_url, self._db_statistic_data)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['users_internal_count'], 2)
+        self.assertEqual(data['users_external_count'], 0)
+        self.assertEqual(data['users_total_count'], 2)
+        self.assertIsInstance(data['db_storage'], int)
+        self.assertIsInstance(data['file_storage'], int)
+        self.assertEqual(
+            data['login_date'], cl.user.login_date)
+        self.assertEqual(
+            data['login_internal_date'], cl.user.login_date)
+        self.assertIsInstance(data['installed_apps_db_count'], int)
+        self.assertIsInstance(data['installed_modules_db_count'], int)
+
+    def test_03_controller_db_statistic(self):
         # test incorrect request with bad token_hash
         data = dict(self._db_statistic_data, token_hash='abracadabra')
 
         response = requests.post(self._db_statistic_url, data)
         self.assertEqual(response.status_code, 403)
 
-    def test_03_controller_db_statistic(self):
+    def test_04_controller_db_statistic(self):
         # test incorrect request with bad db_name
         data = dict(self._db_statistic_data, db='abracadabra')
 
