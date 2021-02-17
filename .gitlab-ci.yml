@@ -93,10 +93,10 @@ tests:
     script:
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-simple" --build-arg ODOO_BASE_TAG=13.0 .
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd-opensource/docker/odoo-simple" --build-arg ODOO_BASE_TAG=13.0 .
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd/docker/odoo-ci" --build-arg ODOO_BASE_TAG=13.0 .
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd-opensource/docker/odoo-ci" --build-arg ODOO_BASE_TAG=13.0 .
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
