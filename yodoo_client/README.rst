@@ -14,12 +14,27 @@ Yodoo Client
 
 |badge4| |badge5|
 
-The Yodoo Client application is the client addon for the yodoo.systems. Connect your Odoo instance to yodoo.systems and get the SaaS portal for your clients.
+The Yodoo Client application is the client addon for the Yodoo Cockpit.
+It allows you to connect Odoo instance to Yodoo Cockpit.
 
-Requirements
-''''''''''''
+Yodoo Cockpit - Manage your odoo infrastructure via odoo
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Minimal postgres version required: 9.5
+.. image:: https://crnd.pro/web/image/18846/banner_2_4_gif_animation_cut.gif
+  :target: https://crnd.pro/yodoo-cockpit
+  :alt: Yodoo Cockpit - Manage your odoo infrastructure via odoo
+
+Take a look at `[Yodoo Cockpit](https://crnd.pro/yodoo-cockpit) <https://crnd.pro/yodoo-cockpit>`__ project, and discover the easiest way to manage your odoo installations.
+Just short notes about `[Yodoo Cockpit](https://crnd.pro/yodoo-cockpit) <https://crnd.pro/yodoo-cockpit>`__:
+
+- start new production-ready odoo instance in 1-2 minutes.
+- add custom addons to your odoo instances in few clicks.
+- out-of-the-box email configuration: just press button and add some records to your DNS, and get a working email
+- make your odoo instance available to external world (internet) in 30 seconds (just add single record in your DNS)
+- easy way to sell your odoo-based product in SaaS way.
+- Yodoo Cockpit could be launched as Infrastructure as a Service (IaaS), thus you even do not need to worry about servers.
+
+If you have any questions, then contact us at `info@crnd.pro <mailto:info@crnd.pro>`__, so we could schedule online-demonstration.
 
 
 Configuration
@@ -69,30 +84,27 @@ The configuration has several steps.
    that have to be installed on database creation.
 
 
-Installation
-''''''''''''
-This module is automatically installed with the base module.
-
-
-Read the `Odoo-Infrastructure <http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/>`__ Guide for more information.
-
-
-Launching SaaS is fast and easy:
-''''''''''''''''''''''''''''''''
-
-
-|badge3|
 
 
 Bug Tracker
-===========
+'''''''''''
 
 Bugs are tracked on `https://crnd.pro/requests <https://crnd.pro/requests>`_.
 In case of trouble, please report there.
 
 
+Level up your service quality
+=============================
+
+Level up your service with our `Helpdesk <https://crnd.pro/solutions/helpdesk>`__ / `Service Desk <https://crnd.pro/solutions/service-desk>`__ / `ITSM <https://crnd.pro/itsm>`__ solution.
+
+Just test it at `yodoo.systems <https://yodoo.systems/saas/templates>`__: choose template you like, and start working.
+
+Test all available features of `Bureaucrat ITSM <https://crnd.pro/itsm>`__ with `this template <https://yodoo.systems/saas/template/bureaucrat-itsm-demo-data-95>`__.
+
+
 Maintainer
-''''''''''
+==========
 .. image:: https://crnd.pro/web/image/3699/300x140/crnd.png
 
 Our web site: https://crnd.pro/

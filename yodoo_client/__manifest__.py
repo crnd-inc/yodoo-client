@@ -1,17 +1,17 @@
 {
     'name': "Yodoo Client",
 
-    'summary': """
-        It is the client addon for the yodoo.systems. Connect your Odoo
-        instance to yodoo.systems and get the SaaS portal for
-        your clients.
-    """,
+    'summary': (
+        "This is the client addon for the Yodoo Cockpit. "
+        "Yodoo Cockpit, allows you to easily manage your odoo installations. "
+        "Also, it allows you to easily run your product as SaaS."
+    ),
 
     'author': "Center of Research and Development",
-    'website': "https://yodoo.systems",
+    'website': "https://crnd.pro/yodoo-cockpit",
     'license': 'LGPL-3',
 
-    'version': '14.0.1.22.0',
+    'version': '14.0.1.23.0',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -36,9 +36,11 @@
     # only loaded in demonstration mode
     'demo': [],
     'qweb': [],
-    'category': 'Administration',
+    'category': 'Technical',
     'installable': True,
     'auto_install': True,
     'images': ['static/description/banner.png'],
     "post_load": "_post_load_hook",
+    'live_test_url': 'https://yodoo.systems',
+    'support': 'info@crnd.pro',
 }
