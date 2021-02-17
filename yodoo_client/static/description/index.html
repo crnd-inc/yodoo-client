@@ -4,31 +4,39 @@
 <h1 style="color:#875A7B;">Yodoo Client</h1>
 </div>
 <div align="center">
-<p><a href="http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/"><img alt="docs" src="https://img.shields.io/badge/docs-Odoo_Infrastructure-yellowgreen.png" /></a> <a href="https://crnd.pro/"><img alt="CR&amp;D" src="https://img.shields.io/badge/maintainer-CR&amp;D-purple.png" /></a></p>
+<p><a href="https://crnd.pro/"><img alt="CR&amp;D" src="https://img.shields.io/badge/maintainer-CR&amp;D-purple.png" /></a></p>
 <p><br></p>
 </div>
 </section>
 
 <section style="margin: 0 auto; max-width: 896px;">
-<div>
-<p>Yodoo Client is an application developed by the <a href="https://crnd.pro/">Center of Research &amp; Development</a> company. It is the client addon for the <a href="https://yodoo.systems/">yodoo.systems</a>.
-</p>
-<p>Connect your Odoo instance to <a href="https://yodoo.systems/">yodoo.systems</a> and get the SaaS portal for your clients.
-</p>
-</div>
 <div style="padding: 0.3em 0.6em; font-size: 120%;">
-<i><b>Key features</b></i>
-<ul>
-<li>High-level server management</li>
-<li>Pre-configured database templates</li>
-<li>Automatic backups (very deep configured: backup every hour, daily, weekly, etc.)</li>
-<li>Fully functional database management (create, drop, rename, duplicate, modules installation, etc.)</li>
-<li>Frontend management (automatic generation of ssl certificates)</li>
-<li>Customer portal (users can create, drop db, manage backups, etc.)</li>
-</ul>
+<p>
+The Yodoo Client application is the client addon for the Yodoo Cockpit.
+It allows you to connect Odoo instance to Yodoo Cockpit.
+</p>
 </div>
-<div>
-<p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Configuration</b></i></p>
+</section>
+<section style="margin: 0 auto; max-width: 896px;">
+<h2 style="color:#875A7B;text-align: center">Yodoo Cockpit</h2>
+<div style="padding: 0.3em 0.6em; font-size: 120%;">
+<p>Take a look at [Yodoo Cockpit](https://crnd.pro/yodoo-cockpit) project, and discover the easiest way to manage your odoo installations, or run your product as SaaS.</p>
+<p>Just short notes about [Yodoo Cockpit](https://crnd.pro/yodoo-cockpit):</p>
+<ul>
+<li>start new production-ready odoo instance in 1-2 minutes.</li>
+<li>add custom addons to your odoo instances in few clicks.</li>
+<li>out-of-the-box email configuration: just press button and add some records to your DNS, and get a working email</li>
+<li>make your odoo instance available to external world (internet) in 30 seconds (just add single record in your DNS)</li>
+<li>easy way to sell your odoo-based product in SaaS way.</li>
+<li>Yodoo Cockpit could be launched as <i>Infrastructure as a Service (IaaS)</i>, thus you even do not need to worry about servers.</li>
+</ul>
+
+<p>If you have any questions, then contact us at info@crnd.pro, so we could schedule online-demonstration.</p>
+</div>
+</section>
+<section style="margin: 0 auto; max-width: 896px;">
+<h2 style="color:#875A7B;text-align: center">Configuration</h2>
+<div style="padding: 0.3em 0.6em; font-size: 120%;">
 <p>The configuration has several steps.</p>
 <ol>
 <li><p>Set <code>yodoo_token</code> to the <code>odoo.conf</code> file. This is a series of random ascii characters. This is the same as the <code>odoo_instance_token</code> field on the remote server.</p>
@@ -50,156 +58,31 @@ admin_access_credentials = False</code></pre>
 </li>
 </ol>
 </div>
-<div><p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Installation</b></i></p>
-<p>This module is automatically installed with the base module.</p>
-</div>
-<div><p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Creation of the Control Database for SaaS</b></i></p>
-<p>To create Control Database for SaaS you need to register on the <a href="https://yodoo.systems/">yodoo.systems</a> portal and submit the appropriate request.</p>
+</section>
 
-<ol>
-<li>
-<div>
-<p><i>On the portal, click <b>Sign In</b>.
-</i>
+<section style="max-width: 896px; margin: 0 auto;">
+<h2 style="color:#875A7B;text-align: center">Bug Tracker</h2>
+<div style="padding: 0.3em 0.6em; font-size: 120%;">
+<p>Bugs are tracked at our [Service Desk](https://crnd.pro/requests). In case of any trouble, please report there.
 </p>
-<div align="center">
-<img src="odoo_infrastructure06.png" alt="sign_in" style="max-width: 100%">
 <p><br></p>
-</div>
-</div>
-</li>
-
-<li>
-<div>
-<p><i>If you have not already registered, click <b>Don't have an account?</b>
-</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure07.png" alt="sign_in_form" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-</li>
-
-<li>
-<div>
-<p><i>Fill in the form for registration, click <b>Sign up</b>.
-</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure08.png" alt="registration_form" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-</li>
-
-<li>
-<div>
-<p><i>Click <b>Service Desk</b> at the top of the page.
-</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure09.png" alt="service_desk" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-</li>
-
-<li>
-<div>
-<p><i>Click <b>Create request</b>.
-</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure10.png" alt="create_request" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-</li>
-
-<li>
-<div>
-<p><i>Fill the request data: request category - <b>Database/Create</b>; request type - <b>Request for Control Database for SaaS</b>. And then, submit the request.
-</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure11.png" alt="submit_request" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-</li>
-</ol>
-
-<p>The Control Database for SaaS will be automatically created.</p>
 </div>
 </section>
 
 <section style="max-width: 896px; margin: 0 auto;">
-<div><p style="padding: 0.3em 0.6em; font-size: 120%;"><i><b>Workflow examples</b></i></p>
-</div>
-<div>
-<p><i>Configure Odoo Instance Server</i>
+<h2 style="color:#875A7B;text-align: center">Level up your service quality</h2>
+<div style="padding: 0.3em 0.6em; font-size: 120%;">
+<p>
+Level up your service with one of our solutions:</p>
+<ul>
+<li>[Helpdesk](https://crnd.pro/solutions/helpdesk)</li>
+<li>[Service Desk](https://crnd.pro/solutions/service-desk)</li>
+<li>[ITSM](https://crnd.pro/itsm) solution.</li>
+</ul>
+<p>Just test it at [yodoo.systems](https://yodoo.systems/saas/templates): choose template you like, and start working.
 </p>
-<div align="center">
-<img src="odoo_infrastructure_client01.png" alt="server_configuration" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-<div>
-<p><i>General databases management
-</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure_client02.png" alt="database_management" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-<div>
-<p><i>Manage specific database</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure_client03.png" alt="manage_specific_database" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-<div>
-<p><i>Database templates creation</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure_client04.png" alt="template_creation" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-<div>
-<p><i>Customers can create their databases by configured templates from website</i>
-</p>
-<div align="center">
-<img src="odoo_infrastructure_client05.png" alt="db_creation" style="max-width: 100%">
-<p><br></p>
-</div>
-</div>
-</section>
 
-<section style="max-width: 896px; margin: 0 auto;">
-<p>Read the <a href="http://review-docs.10.100.34.40.xip.io/review/doc-odoo-infrastructure/11.0/en/odoo_infrastructure_admin/">Odoo Infrastructure</a> guide for more information.</p>
-
-</section>
-
-<section style="max-width: 896px; margin: 0 auto;">
-<div>
-<h3>Bug Tracker</h3>
-<p>Bugs are tracked on <a href="https://crnd.pro/requests">https://crnd.pro/requests</a>. In case of trouble, please report there.
-</p>
-<p><br></p>
-</div>
-</section>
-
-<section align="center" style="max-width: 896px; margin: 0 auto;">
-<div>
-<h2 style="color:#875A7B;">Launching SaaS is Fast and Easy</h2>
-<p><a href="https://yodoo.systems/">LAUNCH</a> with Yodoo
-<a href="https://yodoo.systems"><img alt="yodoo.systems" src="https://img.shields.io/badge/powered%20by-yodoo.systems-00a09d.png"/></a>
-</p> 
+<p>Test all available features of [Bureaucrat ITSM](https://crnd.pro/itsm) with template https://yodoo.systems/saas/template/bureaucrat-itsm-demo-data-95.</p>
 </div>
 </section>
 
@@ -220,4 +103,3 @@ For any questions <a href="mailto:info@crnd.pro">contact us</a>.
 </p>
 </div>
 </section>
-
