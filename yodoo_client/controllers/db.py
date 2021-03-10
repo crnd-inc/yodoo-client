@@ -310,14 +310,14 @@ class SAASClientDb(http.Controller):
             env = api.Environment(cr, SUPERUSER_ID, context={})
 
             # Regenerate password for administrator user for security reason
-            u = env['res.users'].browse(ADMIN_USER_ID)
+            u = env['res.users'].sudo().browse(ADMIN_USER_ID)
             u.write({
                 'login': 'odoo',
                 'password': generate_random_password(),
             })
             # Cleanup login history (useful if database was created as
             # duplicate
-            env['res.users.log'].search([]).unlink()
+            env['res.users.log'].sudo().search([]).unlink()
 
             company_data = {}
             if company_name:
@@ -327,7 +327,7 @@ class SAASClientDb(http.Controller):
 
             # Update info about main company
             if company_data:
-                env['res.company'].browse(1).write(company_data)
+                env['res.company'].sudo().browse(1).write(company_data)
         return http.Response('OK', status=200)
 
     @http.route(
