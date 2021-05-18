@@ -4,6 +4,7 @@ import re
 import json
 import logging
 import tempfile
+import time
 from contextlib import closing
 
 import werkzeug
@@ -135,8 +136,18 @@ class SAASClientDb(http.Controller):
                 description="Database %s already exists" % new_dbname)
 
         _logger.info("Rename database: %s -> %s", db, new_dbname)
-        service_db.exp_rename(db, new_dbname)
-        return Response('OK', status=200)
+        try:
+            service_db.exp_rename(db, new_dbname)
+        except Exception as e:
+            _logger.error("Rename database: %s -> %s ERROR", db, new_dbname)
+        c = 10
+        while service_db.exp_db_exist() and c >= 0:
+            c = c - 1
+            time.sleep(1)
+        if service_db.exp_db_exist():
+            return Response('OK', status=200)
+        else:
+            return Response('Error database rename', status=500)
 
     @http.route(
         '/saas/client/db/drop',
@@ -150,7 +161,7 @@ class SAASClientDb(http.Controller):
     def client_db_drop(self, db=None, **params):
         if not service_db.exp_drop(db):
             raise werkzeug.exceptions.Forbidden(
-                description="It is not allowed to drop databse %s" % db)
+                description="It is not allowed to drop database %s" % db)
         return Response('OK', status=200)
 
     @http.route(
