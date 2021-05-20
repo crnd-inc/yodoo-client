@@ -139,15 +139,15 @@ class SAASClientDb(http.Controller):
         try:
             service_db.exp_rename(db, new_dbname)
         except Exception as e:
-            _logger.error("Rename database: %s -> %s ERROR", db, new_dbname)
+            _logger.error("Rename database: %s -> %s ERROR: '%s'",
+                          db, new_dbname, e)
         c = 10
         while service_db.exp_db_exist(new_dbname) and c >= 0:
             c = c - 1
             time.sleep(1)
-        if service_db.exp_db_exist(new_dbname):
-            return Response('OK', status=200)
-        else:
+        if not service_db.exp_db_exist(new_dbname):
             return Response('Error database rename', status=500)
+        return Response('OK', status=200)
 
     @http.route(
         '/saas/client/db/drop',
