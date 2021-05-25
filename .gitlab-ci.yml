@@ -1,4 +1,4 @@
-image: registry.crnd.pro/crnd/docker/odoo-ci-x:11.0-simple
+image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:11.0-simple
 
 variables:
     SERIES_BRANCH: '11.0'
@@ -17,6 +17,7 @@ stages:
     - test
     - translation
     - build
+    - review
 
 build_env:
     stage: static-test
@@ -58,7 +59,7 @@ check-versions:
         - /^11.0-.*$/   # only branches that started with '11.0-'
 
 tests:
-    image: registry.crnd.pro/crnd/docker/odoo-ci-x:11.0-ci
+    image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:11.0-ci
     stage: test
     <<: *pip_cache_definition
     before_script:
@@ -82,7 +83,7 @@ tests:
             - "--mtu"
             - "1356"
     variables:
-        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd/docker/odoo-simple"
+        ODOO_BASE_IMAGE: "registry.crnd.pro/crnd-opensource/docker/odoo-simple"
         ODOO_BASE_TAG: "11.0"
         RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
     tags:
@@ -111,3 +112,42 @@ build-docker-dev:
     only:
         - /^11.0-.*$/
     when: manual
+
+
+.deploy_review_definition: &deploy_review_definition
+    stage: deploy
+    before_script:
+        - ci-review-app init
+    script:
+        - ci-review-app start
+    tags:
+        - deploy
+        - odoo-review-ci4-shared
+        - review-apps
+
+deploy_review_dev:
+    <<: *deploy_review_definition
+    environment:
+        name: review/$CI_COMMIT_REF_NAME
+        url: http://$CI_ENVIRONMENT_SLUG-$CI_PROJECT_ID.ci4.crnd.pro
+        on_stop: stop_review_dev
+    only:
+        - /^12.0-.*$/   # only branches that started with '12.0-'
+    when: manual
+
+stop_review_dev:
+    stage: deploy
+    environment:
+        name: review/$CI_COMMIT_REF_NAME
+        action: stop
+    variables:
+        GIT_STRATEGY: none
+    script:
+        - ci-review-app stop
+    when: manual
+    tags:
+        - deploy
+        - odoo-review-ci4-shared
+        - review-apps
+    only:
+        - /^11.0-.*$/   # only branches that started with '11.0-'
