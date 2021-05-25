@@ -115,7 +115,7 @@ build-docker-dev:
 
 
 .deploy_review_definition: &deploy_review_definition
-    stage: deploy
+    stage: review
     before_script:
         - ci-review-app init
     script:
@@ -136,7 +136,7 @@ deploy_review_dev:
     when: manual
 
 stop_review_dev:
-    stage: deploy
+    stage: review
     environment:
         name: review/$CI_COMMIT_REF_NAME
         action: stop
