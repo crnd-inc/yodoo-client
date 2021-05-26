@@ -17,7 +17,6 @@ stages:
     - test
     - translation
     - build
-    - review
 
 build_env:
     stage: static-test
@@ -115,7 +114,7 @@ build-docker-dev:
 
 
 .deploy_review_definition: &deploy_review_definition
-    stage: review
+    stage: build
     before_script:
         - ci-review-app init
     script:
@@ -132,11 +131,11 @@ deploy_review_dev:
         url: http://$CI_ENVIRONMENT_SLUG-$CI_PROJECT_ID.ci4.crnd.pro
         on_stop: stop_review_dev
     only:
-        - /^12.0-.*$/   # only branches that started with '12.0-'
+        - /^11.0-.*$/   # only branches that started with '11.0-'
     when: manual
 
 stop_review_dev:
-    stage: review
+    stage: build
     environment:
         name: review/$CI_COMMIT_REF_NAME
         action: stop
