@@ -21,6 +21,7 @@ from ..utils import (
     str_filter_falsy,
     get_yodoo_client_version,
     generate_random_password,
+    retry_iter,
 )
 from ..http_decorators import (
     require_saas_token,
@@ -134,9 +135,29 @@ class SAASClientDb(http.Controller):
             raise werkzeug.exceptions.Conflict(
                 description="Database %s already exists" % new_dbname)
 
-        _logger.info("Rename database: %s -> %s", db, new_dbname)
-        service_db.exp_rename(db, new_dbname)
-        return Response('OK', status=200)
+        _logger.info("Renaming database '%s' to '%s'...", db, new_dbname)
+        try:
+            service_db.exp_rename(db, new_dbname)
+        except Exception as e:
+            _logger.error("Rename database '%s' to '%s' failed:\n%s",
+                          db, new_dbname, e)
+            raise werkzeug.exceptions.InternalServerError(
+                description="Cannot rename database (%s -> %s):\n%s" % (
+                    db, new_dbname, e))
+
+        # Sometime, database is not available just after renaming,
+        # thus we have to wait while it will be available.
+        # Especially, this case sometimes happens with large databases (60+ GB)
+        for __ in retry_iter(interval_timeout=0.5,
+                             max_retries=10,
+                             first_timeout=False):
+            if service_db.exp_db_exist(new_dbname):
+                return Response('OK', status=200)
+
+        # If database still not available - raise error
+        raise werkzeug.exceptions.InternalServerError(
+            description="Cannot rename database (%s -> %s):\nTimed out" % (
+                db, new_dbname))
 
     @http.route(
         '/saas/client/db/drop',
@@ -150,7 +171,7 @@ class SAASClientDb(http.Controller):
     def client_db_drop(self, db=None, **params):
         if not service_db.exp_drop(db):
             raise werkzeug.exceptions.Forbidden(
-                description="It is not allowed to drop databse %s" % db)
+                description="It is not allowed to drop database %s" % db)
         return Response('OK', status=200)
 
     @http.route(
