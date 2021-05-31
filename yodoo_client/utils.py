@@ -1,4 +1,5 @@
 import os
+import time
 import string
 import hashlib
 import logging
@@ -24,6 +25,25 @@ DEFAULT_RANDOM_PASSWORD_LEN = 32
 SAAS_TOKEN_FIELD = 'yodoo_token'
 
 _logger = logging.getLogger(__name__)
+
+
+def retry_iter(interval_timeout=0.5, max_retries=3, first_timeout=True):
+    """ Retrry as iterator.
+    """
+    attempt = 0
+    enable_timeout = first_timeout
+    retry_timeout = interval_timeout
+
+    while attempt < max_retries:
+        attempt += 1
+
+        if enable_timeout:
+            time.sleep(retry_timeout)
+
+        # Do the work
+        yield attempt
+
+        enable_timeout = True
 
 
 def str_filter_falsy(s):
