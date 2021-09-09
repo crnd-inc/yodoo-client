@@ -82,6 +82,7 @@ class YodooEasyBackup(http.Controller):
                 shutil.copyfileobj(stdout, stream)
             else:
                 return stdout
+        return None
 
     @http.route(
         '/yodoo_easy_backup/<token>',
