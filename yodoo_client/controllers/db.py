@@ -324,7 +324,7 @@ class SAASClientDb(http.Controller):
     )
     @require_saas_token
     @require_db_param
-    @wrap_str_falsy_values('company_name', 'company_webste')
+    @wrap_str_falsy_values('company_name', 'company_website')
     def client_db_configure_db(self, db=None, company_name=None,
                                company_website=None, **params):
         with registry(db).cursor() as cr:
