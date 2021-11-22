@@ -30,7 +30,6 @@
         'views/yodoo_client_auth_log.xml',
         'views/saas_statistic.xml',
         'views/dbmanager.xml',
-        'views/assets.xml',
         'views/ir_module_module.xml',
     ],
     # only loaded in demonstration mode
@@ -43,4 +42,13 @@
     "post_load": "_post_load_hook",
     'live_test_url': 'https://yodoo.systems',
     'support': 'info@crnd.pro',
+
+    'assets': {
+        'web.assets_backend': [
+            '/yodoo_client/static/src/js/db.js',
+        ],
+        'web.assets_qweb': [
+            '/yodoo_client/static/src/xml/**/*',
+        ],
+    },
 }
