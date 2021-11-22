@@ -195,4 +195,4 @@ class SAASClient(http.Controller):
                 'user_id': user_id,
                 'auth_id': auth_id,
             })
-        return http.redirect_with_hash('/web')
+        return http.redirect('/web')
