@@ -1,5 +1,5 @@
 ARG ODOO_BASE_IMAGE=registry.crnd.pro/crnd-opensource/docker/odoo-simple
-ARG ODOO_BASE_TAG=14.0
+ARG ODOO_BASE_TAG=15.0
 FROM ${ODOO_BASE_IMAGE}:${ODOO_BASE_TAG}
 MAINTAINER CRnD
 

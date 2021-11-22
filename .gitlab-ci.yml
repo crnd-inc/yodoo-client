@@ -1,4 +1,4 @@
-image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:14.0-simple
+image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:15.0-simple
 
 variables:
     SERIES_BRANCH: '15.0'
