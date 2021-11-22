@@ -1,7 +1,7 @@
 image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:14.0-simple
 
 variables:
-    SERIES_BRANCH: '14.0'
+    SERIES_BRANCH: '15.0'
     ODOO_MAX_CRON_THREADS: 0
     ODOO_SERVER_WIDE_MODULES: "base,web,yodoo_client"
     ODOO_EXTRA_CONFIG: "yodoo_token = qwerty"
@@ -55,10 +55,10 @@ check-versions:
     script:
         - odoo-helper ci check-versions-git . origin/$SERIES_BRANCH $CI_COMMIT_SHA
     only:
-        - /^14.0-.*$/   # only branches that started with '14.0-'
+        - /^15.0-.*$/   # only branches that started with '15.0-'
 
 tests:
-    image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:14.0-ci
+    image: registry.crnd.pro/crnd-opensource/docker/odoo-ci-x:15.0-ci
     stage: test
     <<: *pip_cache_definition
     before_script:
@@ -83,7 +83,7 @@ tests:
             - "1356"
     variables:
         ODOO_BASE_IMAGE: "registry.crnd.pro/crnd-opensource/docker/odoo-simple"
-        ODOO_BASE_TAG: "14.0"
+        ODOO_BASE_TAG: "15.0"
         RESULT_IMAGE_TAG: "${CI_COMMIT_REF_NAME}"
     tags:
         - docker
@@ -93,10 +93,10 @@ tests:
     script:
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd-opensource/docker/odoo-simple" --build-arg ODOO_BASE_TAG=14.0 .
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd-opensource/docker/odoo-simple" --build-arg ODOO_BASE_TAG=15.0 .
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}
 
-        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd-opensource/docker/odoo-ci" --build-arg ODOO_BASE_TAG=14.0 .
+        - docker build --rm -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-ci --build-arg ODOO_BASE_IMAGE="registry.crnd.pro/crnd-opensource/docker/odoo-ci" --build-arg ODOO_BASE_TAG=15.0 .
         - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}-ci
 
         - docker logout $CI_REGISTRY
@@ -104,12 +104,12 @@ tests:
 build-docker-stable:
     <<: *build-docker-definition
     only:
-        - "14.0"
+        - "15.0"
 
 build-docker-dev:
     <<: *build-docker-definition
     only:
-        - /^14.0-.*$/
+        - /^15.0-.*$/
     when: manual
 
 
@@ -131,7 +131,7 @@ deploy_review_dev:
         url: http://$CI_ENVIRONMENT_SLUG-$CI_PROJECT_ID.ci4.crnd.pro
         on_stop: stop_review_dev
     only:
-        - /^14.0-.*$/   # only branches that started with '14.0-'
+        - /^15.0-.*$/   # only branches that started with '15.0-'
     when: manual
 
 stop_review_dev:
@@ -149,4 +149,4 @@ stop_review_dev:
         - odoo-review-ci4-shared
         - review-apps
     only:
-        - /^14.0-.*$/   # only branches that started with '14.0-'
+        - /^15.0-.*$/   # only branches that started with '15.0-'
