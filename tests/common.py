@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from six.moves.urllib.parse import urlunsplit
 
 from odoo_rpc_client import Client
+import odoo_rpc_client.plugins.external_ids
+
 from odoo_rpc_client.exceptions import LoginException
 
 _logger = logging.getLogger(__name__)

@@ -95,7 +95,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertFalse(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            )['ir.model.data']._xmlid_to_res_id('base.user_demo'))
+            )['ir.model.data'].ref('base.user_demo'))
 
         # Duplicate database
         response = requests.post(
@@ -158,7 +158,8 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            )['ir.model.data']._xmlid_to_res_id('base.user_demo'))
+            ).external_ids.get_for('base.user_demo'))
+
 
         # Backup database
         response = requests.post(self._backup_db_url, self._backup_db_data)
@@ -222,7 +223,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            )['ir.model.data']._xmlid_to_res_id('base.user_demo'))
+            ).external_ids.get_for('base.user_demo'))
 
         # Drop database
         self._odoo_instance.services.db.drop_db(
@@ -240,7 +241,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            )['ir.model.data']._xmlid_to_res_id('base.user_demo'))
+            ).external_ids.get_for('base.user_demo'))
 
         # Drop database
         self._odoo_instance.services.db.drop_db(
@@ -258,7 +259,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            )['ir.model.data']._xmlid_to_res_id('base.user_demo'))
+            ).external_ids.get_for('base.user_demo'))
 
         # Drop database
         self._odoo_instance.services.db.drop_db(
