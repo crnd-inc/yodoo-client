@@ -158,7 +158,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            ).external_ids.get_for('base.user_demo'))
+            ).plugins.external_ids.get_for('base.user_demo'))
 
 
         # Backup database
@@ -223,7 +223,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            ).external_ids.get_for('base.user_demo'))
+            ).plugins.external_ids.get_for('base.user_demo'))
 
         # Drop database
         self._odoo_instance.services.db.drop_db(
@@ -241,7 +241,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            ).external_ids.get_for('base.user_demo'))
+            ).plugins.external_ids.get_for('base.user_demo'))
 
         # Drop database
         self._odoo_instance.services.db.drop_db(
@@ -259,7 +259,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertTrue(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            ).external_ids.get_for('base.user_demo'))
+            ).plugins.external_ids.get_for('base.user_demo'))
 
         # Drop database
         self._odoo_instance.services.db.drop_db(
