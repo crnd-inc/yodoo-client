@@ -95,7 +95,7 @@ class TestDBManagement(TestOdooInfrastructureClient):
         self.assertFalse(
             self._client.login(
                 'test_db', 'test_user', 'test_password'
-            )['ir.model.data'].ref('base.user_demo'))
+            ).pulgins.external_ids.get_for('base.user_demo'))
 
         # Duplicate database
         response = requests.post(
