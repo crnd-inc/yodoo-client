@@ -23,7 +23,6 @@ build_env:
     script:
         - pwd
         - whoami
-        - python --version
         - odoo-helper --version
         - odoo-helper status --tools-versions --ci-tools-versions
 
