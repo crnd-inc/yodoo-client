@@ -29,7 +29,8 @@ class SAASClientInstance(http.Controller):
     @require_saas_token
     def get_client_module_info(self, **params):
         data = prepare_saas_module_info_data()
-        return Response(json.dumps(data, cls=ModuleManifestEncoder), status=200)
+        return Response(
+            json.dumps(data, cls=ModuleManifestEncoder), status=200)
 
     @http.route(
         ['/saas/client/server/fast/stat', '/saas/client/server/stat/fast'],
