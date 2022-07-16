@@ -6,6 +6,7 @@ import logging
 import random
 import platform
 import datetime
+import json
 from contextlib import closing
 
 import dateutil
@@ -321,3 +322,10 @@ def ensure_installing_addons_dependencies(cr):
         if not to_auto_install:
             break
         make_addons_to_be_installed(cr, to_auto_install)
+
+
+class ModuleManifestEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
