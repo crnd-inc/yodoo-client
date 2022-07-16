@@ -7,6 +7,7 @@ from ..utils import (
     prepare_saas_module_info_data,
     prepare_server_fast_statistic_data,
     prepare_server_slow_statistic_data,
+    ModuleManifestEncoder,
 )
 from ..http_decorators import (
     require_saas_token,
@@ -28,7 +29,8 @@ class SAASClientInstance(http.Controller):
     @require_saas_token
     def get_client_module_info(self, **params):
         data = prepare_saas_module_info_data()
-        return Response(json.dumps(data), status=200)
+        return Response(
+            json.dumps(data, cls=ModuleManifestEncoder), status=200)
 
     @http.route(
         ['/saas/client/server/fast/stat', '/saas/client/server/stat/fast'],
