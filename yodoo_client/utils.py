@@ -5,6 +5,7 @@ import logging
 import random
 import platform
 import datetime
+import json
 from contextlib import closing
 
 import dateutil
@@ -224,10 +225,12 @@ def prepare_saas_module_info_data():
                                 etc...},
                     etc...}
     """
-    return {
-        mod: module.load_information_from_description_file(mod)
-        for mod in module.get_modules()
-    }
+    res = {}
+    for mod in module.get_modules():
+        data = module.load_information_from_description_file(mod)
+        data['auto_install'] = bool(data['auto_install'])
+        res[mod] = data
+    return res
 
 
 def make_addons_to_be_installed(cr, addons):
@@ -299,3 +302,10 @@ def ensure_installing_addons_dependencies(cr):
         if not to_auto_install:
             break
         make_addons_to_be_installed(cr, to_auto_install)
+
+
+class ModuleManifestEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
