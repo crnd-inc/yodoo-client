@@ -165,7 +165,7 @@ class SAASClient(http.Controller):
 
         # Do not rotate session. So user will keep same session as before.
         # TODO: handle admin sessions in better way
-        request.session.rotate = False
+        request.session.should_rotate = False
 
         with registry(db).cursor() as cr:
             cr.execute("""

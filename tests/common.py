@@ -80,4 +80,3 @@ class TestOdooInfrastructureClient(unittest.TestCase):
         """
         host_url = ':'.join((self._odoo_host, self._odoo_port))
         return urlunsplit(('http', host_url, query, '', ''))
-

@@ -11,14 +11,13 @@
     'website': "https://crnd.pro/yodoo-cockpit",
     'license': 'LGPL-3',
 
-    'version': '15.0.1.26.0',
+    'version': '16.0.1.26.0',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'web',
         'base_setup',
-        'fetchmail',
     ],
 
     # always loaded

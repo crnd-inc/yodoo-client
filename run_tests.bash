@@ -9,6 +9,7 @@ set -e;
 
 (
     cd "$SCRIPT_DIR" && \
+    odoo-helper stop || true && \
     odoo-helper start --coverage -- -p 8069 --http-interface=localhost && \
     sleep 5 && \
     odoo-helper exec python -m unittest tests && \

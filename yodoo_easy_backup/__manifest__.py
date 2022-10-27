@@ -27,7 +27,7 @@
     'demo': [],
     'qweb': [],
     'category': 'Administration',
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'images': [],
 }

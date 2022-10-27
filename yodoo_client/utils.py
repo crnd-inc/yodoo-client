@@ -91,7 +91,7 @@ def generate_random_password(length=DEFAULT_RANDOM_PASSWORD_LEN):
 def get_yodoo_client_version():
     """ Return version of yodoo_client available on disk
     """
-    return odoo.modules.load_information_from_description_file(
+    return odoo.modules.get_manifest(
         'yodoo_client')['version']
 
 
@@ -247,7 +247,7 @@ def prepare_saas_module_info_data():
     """
     res = {}
     for mod in module.get_modules():
-        data = module.load_information_from_description_file(mod)
+        data = module.get_manifest(mod)
         data['auto_install'] = bool(data['auto_install'])
         res[mod] = data
     return res

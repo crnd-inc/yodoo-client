@@ -21,6 +21,7 @@ class YodooClientAuthLog(models.Model):
         for record in self:
             if record.login_state != 'expired':
                 session = http.root.session_store.get(record.login_session)
+                session.logout()
                 http.root.session_store.delete(session)
                 record.login_state = 'expired'
                 record.logout_date = fields.Datetime.now()

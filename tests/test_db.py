@@ -104,7 +104,10 @@ class TestDBModuleInfo(TestOdooInfrastructureClient):
             self.assertIsInstance(module['application'], bool)
             self.assertIsInstance(module['state'], six.string_types)
             self.assertIsInstance(
-                module['published_version'], (str, NoneType))
+                module['published_version'],
+                (str, NoneType, bool),
+                "Published version is not set correctly: %r\nmodule_info:%r" %(
+                    module['published_version'], module))
 
     def test_02_controller_db_module_info(self):
         # test incorrect request with bad token_hash
@@ -227,7 +230,9 @@ class TestDBUsersConfigureBasics(TestOdooInfrastructureClient):
                 'token_hash': self._hash_token,
                 'db': self._client.dbname,
             })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.status_code, 200,
+            "Bad response received: %s" % response.text)
         self.assertFalse(self._client.ref('yodoo_client.yodoo_incoming_mail'))
         self.assertFalse(self._client.ref('yodoo_client.yodoo_outgoing_mail'))
 

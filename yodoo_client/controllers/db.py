@@ -172,6 +172,7 @@ class SAASClientDb(http.Controller):
         if not service_db.exp_drop(db):
             raise werkzeug.exceptions.Forbidden(
                 description="It is not allowed to drop database %s" % db)
+
         return Response('OK', status=200)
 
     @http.route(
@@ -218,8 +219,7 @@ class SAASClientDb(http.Controller):
         to_install_modules = set()
         modules_in_db = {}
         modules_on_disk = {
-            mod: odoo.modules.module.load_information_from_description_file(
-                mod)
+            mod: odoo.modules.module.get_manifest(mod)
             for mod in odoo.modules.module.get_modules()
         }
         auto_install_addons = odoo.tools.config.get(
@@ -430,6 +430,7 @@ class SAASClientDb(http.Controller):
     def client_db_configure_mail(self, incoming, outgoing, db=None,
                                  test_and_confirm=False, **params):
         # pylint: disable=too-many-locals, too-many-branches
+        # pylint: disable=too-many-statements
         """ Configure mail servers for database
 
             :param dict incoming: dict with config of incoming mail server
@@ -474,6 +475,16 @@ class SAASClientDb(http.Controller):
             'smtp_pass': outgoing['password'],
             'active': outgoing.get('active', True),
         }
+        # At first we have to install module 'mail' if it is not installed yet
+        # Otherwise we will not be able to configure mail servers
+        with registry(db).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, context={})
+            module_mail = env['ir.module.module'].search(
+                [('name', '=', 'mail'),
+                 ('state', 'in', ('uninstalled', 'to_install'))])
+            if module_mail:
+                module_mail.button_immediate_install()
+
         with registry(db).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, context={})
             incoming_srv = env.ref(
@@ -492,7 +503,13 @@ class SAASClientDb(http.Controller):
                 })
 
             if test_and_confirm:
-                incoming_srv.button_confirm_login()
+                try:
+                    incoming_srv.button_confirm_login()
+                except Exception:
+                    _logger.error(
+                        "Cannot configure incoming mail server", exc_info=True)
+                    raise werkzeug.exceptions.InternalServerError(
+                        "Cannot configure incoming mail server")
                 if incoming_srv.state != 'done':
                     raise werkzeug.exceptions.InternalServerError(
                         "Cannot configure incoming mail server")
