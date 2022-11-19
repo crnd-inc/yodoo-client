@@ -247,7 +247,10 @@ def prepare_saas_module_info_data():
     """
     res = {}
     for mod in module.get_modules():
-        data = module.get_manifest(mod)
+        # We have to copy manifest info before alrering it,
+        # to avoid sideeffects, because call to get_manifest is cached,
+        # thus modification of it could lead to modification of cached value.
+        data = dict(module.get_manifest(mod))
         data['auto_install'] = bool(data['auto_install'])
         res[mod] = data
     return res
