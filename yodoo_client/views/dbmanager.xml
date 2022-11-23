@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-<!--    pylint: disable=dangerous-qweb-replace-wo-priority    -->
+    <!-- Note, that priority is set to 15, to ensure that this view is applied before any other extension,
+         otherwise, errors could be raise (some other modules may replace some elements this module is rely on) -->
+    <!-- pylint: disable=dangerous-qweb-replace-wo-priority    -->
     <template id="login_layout"
               inherit_id="web.login_layout"
               name="Remove Database Manager Link"
