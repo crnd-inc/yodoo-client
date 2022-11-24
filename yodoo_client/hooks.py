@@ -15,6 +15,8 @@ original_module_db_initialize = odoo.modules.db.initialize
 
 
 def list_dbs(force=False):
+    # Modify list_db method to ignore temporary databases, that could be used
+    # by backup system.
     res = original_list_dbs(force)
     db_name_pattern = r"^tmp-.*-tmp$"
     return list(filter(lambda i: not re.match(db_name_pattern, i), res))
