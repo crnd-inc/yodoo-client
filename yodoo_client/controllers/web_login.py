@@ -2,17 +2,16 @@ import logging
 
 import odoo
 from odoo import http
-from odoo.http import request
 from odoo.addons.web.controllers.home import Home
 
 _logger = logging.getLogger(__name__)
 
 
 class SaaSHome(Home):
-    @http.route('/web/login', type='http', auth="none", sitemap=False)
+    @http.route('/web/login')
     def web_login(self, *args, **kw):
         response = super(SaaSHome, self).web_login(*args, **kw)
-        values = request.params.copy()
+        values = {}
         if odoo.tools.config.get('url_manage_db', False):
             values['url_manage_db'] = odoo.tools.config['url_manage_db']
         if odoo.tools.config.get('url_powered_by', False):
