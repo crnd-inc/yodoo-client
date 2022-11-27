@@ -22,9 +22,9 @@ def list_dbs(force=False):
     return list(filter(lambda i: not re.match(db_name_pattern, i), res))
 
 
-def db_filter(dbs, httprequest=None):
-    httprequest = httprequest or http.request.httprequest
-    dbs = original_db_filter(dbs, httprequest=httprequest)
+def db_filter(dbs, host=None):
+    httprequest = http.request.httprequest
+    dbs = original_db_filter(dbs, host=host)
     db_header = httprequest.environ.get('HTTP_X_ODOO_DBFILTER')
     if not db_header:
         return dbs
