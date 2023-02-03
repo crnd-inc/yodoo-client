@@ -3,6 +3,7 @@ import six
 
 from odoo_rpc_client import Client
 from odoo_rpc_client.exceptions import LoginException
+from odoo_rpc_client.connection.jsonrpc import JSONRPCError
 
 from .common import (
     TestOdooInfrastructureClient,
@@ -40,6 +41,29 @@ class TestClientAuth(TestOdooInfrastructureClient):
         self.assertEqual(
             cl['ir.config_parameter'].get_param("yodoo.client.test.param"),
             '42')
+
+        # Test that it is not possible to login with incorrect password
+        with self.assertRaisesRegex(LoginException, "Bad login or password"):
+            cl = self._client.login(
+                dbname=self._client.dbname,
+                user=data['token_user'],
+                password="unexisting password")
+            cl['ir.config_parameter'].set_param("yodoo.client.test.param", 48)
+
+        # Unlink auth record
+        self._client[
+            'odoo.infrastructure.client.auth'
+        ].search_records([]).unlink()
+
+        # Ensure AccessDenied raised when auth record deleted
+        # (check that auth credentials are not cached)
+        with self.assertRaisesRegex(LoginException, "Bad login or password"):
+            cl = self._client.login(
+                dbname=self._client.dbname,
+                user=data['token_user'],
+                password=data['token_password'])
+            cl['ir.config_parameter'].set_param("yodoo.client.test.param", 48)
+
 
     def test_02_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad token_hash
