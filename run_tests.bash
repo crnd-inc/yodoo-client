@@ -14,6 +14,6 @@ set -e;
     odoo-helper exec python -m unittest tests && \
     odoo-helper stop && \
     odoo-helper exec coverage combine && \
-    odoo-helper exec coverage report && \
+    odoo-helper exec coverage report; \
     odoo-helper stop
 )
