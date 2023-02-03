@@ -31,6 +31,16 @@ class TestClientAuth(TestOdooInfrastructureClient):
         self.assertIsInstance(data['temp_url'], six.string_types)
         self.assertIsInstance(data['token_temp'], six.string_types)
 
+        # Test that we can use our temporary auth keys for RPC
+        cl = self._client.login(
+            dbname=self._client.dbname,
+            user=data['token_user'],
+            password=data['token_password'])
+        cl['ir.config_parameter'].set_param("yodoo.client.test.param", 42)
+        self.assertEqual(
+            cl['ir.config_parameter'].get_param("yodoo.client.test.param"),
+            '42')
+
     def test_02_controller_odoo_infrastructure_auth(self):
         # test incorrect request with bad token_hash
         data = dict(self._data, token_hash='abracadabra')
