@@ -11,7 +11,7 @@
     'website': "https://crnd.pro/yodoo-cockpit",
     'license': 'LGPL-3',
 
-    'version': '13.0.1.27.0',
+    'version': '13.0.1.27.1',
 
     # any module necessary for this one to work correctly
     'depends': [

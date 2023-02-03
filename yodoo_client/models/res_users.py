@@ -22,6 +22,24 @@ class Users(models.Model):
                 return res[1]
         return super(Users, cls)._login(db, login, password)
 
+    @classmethod
+    def check(cls, db, uid, passwd):
+        if not (passwd and db and uid):
+            return super().check(db, uid, passwd)
+
+        with cls.pool.cursor() as cr:
+            cr.execute("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM odoo_infrastructure_client_auth
+                    WHERE user_id=%s
+                        AND token_password=%s
+                        AND expire > CURRENT_TIMESTAMP AT TIME ZONE 'UTC');
+            """, (uid, passwd, ))
+            if cr.fetchone()[0]:
+                return None
+        return super().check(db, uid, passwd)
+
     @api.model
     def _check_credentials(self, password):
         """ Check user credentials, and raise AccessDenied if check failed
