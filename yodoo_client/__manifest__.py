@@ -43,11 +43,11 @@
     'support': 'info@crnd.pro',
 
     # 'assets': {
-        # 'web.assets_backend': [
-            # '/yodoo_client/static/src/js/db.js',
-        # ],
-        # 'web.assets_qweb': [
-            # '/yodoo_client/static/src/xml/**/*',
-        # ],
+    #     'web.assets_backend': [
+    #         '/yodoo_client/static/src/js/db.js',
+    #     ],
+    #     'web.assets_qweb': [
+    #         '/yodoo_client/static/src/xml/**/*',
+    #     ],
     # },
 }
