@@ -11,7 +11,7 @@
     'website': "https://crnd.pro/yodoo-cockpit",
     'license': 'LGPL-3',
 
-    'version': '16.0.1.27.2',
+    'version': '17.0.1.27.2',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -42,12 +42,12 @@
     'live_test_url': 'https://yodoo.systems',
     'support': 'info@crnd.pro',
 
-    'assets': {
-        'web.assets_backend': [
-            '/yodoo_client/static/src/js/db.js',
-        ],
-        'web.assets_qweb': [
-            '/yodoo_client/static/src/xml/**/*',
-        ],
-    },
+    # 'assets': {
+        # 'web.assets_backend': [
+            # '/yodoo_client/static/src/js/db.js',
+        # ],
+        # 'web.assets_qweb': [
+            # '/yodoo_client/static/src/xml/**/*',
+        # ],
+    # },
 }

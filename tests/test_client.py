@@ -269,32 +269,38 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         # check request if temp record does not exist
         AuthLog = self._client['yodoo.client.auth.log']
 
-        # Install module mail for this test. This is needed to check if user
-        # can view partner record.
-        self._client['ir.module.module'].search_records(
-            [('name', '=', 'mail')]
-        ).button_immediate_install()
-
         session = requests.Session()
 
+        # Test that we cannot see apps menu
+        response = session.get(
+            self.create_url('/web#model=ir.module.module&view_type=kanban'))
+        self.assertTrue(
+            response.url.startswith(self.create_url('/web/login')),
+            "Expected response url starts with '/web/login', got %s" % (
+                response.url))
+
+        # Get admin auth
         response = session.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.url, self.create_url('/web'))
 
+        # Check that we can access apps view
         response = session.get(
-            self.create_url('/mail/view?model=res.partner&res_id=1'))
+            self.create_url('/web#model=ir.module.module&view_type=kanban'))
         self.assertEqual(response.status_code, 200)
         self.assertFalse(
             response.url.startswith(self.create_url('/web/login')))
         self.assertTrue(
             response.url.startswith(self.create_url('/web#')))
 
+        # Expire admin authentication
         log_entry = AuthLog.search_records([])
         self.assertEqual(len(log_entry), 1)
         log_entry.action_expire()
 
+        # Test that we cannot access apps view
         response = session.get(
-            self.create_url('/mail/view?model=res.partner&res_id=1'))
+            self.create_url('/web#model=ir.module.module&view_type=kanban'))
         self.assertTrue(
             response.url.startswith(self.create_url('/web/login')),
             "Expected response url starts with '/web/login', got %s" % (
@@ -313,7 +319,7 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         self.assertEqual(len(log_entry), 1)
 
         response = session.get(
-            self.create_url('/mail/view?model=res.partner&res_id=1'),
+            self.create_url('/web#model=ir.module.module&view_type=kanban'),
             allow_redirects=True)
         self.assertFalse(
             response.url.startswith(self.create_url('/web/login')))
@@ -341,7 +347,7 @@ class TestClientAuthAdminLogin(TestOdooInfrastructureClient):
         self.assertEqual(response.status_code, 403)
 
         response = session.get(
-            self.create_url('/mail/view?model=res.partner&res_id=1'))
+            self.create_url('/web#model=ir.module.module&view_type=kanban'))
         self.assertTrue(
             response.url.startswith(self.create_url('/web/login')),
             "Expected response url starts with '/web/login', got %s" % (
